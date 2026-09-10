@@ -1,3 +1,2 @@
-# PRAXO
+# Welcome to PRAXO
 
-(Prueba de commit para verificar llave.)
