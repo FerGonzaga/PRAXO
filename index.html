@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+
+<head>
+    <!-- Configuración básica -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Información de la página -->
+    <meta name="description" content="PRAXO - Oficios al instante">
+    <meta name="author" content="PRAXO">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <!-- Título de la página -->
+    <title>PRAXO - Oficios al instante</title>
+
+    <!-- Ícono de la pestaña -->
+    <link rel="icon" type="image/png" href="assets/logo/logo.png">
+</head>
+
+<body>
+
+    <!-- ========================================
+         BARRA DE NAVEGACIÓN
+    ========================================= -->
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container-fluid px-4">
+            
+            <!-- LOGO A LA IZQUIERDA -->
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="#">
+                <img src="assets/logo/logo.png" alt="PRAXO Logo" width="35" height="35" class="d-inline-block align-text-top rounded">
+                PRAXO
+            </a>
+
+            <!-- BOTÓN HAMBURGUESA PARA MÓVILES -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- CONTENIDO DE LA BARRA (MENÚ Y BÚSQUEDA A LA DERECHA) -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                
+                <!-- Enlaces de navegación alineados a la derecha -->
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 me-3 align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#quienes-somos">¿Quiénes somos?</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contactanos">Contáctanos</a>
+                    </li>
+                </ul>
+
+                <!-- BARRA DE BÚSQUEDA -->
+                <form class="d-flex" role="search">
+                    <div class="input-group">
+                        <input class="form-control bg-dark text-white border-secondary" type="search" placeholder="¿Qué oficio buscas? (ej. Plomero)" aria-label="Buscar">
+                        <button class="btn btn-outline-light" type="submit">
+                            Buscar
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- SLIDER PRINCIPAL -->
+    <section>
+
+        <div id="sliderPrincipal" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+            <!-- INDICADORES -->
+            <div class="carousel-indicators">
+
+                <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="0" class="active"
+                    aria-current="true" aria-label="Slide 1">
+                </button>
+
+                <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="1" aria-label="Slide 2">
+                </button>
+
+                <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="2" aria-label="Slide 3">
+                </button>
+
+                <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="3" aria-label="Slide 4">
+                </button>
+
+                <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="4" aria-label="Slide 5">
+                </button>
+
+            </div>
+
+
+            <!-- CONTENIDO DEL SLIDER -->
+            <div class="carousel-inner">
+
+                <!-- SLIDE 1 -->
+                <div class="carousel-item active" data-bs-interval="5000">
+
+                    <img src="assets/img/albanil.jpeg" class="d-block w-100" alt="Promoción de productos">
+
+                    <div class="carousel-caption d-none d-md-block">
+
+                        <h2 class="fw-bold">
+                            Tecnología para ti
+                        </h2>
+
+                        <p>
+                            Descubre nuestros productos y promociones.
+                        </p>
+
+                        <a href="pages/productos.html" class="btn btn-primary">
+                            Comprar ahora
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SLIDE 2 -->
+                <div class="carousel-item" data-bs-interval="5000">
+
+                    <img src="assets/img/elec.jpg"class="d-block w-100" alt="Productos destacados">
+
+                    <div class="carousel-caption d-none d-md-block">
+
+                        <h2 class="fw-bold">
+                            Productos destacados
+                        </h2>
+
+                        <p>
+                            Encuentra lo que necesitas al mejor precio.
+                        </p>
+
+                        <a href="pages/productos.html" class="btn btn-light">
+                            Ver productos
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SLIDE 3 -->
+                <div class="carousel-item" data-bs-interval="5000">
+
+                    <img src="assets/img/fletes.jpg" class="d-block w-100" alt="Ofertas especiales">
+
+                    <div class="carousel-caption d-none d-md-block">
+
+                        <h2 class="fw-bold">
+                            Ofertas especiales
+                        </h2>
+
+                        <p>
+                            Aprovecha nuestras promociones.
+                        </p>
+
+                        <a href="pages/productos.html" class="btn btn-danger">
+                            Ver ofertas
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- SLIDE 4 -->
+                <div class="carousel-item" data-bs-interval="5000">
+
+                    <img src="assets/img/plomero.jpg" class="d-block w-100" alt="Ofertas especiales">
+
+                    <div class="carousel-caption d-none d-md-block">
+
+                        <h2 class="fw-bold">
+                            Ofertas especiales
+                        </h2>
+
+                        <p>
+                            Aprovecha nuestras promociones.
+                        </p>
+
+                        <a href="pages/productos.html" class="btn btn-danger">
+                            Ver ofertas
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- SLIDE 5 -->
+                <div class="carousel-item" data-bs-interval="5000">
+
+                    <img src="assets/img/carpi.jpg" class="d-block w-100" alt="Ofertas especiales">
+
+                    <div class="carousel-caption d-none d-md-block">
+
+                        <h2 class="fw-bold">
+                            Ofertas especiales
+                        </h2>
+
+                        <p>
+                            Aprovecha nuestras promociones.
+                        </p>
+
+                        <a href="pages/productos.html" class="btn btn-danger">
+                            Ver ofertas
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTÓN ANTERIOR -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#sliderPrincipal" data-bs-slide="prev">
+
+                <span class="carousel-control-prev-icon" aria-hidden="true">
+                </span>
+
+                <span class="visually-hidden">
+                    Anterior
+                </span>
+
+            </button>
+
+
+            <!-- BOTÓN SIGUIENTE -->
+            <button class="carousel-control-next" type="button" data-bs-target="#sliderPrincipal" data-bs-slide="next">
+
+                <span class="carousel-control-next-icon" aria-hidden="true">
+                </span>
+
+                <span class="visually-hidden">
+                    Siguiente
+                </span>
+
+            </button>
+
+        </div>
+
+    </section>
+    <!-- ========================================
+         BOOTSTRAP JAVASCRIPT
+    ========================================= -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
+        </script>
+
+</body>
+
+</html>
