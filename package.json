@@ -1,0 +1,32 @@
+{
+  "name": "pagina-integrador",
+  "version": "1.0.0",
+  "description": "this was wrote by pambazo",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "mongodb": "^7.6.0",
+    "mongoose": "^9.10.0",
+    "multer": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FerGonzaga/PRAXO.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FerGonzaga/PRAXO/issues"
+  },
+  "homepage": "https://github.com/FerGonzaga/PRAXO#readme"
+}

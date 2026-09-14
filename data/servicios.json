@@ -1,0 +1,11 @@
+{
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Electricidad",
+      "icono": "⚡",
+      "descripcion": "Servicios eléctricos",
+      "subcategorias": ["Instalación", "Reparación", "Mantenimiento"]
+    }
+  ]
+}

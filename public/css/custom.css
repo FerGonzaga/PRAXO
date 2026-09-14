@@ -1,0 +1,33 @@
+/* public/css/custom.css */
+/* Aqui van tus estilos propios que ajustan o extienden Bootstrap. */
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Hero de la pagina principal (fondo oscuro tipo Uber) */
+.hero-seccion {
+  background-color: #1a1a2e;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Fila de categorias con scroll horizontal (tipo Uber Eats) */
+.categorias-scroll {
+  scrollbar-width: thin;
+}
+
+.categoria-card {
+  flex: 0 0 auto;
+  width: 90px;
+}
+
+.categoria-icono {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #1a1a2e;
+}

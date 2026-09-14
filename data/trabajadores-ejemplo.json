@@ -1,0 +1,52 @@
+[
+  {
+    "nombre": "Juan Pérez",
+    "oficio": "Electricista",
+    "telefono": "771-123-4567",
+    "ciudad": "Pachuca de Soto, Hidalgo",
+    "descripcion": "Instalaciones eléctricas residenciales y comerciales, 8 años de experiencia.",
+    "calificacionPromedio": 4.7,
+    "disponibleAhora": true,
+    "fotoArchivo": "juan.jpg"
+  },
+  {
+    "nombre": "María López",
+    "oficio": "Plomero",
+    "telefono": "771-234-5678",
+    "ciudad": "Pachuca de Soto, Hidalgo",
+    "descripcion": "Reparación de fugas, instalación de tuberías y calentadores.",
+    "calificacionPromedio": 4.9,
+    "disponibleAhora": false,
+    "fotoArchivo": "maria.jpg"
+  },
+  {
+    "nombre": "Carlos Ramírez",
+    "oficio": "Cerrajero",
+    "telefono": "771-345-6789",
+    "ciudad": "Pachuca de Soto, Hidalgo",
+    "descripcion": "Apertura de puertas, cambio de chapas, servicio de emergencia 24/7.",
+    "calificacionPromedio": 4.5,
+    "disponibleAhora": true,
+    "fotoArchivo": "carlos.jpg"
+  },
+  {
+    "nombre": "Ana Torres",
+    "oficio": "Albañil",
+    "telefono": "771-456-7890",
+    "ciudad": "Mineral de la Reforma, Hidalgo",
+    "descripcion": "Construcción, remodelación y acabados en general.",
+    "calificacionPromedio": 4.6,
+    "disponibleAhora": false,
+    "fotoArchivo": "ana.jpg"
+  },
+  {
+    "nombre": "Roberto Sánchez",
+    "oficio": "Pintor",
+    "telefono": "771-567-8901",
+    "ciudad": "Pachuca de Soto, Hidalgo",
+    "descripcion": "Pintura de interiores y exteriores, acabados finos.",
+    "calificacionPromedio": 4.8,
+    "disponibleAhora": true,
+    "fotoArchivo": "roberto.jpg"
+  }
+]
