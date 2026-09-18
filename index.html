@@ -2,6 +2,10 @@
 <html lang="es-MX">
 
 <head>
+    <!-- Librerías de MapLibre GL JS para el mapa -->
+    <link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+
     <!-- Configuración básica -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -248,11 +252,50 @@
 
     </section>
     <!-- ========================================
+         SECCIÓN DEL MAPA (OFICINAS PRAXO / ITSOEH)
+    ========================================= -->
+    <section class="container my-5" id="contactanos">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold">Nuestra Ubicación</h2>
+                <p class="text-muted">Visítanos en nuestras oficinas principales</p>
+            </div>
+            <div class="col-md-10">
+                <!-- Aquí definimos el tamaño del mapa (height: 350px para hacerlo chico) -->
+                <div id="map" style="width: 100%; height: 350px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"></div>
+            </div>
+        </div>
+    </section>
+    <!-- ========================================
          BOOTSTRAP JAVASCRIPT
     ========================================= -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
         </script>
+        <!-- JS del Mapa -->
+    <script>
+        // Coordenadas exactas del ITSOEH
+        const coordenadasOficina = [-99.2217, 20.2055]; 
+
+        // Inicializar el mapa
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://tiles.openfreemap.org/styles/liberty', // Estilo gratuito
+            center: coordenadasOficina, 
+            zoom: 16,
+            scrollZoom: false // Desactiva el zoom con la rueda para no interrumpir el scroll de tu página
+        });
+
+        // Controles de navegación del mapa
+        map.addControl(new maplibregl.NavigationControl());
+
+        // Colocar el marcador
+        new maplibregl.Marker({ color: "#FF0000" }) 
+            .setLngLat(coordenadasOficina)
+            .setPopup(new maplibregl.Popup({ offset: 25 })
+                .setHTML("<div class='text-center'><strong>Oficinas PRAXO</strong><br><small class='text-muted'>Mixquiahuala</small></div>")) 
+            .addTo(map);
+    </script>
 
 </body>
 
