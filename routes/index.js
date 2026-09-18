@@ -32,6 +32,13 @@ router.get('/contacto', (req, res) => {
   });
 });
 
+// GET /quienes-somos -> pagina de quienes somos
+router.get('/quienes-somos', (req, res) => {
+  res.render('quienes-somos', {
+    titulo: 'Quiénes somos',
+  });
+});
+
 // GET /registro -> formulario para que un trabajador se anuncie
 router.get('/registro', (req, res) => {
   res.render('registro', {
