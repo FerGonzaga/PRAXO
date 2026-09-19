@@ -1,14 +1,16 @@
 <!-- views/partials/navbar.ejs -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
-    <a class="navbar-brand" href="/">Encuentra tu Servicio</a>
+    <!--
+    <a class="navbar-brand" href="/">PRAXO</a>
+    -->
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="/">
+      <img src="assets\img\logo\logo.png" alt="PRAXO Logo" width="35" height="35"
+        class="d-inline-block align-text-top rounded">
+      PRAXO
+    </a>
 
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-    >
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -32,22 +34,22 @@
 
         <!-- Menu desplegable de categorias -->
         <li class="nav-item dropdown">
-          <a
-            class="nav-link dropdown-toggle"
-            href="#"
-            id="categoriasDropdown"
-            role="button"
-            data-bs-toggle="dropdown"
-          >
+          <a class="nav-link dropdown-toggle" href="#" id="categoriasDropdown" role="button" data-bs-toggle="dropdown">
             Categorias
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><h6 class="dropdown-header">Hogar y mantenimiento</h6></li>
+            <li>
+              <h6 class="dropdown-header">Hogar y mantenimiento</h6>
+            </li>
             <li><a class="dropdown-item" href="#">Electricista</a></li>
             <li><a class="dropdown-item" href="#">Plomero</a></li>
             <li><a class="dropdown-item" href="#">Cerrajero</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><h6 class="dropdown-header">Limpieza y cuidado</h6></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <h6 class="dropdown-header">Limpieza y cuidado</h6>
+            </li>
             <li><a class="dropdown-item" href="#">Limpieza domestica</a></li>
             <li><a class="dropdown-item" href="#">Niñera</a></li>
           </ul>
