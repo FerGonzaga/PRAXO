@@ -12,6 +12,7 @@ const indexRoutes = require('./routes/index');
 const trabajadoresRoutes = require('./routes/trabajadores');
 // Ruta de registro de usuarios y login
 const authRoutes = require('./routes/auth');
+const verificacionRoutes = require('./routes/verificacion');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use('/', indexRoutes);
 app.use('/trabajadores', trabajadoresRoutes);
 app.use('/api/auth', authRoutes); // Rutas de autenticación (registro y login)
+app.use('/verificacion', verificacionRoutes);
 
 // 6. Levantar el servidor
 app.listen(PORT, () => {

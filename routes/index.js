@@ -46,10 +46,15 @@ router.get('/registro', (req, res) => {
   });
 });
 
-// GET /login -> formulario de inicio de sesión
-router.get('/login', (req, res) => {
-  res.render('login', {
-    titulo: 'Iniciar sesión',
+// Llaves de templates para MailJS
+router.get('/contacto', (req, res) => {
+  res.render('contacto', {
+    titulo: 'Contacto',
+    emailjs: {
+      publicKey: process.env.EMAILJS_PUBLIC_KEY,
+      serviceId: process.env.EMAILJS_SERVICE_ID,
+      templateId: process.env.EMAILJS_CONTACTO_TEMPLATE_ID,
+    },
   });
 });
 
