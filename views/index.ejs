@@ -21,99 +21,113 @@
 
   <%- include('partials/navbar') %>
 
-    <!-- HERO tipo Apple / Banner de pantalla completa con Slider de fondo -->
-  <section class="hero-seccion position-relative text-white overflow-hidden" style="min-height: 80vh;">
+    <!-- HERO estilo Apple / Banner de pantalla completa con Slider de fondo -->
+    <section class="hero-seccion position-relative text-white overflow-hidden" style="height: 80vh; min-height: 500px;">
 
-    <!-- SLIDER DE FONDO -->
-    <div id="sliderPrincipal" class="carousel slide carousel-fade position-absolute top-0 start-0 w-100 h-100" data-bs-ride="carousel" style="z-index: 1;">
-      
-      <!-- INDICADORES -->
-      <div class="carousel-indicators mb-4" style="z-index: 3;">
-        <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="3" aria-label="Slide 4"></button>
-        <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="4" aria-label="Slide 5"></button>
+      <!-- SLIDER DE FONDO -->
+      <div id="sliderPrincipal" class="carousel slide carousel-fade position-absolute top-0 start-0 w-100 h-100"
+        data-bs-ride="carousel" style="z-index: 1;">
+
+        <!-- INDICADORES -->
+        <div class="carousel-indicators mb-4" style="z-index: 3;">
+          <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="0" class="active"
+            aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="2" aria-label="Slide 3"></button>
+          <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="3" aria-label="Slide 4"></button>
+          <button type="button" data-bs-target="#sliderPrincipal" data-bs-slide-to="4" aria-label="Slide 5"></button>
+        </div>
+
+        <!-- CONTENIDO DEL SLIDER (IMÁGENES DE FONDO) -->
+        <div class="carousel-inner w-100 h-100">
+
+          <!-- SLIDE 1 -->
+          <div class="carousel-item active w-100 h-100">
+            <img src="/assets/img/imgs/albanil.jpeg" class="d-block w-100 h-100"
+              style="object-fit: cover; object-position: center;" alt="Albañil">
+          </div>
+
+          <!-- SLIDE 2 -->
+          <div class="carousel-item w-100 h-100">
+            <img src="/assets/img/imgs/elec.jpg" class="d-block w-100 h-100"
+              style="object-fit: cover; object-position: center;" alt="Electricista">
+          </div>
+
+          <!-- SLIDE 3 -->
+          <div class="carousel-item w-100 h-100">
+            <img src="/assets/img/imgs/fletes.jpg" class="d-block w-100 h-100"
+              style="object-fit: cover; object-position: center;" alt="Fletes">
+          </div>
+
+          <!-- SLIDE 4 -->
+          <div class="carousel-item w-100 h-100">
+            <img src="/assets/img/imgs/plomero.jpg" class="d-block w-100 h-100"
+              style="object-fit: cover; object-position: center;" alt="Plomero">
+          </div>
+
+          <!-- SLIDE 5 -->
+          <div class="carousel-item w-100 h-100">
+            <img src="/assets/img/imgs/carpi.jpg" class="d-block w-100 h-100"
+              style="object-fit: cover; object-position: center;" alt="Carpintero">
+          </div>
+
+        </div>
+
+        <!-- CONTROLES -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#sliderPrincipal" data-bs-slide="prev"
+          style="z-index: 4;">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#sliderPrincipal" data-bs-slide="next"
+          style="z-index: 4;">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+
       </div>
 
-      <!-- CONTENIDO DEL SLIDER (IMÁGENES DE FONDO) -->
-      <div class="carousel-inner h-100">
+      <!-- CAPA DE OSCURECIMIENTO (OVERLAY) -->
+      <div class="position-absolute top-0 start-0 w-100 h-100"
+        style="z-index: 2; background-color: rgba(0, 0, 0, 0.30); pointer-events: none;"></div>
 
-        <!-- SLIDE 1 -->
-        <div class="carousel-item active h-100" data-bs-interval="5000">
-          <img src="assets\img\imgs\albanil.jpeg" class="d-block w-100 h-100" style="object-fit: cover;" alt="Albañil">
-        </div>
+      <!-- CONTENIDO AL FRENTE (TEXTO Y BUSCADOR CENTRADOS) -->
+      <div class="container position-relative d-flex align-items-center justify-content-center h-100 py-5"
+        style="z-index: 3;">
+        <div class="row justify-content-center text-center w-100">
+          <div class="col-lg-8 col-xl-7">
 
-        <!-- SLIDE 2 -->
-        <div class="carousel-item h-100" data-bs-interval="5000">
-          <img src="assets\img\imgs\elec.jpg" class="d-block w-100 h-100" style="object-fit: cover;" alt="Electricista">
-        </div>
+            <h1 class="display-4 fw-bold mb-3 text-shadow">
+              Un profesional para cada necesidad, cuando lo necesites
+            </h1>
+            <p class="lead mb-4 text-white-80 fs-5">
+              Electricistas, plomeros, cerrajeros y más, disponibles ahora mismo o programados para el día que tú
+              elijas.
+            </p>
 
-        <!-- SLIDE 3 -->
-        <div class="carousel-item h-100" data-bs-interval="5000">
-          <img src=" assets\img\imgs\fletes.jpg" class="d-block w-100 h-100" style="object-fit: cover;" alt="Fletes">
-        </div>
+            <!-- Buscador Centrado -->
+            <form action="/trabajadores" method="GET"
+              class="bg-white rounded-4 p-2 d-flex flex-column flex-md-row gap-2 shadow-lg mx-auto"
+              style="max-width: 650px;">
+              <select name="oficio" class="form-select border-0 text-dark py-2">
+                <option selected value="">¿Qué servicio buscas?</option>
+                <option value="Electricista">Electricista</option>
+                <option value="Plomero">Plomero</option>
+                <option value="Cerrajero">Cerrajero</option>
+                <option value="Albañil">Albañil</option>
+                <option value="Pintor">Pintor</option>
+              </select>
+              <input type="text" name="ciudad" class="form-control border-0 text-dark py-2" placeholder="Tu ciudad">
+              <button type="submit" class="btn btn-dark px-4 py-2 rounded-3 fw-bold">
+                <i class="bi bi-search"></i> Buscar
+              </button>
+            </form>
 
-        <!-- SLIDE 4 -->
-        <div class="carousel-item h-100" data-bs-interval="5000">
-          <img src="assets\img\imgs\plomero.jpg" class="d-block w-100 h-100" style="object-fit: cover;" alt="Plomero">
-        </div>
-
-        <!-- SLIDE 5 -->
-        <div class="carousel-item h-100" data-bs-interval="5000">
-          <img src="assets\img\imgs\carpi.jpg" class="d-block w-100 h-100" style="object-fit: cover;" alt="Carpintero">
-        </div>
-
-      </div>
-
-      <!-- CONTROLES -->
-      <button class="carousel-control-prev" type="button" data-bs-target="#sliderPrincipal" data-bs-slide="prev" style="z-index: 3;">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#sliderPrincipal" data-bs-slide="next" style="z-index: 3;">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
-      </button>
-
-    </div>
-
-    <!-- CAPA DE OSCURECIMIENTO (OVERLAY) -->
-    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-60" style="z-index: 2; background-color: rgba(0, 0, 0, 0.55);"></div>
-
-    <!-- CONTENIDO AL FRENTE (TEXTO Y BUSCADOR CENTRADOS) -->
-    <div class="container position-relative d-flex align-items-center justify-content-center h-100 py-5" style="z-index: 3; min-height: 80vh;">
-      <div class="row justify-content-center text-center w-100">
-        <div class="col-lg-8 col-xl-7">
-          
-          <h1 class="display-4 fw-bold mb-3 text-shadow">
-            Un profesional para cada necesidad, cuando lo necesites
-          </h1>
-          <p class="lead mb-4 text-white-80 fs-5">
-            Electricistas, plomeros, cerrajeros y más, disponibles ahora mismo o programados para el día que tú elijas.
-          </p>
-
-          <!-- Buscador Centrado -->
-          <form action="/trabajadores" method="GET" class="bg-white rounded-4 p-2 d-flex flex-column flex-md-row gap-2 shadow-lg mx-auto" style="max-width: 650px;">
-            <select name="oficio" class="form-select border-0 text-dark py-2">
-              <option selected value="">¿Qué servicio buscas?</option>
-              <option value="Electricista">Electricista</option>
-              <option value="Plomero">Plomero</option>
-              <option value="Cerrajero">Cerrajero</option>
-              <option value="Albañil">Albañil</option>
-              <option value="Pintor">Pintor</option>
-            </select>
-            <input type="text" name="ciudad" class="form-control border-0 text-dark py-2" placeholder="Tu ciudad">
-            <button type="submit" class="btn btn-dark px-4 py-2 rounded-3 fw-bold">
-              <i class="bi bi-search"></i> Buscar
-            </button>
-          </form>
-
+          </div>
         </div>
       </div>
-    </div>
 
-  </section>
+    </section>
 
     <!-- CATEGORIAS estilo Uber Eats: iconos en fila horizontal -->
     <section class="container py-4">
@@ -192,8 +206,7 @@
                     <img
                       src="<%= (trabajador.fotoUrl ? trabajador.fotoUrl.replace(/\\/g, '/') : '/assets/img/trabajadores/' + trabajador.nombre.toLowerCase().split(' ')[0] + '.jpg') %>"
                       onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(trabajador.nombre) %>&background=random&size=200';"
-                      class="card-img-top" alt="<%= trabajador.nombre %>" style="height: 140px; object-fit: cover;"
-                    >
+                      class="card-img-top" alt="<%= trabajador.nombre %>" style="height: 140px; object-fit: cover;">
 
 
                     <div class="card-body p-2">
