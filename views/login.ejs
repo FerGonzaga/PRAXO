@@ -26,73 +26,49 @@
   <%- include('partials/navbar') %>
 
 
-  <!-- FORMULARIO DE REGISTRO -->
+  <!-- LOGIN -->
   <main class="container py-5">
 
     <div class="row justify-content-center">
 
-      <div class="col-md-8 col-lg-6">
+      <div class="col-md-8 col-lg-5">
 
         <div class="card border-0 shadow-sm">
 
           <div class="card-body p-4 p-md-5">
 
+            <!-- ENCABEZADO -->
             <div class="text-center mb-4">
 
-              <i class="bi bi-person-plus-fill display-5"></i>
+              <i class="bi bi-person-circle display-5"></i>
 
               <h1 class="h2 fw-bold mt-3">
-                Crear cuenta
+                Iniciar sesión
               </h1>
 
               <p class="text-muted">
-                Regístrate en PRAXO para comenzar.
+                Ingresa a tu cuenta de PRAXO.
               </p>
 
             </div>
 
 
-            <!-- Mensaje para JavaScript -->
+            <!-- MENSAJE -->
             <div
-              id="mensajeRegistro"
+              id="mensajeLogin"
               class="alert d-none"
               role="alert">
             </div>
 
 
-            <form id="formRegistro" novalidate>
-
-              <!-- NOMBRE -->
-              <div class="mb-3">
-
-                <label
-                  for="nombre"
-                  class="form-label">
-                  Nombre completo
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nombre"
-                  name="nombre"
-                  placeholder="Ej. Juan Pérez"
-                  required
-                  minlength="3"
-                >
-
-                <div class="invalid-feedback">
-                  Ingresa tu nombre completo.
-                </div>
-
-              </div>
-
+            <!-- FORMULARIO -->
+            <form id="formLogin" novalidate>
 
               <!-- CORREO -->
               <div class="mb-3">
 
                 <label
-                  for="correo"
+                  for="correoLogin"
                   class="form-label">
                   Correo electrónico
                 </label>
@@ -100,7 +76,7 @@
                 <input
                   type="email"
                   class="form-control"
-                  id="correo"
+                  id="correoLogin"
                   name="correo"
                   placeholder="ejemplo@correo.com"
                   required
@@ -114,10 +90,10 @@
 
 
               <!-- CONTRASEÑA -->
-              <div class="mb-3">
+              <div class="mb-4">
 
                 <label
-                  for="password"
+                  for="passwordLogin"
                   class="form-label">
                   Contraseña
                 </label>
@@ -127,17 +103,16 @@
                   <input
                     type="password"
                     class="form-control"
-                    id="password"
+                    id="passwordLogin"
                     name="password"
-                    placeholder="Mínimo 8 caracteres"
-                    minlength="8"
+                    placeholder="Ingresa tu contraseña"
                     required
                   >
 
                   <button
                     class="btn btn-outline-secondary"
                     type="button"
-                    id="btnMostrarPassword"
+                    id="btnMostrarPasswordLogin"
                     aria-label="Mostrar contraseña"
                   >
                     <i class="bi bi-eye"></i>
@@ -146,70 +121,33 @@
                 </div>
 
                 <div class="invalid-feedback">
-                  La contraseña debe tener al menos 8 caracteres.
+                  Ingresa tu contraseña.
                 </div>
 
               </div>
 
-              <!-- CONFIRMAR CONTRASEÑA -->
-              <div class="mb-4">
-
-                <label
-                  for="confirmPassword"
-                  class="form-label">
-                  Confirmar contraseña
-                </label>
-
-                <div class="input-group">
-
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    placeholder="Repite tu contraseña"
-                    minlength="8"
-                    required
-                  >
-
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    id="btnMostrarConfirmPassword"
-                    aria-label="Mostrar confirmación de contraseña"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>
-
-                </div>
-
-                <div class="invalid-feedback">
-                  Las contraseñas deben coincidir.
-                </div>
-
-              </div>
 
               <!-- BOTÓN -->
               <button
                 type="submit"
-                id="btnRegistro"
+                id="btnLogin"
                 class="btn btn-dark w-100">
 
-                <i class="bi bi-person-plus me-2"></i>
-                Crear cuenta
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Iniciar sesión
 
               </button>
 
             </form>
 
 
-            <!-- LOGIN -->
+            <!-- REGISTRO -->
             <div class="text-center mt-4">
 
               <p class="mb-0 text-muted">
-                ¿Ya tienes una cuenta?
-                <a href="/login" class="text-decoration-none">
-                  Inicia sesión
+                ¿No tienes una cuenta?
+                <a href="/registro" class="text-decoration-none">
+                  Regístrate
                 </a>
               </p>
 

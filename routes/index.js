@@ -46,4 +46,11 @@ router.get('/registro', (req, res) => {
   });
 });
 
+// GET /login -> formulario de inicio de sesión
+router.get('/login', (req, res) => {
+  res.render('login', {
+    titulo: 'Iniciar sesión',
+  });
+});
+
 module.exports = router;
