@@ -2,7 +2,14 @@
 /* Aqui van tus estilos propios que ajustan o extienden Bootstrap. */
 
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Opcional: Ajustes para títulos para darles peso estilizado */
+h1, h2, h3, h4, h5, h6, .display-4, .display-5 {
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 700; /* Hace que los títulos resalten más */
+  letter-spacing: -0.5px; /* Le da el estilo elegante característico de marcas como Apple */
 }
 
 /* Hero de la pagina principal (fondo oscuro tipo Uber) */
