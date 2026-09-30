@@ -5,6 +5,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const Usuario = require('../models/Usuarios_Praxo');
+const Trabajador = require('../models/Trabajador');
 
 const router = express.Router();
 
@@ -17,20 +18,39 @@ router.post('/registro', async (req, res) => {
     const {
       nombre,
       correo,
-      password
+      password,
+      tipoUsuario,
+      oficio,
+      telefono,
+      ciudad,
+      descripcion
     } = req.body;
 
 
-    // Validación básica del servidor
-    if (!nombre || !correo || !password) {
+    // -----------------------------------------
+    // VALIDACIONES GENERALES
+    // -----------------------------------------
+
+    if (!nombre || !correo || !password || !tipoUsuario) {
 
       return res.status(400).json({
-        mensaje: 'Todos los campos son obligatorios.'
+        mensaje: 'Completa todos los campos obligatorios.'
       });
 
     }
 
 
+    // Validar tipo de usuario
+    if (!['cliente', 'prestador'].includes(tipoUsuario)) {
+
+      return res.status(400).json({
+        mensaje: 'Tipo de usuario no válido.'
+      });
+
+    }
+
+
+    // Validar contraseña
     if (password.length < 8) {
 
       return res.status(400).json({
@@ -40,11 +60,36 @@ router.post('/registro', async (req, res) => {
     }
 
 
-    // Convertimos el correo a minúsculas
-    const correoNormalizado = correo.trim().toLowerCase();
+    // -----------------------------------------
+    // VALIDACIONES PARA PRESTADOR
+    // -----------------------------------------
+
+    if (tipoUsuario === 'prestador') {
+
+      if (!oficio || !telefono || !ciudad) {
+
+        return res.status(400).json({
+          mensaje: 'Completa la información de tu servicio.'
+        });
+
+      }
+
+    }
 
 
-    // Verificar si ya existe
+    // -----------------------------------------
+    // NORMALIZAR CORREO
+    // -----------------------------------------
+
+    const correoNormalizado = correo
+      .trim()
+      .toLowerCase();
+
+
+    // -----------------------------------------
+    // COMPROBAR CORREO EXISTENTE
+    // -----------------------------------------
+
     const usuarioExistente = await Usuario.findOne({
       correo: correoNormalizado
     });
@@ -59,11 +104,20 @@ router.post('/registro', async (req, res) => {
     }
 
 
-    // Generar hash de la contraseña
-    const passwordHash = await bcrypt.hash(password, 10);
+    // -----------------------------------------
+    // GENERAR HASH DE CONTRASEÑA
+    // -----------------------------------------
+
+    const passwordHash = await bcrypt.hash(
+      password,
+      10
+    );
 
 
-    // Crear usuario
+    // -----------------------------------------
+    // CREAR USUARIO
+    // -----------------------------------------
+
     const nuevoUsuario = new Usuario({
 
       nombre: nombre.trim(),
@@ -71,6 +125,8 @@ router.post('/registro', async (req, res) => {
       correo: correoNormalizado,
 
       passwordHash,
+
+      tipoUsuario,
 
       emailVerificado: false
 
@@ -80,106 +136,73 @@ router.post('/registro', async (req, res) => {
     await nuevoUsuario.save();
 
 
+    // -----------------------------------------
+    // SI ES PRESTADOR, CREAR PERFIL
+    // -----------------------------------------
+
+    if (tipoUsuario === 'prestador') {
+
+      try {
+
+        const nuevoTrabajador = new Trabajador({
+
+          usuarioId: nuevoUsuario._id,
+
+          nombre: nombre.trim(),
+
+          oficio: oficio.trim(),
+
+          telefono: telefono.trim(),
+
+          ciudad: ciudad.trim(),
+
+          descripcion: descripcion
+            ? descripcion.trim()
+            : undefined
+
+        });
+
+        await nuevoTrabajador.save();
+
+      } catch (errorTrabajador) {
+
+        // Si falla la creación del trabajador,
+        // eliminamos el usuario para no dejar
+        // una cuenta incompleta.
+
+        await Usuario.findByIdAndDelete(
+          nuevoUsuario._id
+        );
+
+        throw errorTrabajador;
+      }
+
+    }
+
+
+    // -----------------------------------------
+    // RESPUESTA EXITOSA
+    // -----------------------------------------
+
     return res.status(201).json({
-      mensaje: 'Cuenta creada correctamente.'
+
+      mensaje:
+        tipoUsuario === 'prestador'
+          ? 'Cuenta de prestador creada correctamente.'
+          : 'Cuenta de cliente creada correctamente.',
+
+      tipoUsuario
+
     });
 
 
   } catch (error) {
 
-    console.error('Error al registrar usuario:', error);
-
-    return res.status(500).json({
-      mensaje: 'Error interno del servidor.'
-    });
-
-  }
-
-});
-
-// POST /api/auth/login
-router.post('/login', async (req, res) => {
-
-  try {
-
-    const {
-      correo,
-      password
-    } = req.body;
-
-
-    // Validación básica
-    if (!correo || !password) {
-
-      return res.status(400).json({
-        mensaje: 'El correo y la contraseña son obligatorios.'
-      });
-
-    }
-
-
-    // Normalizar correo
-    const correoNormalizado = correo.trim().toLowerCase();
-
-
-    // Buscar usuario
-    const usuario = await Usuario.findOne({
-      correo: correoNormalizado
-    });
-
-
-    // Si no existe
-    if (!usuario) {
-
-      return res.status(401).json({
-        mensaje: 'Correo o contraseña incorrectos.'
-      });
-
-    }
-
-
-    // Comparar contraseña ingresada
-    // contra el passwordHash almacenado en MongoDB
-    const passwordCorrecta = await bcrypt.compare(
-      password,
-      usuario.passwordHash
+    console.error(
+      'Error al registrar usuario:',
+      error
     );
 
-
-    if (!passwordCorrecta) {
-
-      return res.status(401).json({
-        mensaje: 'Correo o contraseña incorrectos.'
-      });
-
-    }
-
-
-    // Verificar correo electrónico
-    if (!usuario.emailVerificado) {
-
-      return res.status(403).json({
-        mensaje: 'Debes verificar tu correo electrónico antes de iniciar sesión.'
-      });
-
-    }
-
-
-    // Login correcto
-    return res.status(200).json({
-      mensaje: 'Inicio de sesión correcto.',
-      usuario: {
-        id: usuario._id,
-        nombre: usuario.nombre,
-        correo: usuario.correo
-      }
-    });
-
-
-  } catch (error) {
-
-    console.error('Error al iniciar sesión:', error);
-
     return res.status(500).json({
       mensaje: 'Error interno del servidor.'
     });
@@ -187,5 +210,6 @@ router.post('/login', async (req, res) => {
   }
 
 });
+
 
 module.exports = router;
