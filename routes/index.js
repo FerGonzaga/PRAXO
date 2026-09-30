@@ -39,10 +39,31 @@ router.get('/quienes-somos', (req, res) => {
   });
 });
 
-// GET /registro -> formulario para que un trabajador se anuncie
+// GET /registro -> formulario de registro general (redirige a cliente o prestador)
 router.get('/registro', (req, res) => {
   res.render('registro', {
-    titulo: 'Regístrate como profesional',
+    titulo: 'Crear cuenta',
+  });
+});
+
+// GET/ registro/cliente -> formulario para que un cliente se registre
+router.get('/registro/cliente', (req, res) => {
+  res.render('registro-cliente', {
+    titulo: 'Registro de cliente',
+  });
+});
+
+// GET /registro/prestador -> formulario para que un prestador se registre
+router.get('/registro/prestador', (req, res) => {
+  res.render('registro-prestador', {
+    titulo: 'Registro de prestador',
+  });
+});
+
+// GET /login -> formulario de inicio de sesión
+router.get('/login', (req, res) => {
+  res.render('login', {
+    titulo: 'Iniciar sesión',
   });
 });
 

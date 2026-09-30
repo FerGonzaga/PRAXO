@@ -24,6 +24,12 @@ const usuarioSchema = new mongoose.Schema(
       required: true,
     },
 
+    tipoUsuario: {
+      type: String,
+      enum: ['cliente', 'prestador'],
+      required: true,
+    },
+
     emailVerificado: {
       type: Boolean,
       default: false,
