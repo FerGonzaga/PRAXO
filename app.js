@@ -31,6 +31,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Agregar arriba del todo, junto a los demas require:
+const session = require('express-session');
+
+// Agregar DESPUES de app.use(express.json()) / app.use(express.urlencoded(...))
+// y ANTES de montar tus rutas (app.use('/', ...), app.use('/api/auth', ...), etc.)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'La-clave-debe-ser-cifrada-y-oculta',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 2, // 2 horas
+  },
+}));
+
 // 5. Registrar las rutas
 app.use('/', indexRoutes);
 app.use('/trabajadores', trabajadoresRoutes);

@@ -4,6 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const Trabajador = require('../models/Trabajador');
+const { requireTipo } = require('../middlewares/auth');
 
 // GET / -> pagina principal, con trabajadores destacados
 router.get('/', async (req, res) => {
@@ -25,10 +26,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /contacto -> pagina de contacto
+// GET /contacto -> pagina de contacto (con las llaves de EmailJS, unificada)
 router.get('/contacto', (req, res) => {
   res.render('contacto', {
     titulo: 'Contacto',
+    emailjs: {
+      publicKey: process.env.EMAILJS_PUBLIC_KEY,
+      serviceId: process.env.EMAILJS_SERVICE_ID,
+      templateId: process.env.EMAILJS_CONTACTO_TEMPLATE_ID,
+    },
   });
 });
 
@@ -67,15 +73,12 @@ router.get('/login', (req, res) => {
   });
 });
 
-// Llaves de templates para MailJS
-router.get('/contacto', (req, res) => {
-  res.render('contacto', {
-    titulo: 'Contacto',
-    emailjs: {
-      publicKey: process.env.EMAILJS_PUBLIC_KEY,
-      serviceId: process.env.EMAILJS_SERVICE_ID,
-      templateId: process.env.EMAILJS_CONTACTO_TEMPLATE_ID,
-    },
+// GET /revisa-correo -> pagina mostrada justo despues de registrarse
+router.get('/revisa-correo', (req, res) => {
+  res.render('revisa-correo', {
+    titulo: 'Revisa tu correo',
+    correo: req.query.correo || '',
+    tipoUsuario: req.query.tipoUsuario || '',
   });
 });
 
