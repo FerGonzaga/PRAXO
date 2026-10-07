@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title><%= titulo %> - PRAXO</title>
+
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  >
+
+
+  <!-- CSS general de PRAXO -->
+  <link
+    rel="stylesheet"
+    href="/css/custom.css"
+  >
+
+
+  <!-- Estilos exclusivos del carrito -->
+  <style>
+
+    body {
+      background-color: #f6f7f9;
+    }
+
+
+    /* ===============================
+       ENCABEZADO
+    =============================== */
+
+    .carrito-encabezado {
+      padding-top: 45px;
+      padding-bottom: 20px;
+    }
+
+
+    .carrito-encabezado h1 {
+      font-weight: 700;
+      color: #212529;
+    }
+
+
+    .carrito-encabezado p {
+      color: #6c757d;
+      margin-bottom: 0;
+    }
+
+
+
+    /* ===============================
+       CARRITO VACIO
+    =============================== */
+
+    .carrito-vacio {
+
+      background-color: #ffffff;
+
+      border-radius: 20px;
+
+      padding: 70px 25px;
+
+      text-align: center;
+
+      box-shadow:
+        0 5px 25px rgba(0, 0, 0, 0.06);
+
+    }
+
+
+    .carrito-vacio-icono {
+
+      width: 90px;
+      height: 90px;
+
+      margin: 0 auto 25px;
+
+      border-radius: 50%;
+
+      background-color: #f1f3f5;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 40px;
+
+      color: #212529;
+
+    }
+
+
+
+    /* ===============================
+       TARJETA DE SERVICIO
+    =============================== */
+
+    .servicio-card {
+
+      background-color: #ffffff;
+
+      border: none;
+
+      border-radius: 18px;
+
+      padding: 25px;
+
+      margin-bottom: 18px;
+
+      box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.06);
+
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+    }
+
+
+    .servicio-card:hover {
+
+      transform: translateY(-2px);
+
+      box-shadow:
+        0 7px 24px rgba(0, 0, 0, 0.09);
+
+    }
+
+
+    .servicio-icono {
+
+      width: 55px;
+      height: 55px;
+
+      border-radius: 14px;
+
+      background-color: #212529;
+
+      color: #ffffff;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 24px;
+
+      flex-shrink: 0;
+
+    }
+
+
+    .servicio-titulo {
+
+      font-size: 20px;
+
+      font-weight: 700;
+
+      margin-bottom: 5px;
+
+    }
+
+
+    .prestador {
+
+      color: #6c757d;
+
+      margin-bottom: 18px;
+
+    }
+
+
+
+    /* ===============================
+       INFORMACION
+    =============================== */
+
+    .dato-servicio {
+
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 9px;
+
+      margin-bottom: 10px;
+
+      color: #495057;
+
+    }
+
+
+    .dato-servicio i {
+
+      margin-top: 2px;
+
+      color: #6c757d;
+
+      width: 18px;
+
+    }
+
+
+    .descripcion-servicio {
+
+      margin-top: 18px;
+
+      padding: 14px 16px;
+
+      border-radius: 12px;
+
+      background-color: #f8f9fa;
+
+      color: #495057;
+
+    }
+
+
+    .descripcion-servicio p {
+      margin-bottom: 0;
+    }
+
+
+
+    /* ===============================
+       ESTADO
+    =============================== */
+
+    .estado-pendiente {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 6px 12px;
+
+      border-radius: 50px;
+
+      background-color: #fff3cd;
+
+      color: #856404;
+
+      font-size: 13px;
+
+      font-weight: 600;
+
+    }
+
+
+
+    /* ===============================
+       BOTON ELIMINAR
+    =============================== */
+
+    .btn-eliminar {
+
+      border: 1px solid #dc3545;
+
+      background-color: transparent;
+
+      color: #dc3545;
+
+      border-radius: 9px;
+
+      padding: 8px 13px;
+
+      transition: 0.2s ease;
+
+    }
+
+
+    .btn-eliminar:hover {
+
+      background-color: #dc3545;
+
+      color: white;
+
+    }
+
+
+
+    /* ===============================
+       RESUMEN
+    =============================== */
+
+    .resumen-carrito {
+
+      background-color: #ffffff;
+
+      border-radius: 18px;
+
+      padding: 25px;
+
+      margin-top: 28px;
+      margin-bottom: 50px;
+
+      box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.06);
+
+    }
+
+
+    .resumen-numero {
+
+      width: 45px;
+      height: 45px;
+
+      border-radius: 50%;
+
+      background-color: #212529;
+
+      color: #ffffff;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-weight: 700;
+
+    }
+
+
+
+    /* ===============================
+       RESPONSIVE
+    =============================== */
+
+    @media (max-width: 767px) {
+
+      .servicio-card {
+        padding: 20px;
+      }
+
+
+      .acciones-servicio {
+        margin-top: 20px;
+      }
+
+
+      .resumen-acciones {
+
+        flex-direction: column;
+
+        width: 100%;
+
+      }
+
+
+      .resumen-acciones form,
+      .resumen-acciones a,
+      .resumen-acciones button {
+
+        width: 100%;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- =========================================
+       NAVBAR
+  ========================================== -->
+
+  <%- include('partials/navbar') %>
+
+
+
+  <!-- =========================================
+       CONTENIDO PRINCIPAL
+  ========================================== -->
+
+  <main class="container">
+
+
+    <!-- ENCABEZADO -->
+
+    <section class="carrito-encabezado">
+
+
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3"
+      >
+
+
+        <div>
+
+          <h1 class="mb-2">
+
+            <i class="bi bi-bag-check me-2"></i>
+
+            Mis servicios
+
+          </h1>
+
+
+          <p>
+
+            Revisa los servicios que deseas contratar
+            antes de continuar.
+
+          </p>
+
+        </div>
+
+
+        <div>
+
+          <a
+            href="/trabajadores"
+            class="btn btn-outline-dark"
+          >
+
+            <i class="bi bi-arrow-left me-1"></i>
+
+            Seguir buscando
+
+          </a>
+
+        </div>
+
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================
+         CARRITO VACIO
+    ========================================== -->
+
+    <% if (!carrito || carrito.length === 0) { %>
+
+
+      <section class="carrito-vacio">
+
+
+        <div class="carrito-vacio-icono">
+
+          <i class="bi bi-bag"></i>
+
+        </div>
+
+
+        <h2 class="h4 fw-bold mb-3">
+
+          Aún no tienes servicios seleccionados
+
+        </h2>
+
+
+        <p
+          class="text-muted mx-auto mb-4"
+          style="max-width: 500px;"
+        >
+
+          Explora los profesionales disponibles en PRAXO
+          y selecciona el servicio que necesitas.
+
+        </p>
+
+
+        <a
+          href="/trabajadores"
+          class="btn btn-dark px-4 py-2"
+        >
+
+          <i class="bi bi-search me-2"></i>
+
+          Buscar profesionales
+
+        </a>
+
+
+      </section>
+
+
+
+    <% } else { %>
+
+
+
+      <!-- =========================================
+           SERVICIOS DEL CARRITO
+      ========================================== -->
+
+      <section>
+
+
+        <% carrito.forEach((item) => { %>
+
+
+          <article class="servicio-card">
+
+
+            <div class="row align-items-start">
+
+
+              <!-- INFORMACION -->
+
+              <div class="col-md-9">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <!-- ICONO -->
+
+                  <div class="servicio-icono">
+
+                    <i class="bi bi-tools"></i>
+
+                  </div>
+
+
+
+                  <div class="flex-grow-1">
+
+
+                    <!-- SERVICIO -->
+
+                    <h2 class="servicio-titulo">
+
+                      <%= item.servicio %>
+
+                    </h2>
+
+
+
+                    <!-- PRESTADOR -->
+
+                    <div class="prestador">
+
+                      <i class="bi bi-person-circle me-1"></i>
+
+                      Prestador:
+
+                      <strong>
+
+                        <%= item.trabajador %>
+
+                      </strong>
+
+                    </div>
+
+
+
+                    <!-- FECHA -->
+
+                    <% if (item.fecha) { %>
+
+
+                      <div class="dato-servicio">
+
+                        <i class="bi bi-calendar-event"></i>
+
+
+                        <div>
+
+                          <strong>
+                            Fecha:
+                          </strong>
+
+
+                          <%
+
+                            const fechaServicio =
+                              new Date(
+                                item.fecha + 'T00:00:00'
+                              );
+
+                          %>
+
+
+                          <%= fechaServicio.toLocaleDateString(
+                            'es-MX',
+                            {
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric'
+                            }
+                          ) %>
+
+                        </div>
+
+                      </div>
+
+
+                    <% } %>
+
+
+
+                    <!-- HORA -->
+
+                    <% if (item.hora) { %>
+
+
+                      <div class="dato-servicio">
+
+                        <i class="bi bi-clock"></i>
+
+
+                        <div>
+
+                          <strong>
+                            Hora:
+                          </strong>
+
+                          <%= item.hora %>
+
+                        </div>
+
+                      </div>
+
+
+                    <% } %>
+
+
+
+                    <!-- UBICACION -->
+
+                    <% if (item.ubicacion) { %>
+
+
+                      <div class="dato-servicio">
+
+                        <i class="bi bi-geo-alt"></i>
+
+
+                        <div>
+
+                          <strong>
+                            Ubicación:
+                          </strong>
+
+                          <%= item.ubicacion %>
+
+                        </div>
+
+                      </div>
+
+
+                    <% } %>
+
+
+
+                    <!-- DESCRIPCION -->
+
+                    <% if (item.descripcion) { %>
+
+
+                      <div class="descripcion-servicio">
+
+
+                        <div
+                          class="fw-semibold mb-1"
+                        >
+
+                          <i
+                            class="bi bi-chat-left-text me-1"
+                          ></i>
+
+                          Detalles del servicio
+
+                        </div>
+
+
+                        <p>
+
+                          <%= item.descripcion %>
+
+                        </p>
+
+
+                      </div>
+
+
+                    <% } %>
+
+
+
+                    <!-- ESTADO -->
+
+                    <div class="mt-3">
+
+
+                      <span class="estado-pendiente">
+
+
+                        <i
+                          class="bi bi-hourglass-split"
+                        ></i>
+
+
+                        <%= item.estado || 'Pendiente' %>
+
+
+                      </span>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+
+              <!-- ACCIONES -->
+
+              <div
+                class="col-md-3 text-md-end acciones-servicio"
+              >
+
+
+                <form
+                  action="/carrito/eliminar/<%= item.id %>"
+                  method="POST"
+                  class="form-eliminar"
+                >
+
+
+                  <button
+                    type="submit"
+                    class="btn-eliminar"
+                  >
+
+                    <i
+                      class="bi bi-trash3 me-1"
+                    ></i>
+
+                    Eliminar
+
+                  </button>
+
+
+                </form>
+
+
+              </div>
+
+
+            </div>
+
+
+          </article>
+
+
+        <% }) %>
+
+
+      </section>
+
+
+
+      <!-- =========================================
+           RESUMEN DEL CARRITO
+      ========================================== -->
+
+      <section class="resumen-carrito">
+
+
+        <div
+          class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4"
+        >
+
+
+          <!-- CANTIDAD -->
+
+          <div class="d-flex align-items-center gap-3">
+
+
+            <div class="resumen-numero">
+
+              <%= carrito.length %>
+
+            </div>
+
+
+            <div>
+
+
+              <div class="fw-bold">
+
+                <%= carrito.length %>
+
+                servicio<%= carrito.length !== 1 ? 's' : '' %>
+
+                seleccionado<%= carrito.length !== 1 ? 's' : '' %>
+
+              </div>
+
+
+              <small class="text-muted">
+
+                Revisa los datos antes de continuar.
+
+              </small>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          <!-- BOTONES -->
+
+          <div
+            class="d-flex gap-2 resumen-acciones"
+          >
+
+
+            <!-- VACIAR CARRITO -->
+
+            <form
+              action="/carrito/vaciar"
+              method="POST"
+              id="formVaciar"
+            >
+
+
+              <button
+                type="submit"
+                class="btn btn-outline-danger"
+              >
+
+                <i
+                  class="bi bi-trash me-1"
+                ></i>
+
+                Vaciar selección
+
+              </button>
+
+
+            </form>
+
+
+
+            <!-- SEGUIR BUSCANDO -->
+
+            <a
+              href="/trabajadores"
+              class="btn btn-outline-dark"
+            >
+
+              <i
+                class="bi bi-plus-lg me-1"
+              ></i>
+
+              Agregar otro servicio
+
+            </a>
+
+
+
+            <!--
+              IMPORTANTE:
+
+              Todavía NO mandamos este botón a
+              /carrito/confirmar porque esa ruta
+              aún no existe.
+
+              En el siguiente paso crearemos el
+              proceso de confirmación.
+            -->
+
+            <button
+              type="button"
+              class="btn btn-dark"
+              id="continuarContratacion"
+            >
+
+              Continuar contratación
+
+              <i
+                class="bi bi-arrow-right ms-1"
+              ></i>
+
+            </button>
+
+
+          </div>
+
+
+        </div>
+
+
+      </section>
+
+
+    <% } %>
+
+
+  </main>
+
+
+
+  <!-- =========================================
+       FOOTER
+  ========================================== -->
+
+  <%- include('partials/footer') %>
+
+
+
+  <!-- =========================================
+       MODAL INFORMATIVO
+       CONTINUAR CONTRATACION
+  ========================================== -->
+
+  <% if (carrito && carrito.length > 0) { %>
+
+
+    <div
+      class="modal fade"
+      id="modalContinuar"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+
+
+      <div
+        class="modal-dialog modal-dialog-centered"
+      >
+
+
+        <div class="modal-content">
+
+
+          <div class="modal-header">
+
+
+            <h5 class="modal-title">
+
+              <i
+                class="bi bi-check-circle me-2"
+              ></i>
+
+              Servicios preparados
+
+            </h5>
+
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+
+
+          </div>
+
+
+
+          <div class="modal-body">
+
+
+            <p>
+
+              Tienes
+
+              <strong>
+
+                <%= carrito.length %>
+
+                servicio<%= carrito.length !== 1 ? 's' : '' %>
+
+              </strong>
+
+              seleccionado<%= carrito.length !== 1 ? 's' : '' %>.
+
+            </p>
+
+
+            <p class="text-muted mb-0">
+
+              El siguiente paso será confirmar los datos
+              de contratación y posteriormente integrar
+              el proceso de pago.
+
+            </p>
+
+
+          </div>
+
+
+
+          <div class="modal-footer">
+
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+
+              Regresar
+
+            </button>
+
+
+            <button
+              type="button"
+              class="btn btn-dark"
+              disabled
+            >
+
+              Confirmar contratación
+
+            </button>
+
+
+          </div>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  <% } %>
+
+
+
+  <!-- =========================================
+       BOOTSTRAP JS
+  ========================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  ></script>
+
+
+
+  <!-- JS GENERAL DE PRAXO -->
+
+  <script src="/js/main.js"></script>
+
+
+
+  <!-- =========================================
+       JS DEL CARRITO
+  ========================================== -->
+
+  <script>
+
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function () {
+
+
+        // =====================================
+        // CONFIRMAR ELIMINACION DE SERVICIO
+        // =====================================
+
+        const formulariosEliminar =
+          document.querySelectorAll(
+            '.form-eliminar'
+          );
+
+
+        formulariosEliminar.forEach(
+          function (formulario) {
+
+
+            formulario.addEventListener(
+              'submit',
+              function (evento) {
+
+
+                const confirmar =
+                  confirm(
+                    '¿Deseas eliminar este servicio de tu selección?'
+                  );
+
+
+                if (!confirmar) {
+
+                  evento.preventDefault();
+
+                }
+
+
+              }
+            );
+
+
+          }
+        );
+
+
+
+        // =====================================
+        // CONFIRMAR VACIAR CARRITO
+        // =====================================
+
+        const formVaciar =
+          document.getElementById(
+            'formVaciar'
+          );
+
+
+        if (formVaciar) {
+
+
+          formVaciar.addEventListener(
+            'submit',
+            function (evento) {
+
+
+              const confirmar =
+                confirm(
+                  '¿Deseas eliminar todos los servicios seleccionados?'
+                );
+
+
+              if (!confirmar) {
+
+                evento.preventDefault();
+
+              }
+
+
+            }
+          );
+
+
+        }
+
+
+
+        // =====================================
+        // BOTON CONTINUAR CONTRATACION
+        // =====================================
+
+        const botonContinuar =
+          document.getElementById(
+            'continuarContratacion'
+          );
+
+
+        if (botonContinuar) {
+
+
+          botonContinuar.addEventListener(
+            'click',
+            function () {
+
+
+              const modalElemento =
+                document.getElementById(
+                  'modalContinuar'
+                );
+
+
+              if (modalElemento) {
+
+
+                const modal =
+                  new bootstrap.Modal(
+                    modalElemento
+                  );
+
+
+                modal.show();
+
+
+              }
+
+
+            }
+          );
+
+
+        }
+
+
+      }
+    );
+
+
+  </script>
+
+
+</body>
+
+</html>

@@ -5,53 +5,203 @@ require('dotenv').config(); // Carga las variables del archivo .env a process.en
 
 const express = require('express');
 const path = require('path');
-const conectarDB = require('./config/db');
-
-// Rutas
-const indexRoutes = require('./routes/index');
-const trabajadoresRoutes = require('./routes/trabajadores');
-// Ruta de registro de usuarios y login
-const authRoutes = require('./routes/auth');
-const verificacionRoutes = require('./routes/verificacion');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// 1. Conectar a la base de datos antes de levantar el servidor
-conectarDB();
-
-// 2. Configurar EJS como motor de vistas
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// 3. Servir archivos estaticos (css, js del cliente, imagenes) desde /public
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 4. Middleware para poder leer datos enviados desde formularios (POST)
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// Agregar arriba del todo, junto a los demas require:
 const session = require('express-session');
 
-// Agregar DESPUES de app.use(express.json()) / app.use(express.urlencoded(...))
-// y ANTES de montar tus rutas (app.use('/', ...), app.use('/api/auth', ...), etc.)
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'La-clave-debe-ser-cifrada-y-oculta',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 2, // 2 horas
-  },
-}));
+const conectarDB = require('./config/db');
 
-// 5. Registrar las rutas
-app.use('/', indexRoutes);
-app.use('/trabajadores', trabajadoresRoutes);
-app.use('/api/auth', authRoutes); // Rutas de autenticación (registro y login)
-app.use('/verificacion', verificacionRoutes);
 
-// 6. Levantar el servidor
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+// ==========================================
+// CREAR APLICACION
+// ==========================================
+
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+
+// ==========================================
+// RUTAS
+// ==========================================
+
+const indexRoutes = require('./routes/index');
+
+const trabajadoresRoutes = require('./routes/trabajadores');
+
+// Ruta de registro de usuarios y login
+const authRoutes = require('./routes/auth');
+
+const verificacionRoutes = require('./routes/verificacion');
+
+// Ruta del carrito de servicios
+const carritoRoutes = require('./routes/carrito');
+
+
+// ==========================================
+// CONECTAR A MONGODB
+// ==========================================
+
+conectarDB();
+
+
+// ==========================================
+// CONFIGURAR EJS
+// ==========================================
+
+app.set('view engine', 'ejs');
+
+app.set(
+  'views',
+  path.join(__dirname, 'views')
+);
+
+
+// ==========================================
+// ARCHIVOS ESTATICOS
+// ==========================================
+
+app.use(
+  express.static(
+    path.join(__dirname, 'public')
+  )
+);
+
+
+// ==========================================
+// LEER FORMULARIOS Y JSON
+// ==========================================
+
+// Permite leer formularios enviados por POST
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+);
+
+// Permite leer JSON
+app.use(express.json());
+
+
+// ==========================================
+// CONFIGURAR SESIONES
+// ==========================================
+
+// La sesion se utilizara para guardar temporalmente
+// los servicios seleccionados en el carrito.
+
+app.use(
+  session({
+
+    secret:
+      process.env.SESSION_SECRET ||
+      'praxo-clave-desarrollo',
+
+    resave: false,
+
+    saveUninitialized: false,
+
+    cookie: {
+
+      // Duracion de la sesion:
+      // 2 horas
+      maxAge:
+        1000 * 60 * 60 * 2,
+
+      // Evita que JavaScript del navegador
+      // pueda leer directamente la cookie
+      httpOnly: true,
+
+      // En localhost debe estar en false
+      secure: false
+
+    }
+
+  })
+);
+
+
+// ==========================================
+// VARIABLES GLOBALES PARA LAS VISTAS
+// ==========================================
+
+// Esto permitirá después mostrar el número
+// de servicios del carrito en el navbar.
+
+app.use((req, res, next) => {
+
+  const carrito =
+    req.session.carrito || [];
+
+  res.locals.cantidadCarrito =
+    carrito.length;
+
+  next();
+
 });
+
+
+// ==========================================
+// REGISTRAR RUTAS
+// ==========================================
+
+// Inicio
+app.use(
+  '/',
+  indexRoutes
+);
+
+
+// Profesionales
+app.use(
+  '/trabajadores',
+  trabajadoresRoutes
+);
+
+
+// Registro y login
+app.use(
+  '/api/auth',
+  authRoutes
+);
+
+
+// Verificacion de correo
+app.use(
+  '/verificacion',
+  verificacionRoutes
+);
+
+
+// Carrito de servicios
+app.use(
+  '/carrito',
+  carritoRoutes
+);
+
+
+// ==========================================
+// MANEJO DE RUTA NO ENCONTRADA
+// ==========================================
+
+app.use((req, res) => {
+
+  res.status(404).send(
+    'Página no encontrada'
+  );
+
+});
+
+
+// ==========================================
+// LEVANTAR SERVIDOR
+// ==========================================
+
+app.listen(
+  PORT,
+  () => {
+
+    console.log(
+      `Servidor corriendo en http://localhost:${PORT}`
+    );
+
+  }
+);
