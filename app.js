@@ -1,7 +1,7 @@
 // app.js
 // Punto de entrada de la aplicacion.
 
-require('dotenv').config(); // Carga las variables del archivo .env a process.env
+require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
@@ -16,24 +16,39 @@ const conectarDB = require('./config/db');
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+  process.env.PORT || 3000;
+
+
+// ==========================================
+// MODELOS
+// ==========================================
+
+// Se utiliza para obtener la cantidad
+// de servicios guardados por cada cliente.
+
+const SolicitudServicio =
+  require('./models/SolicitudServicio');
 
 
 // ==========================================
 // RUTAS
 // ==========================================
 
-const indexRoutes = require('./routes/index');
+const indexRoutes =
+  require('./routes/index');
 
-const trabajadoresRoutes = require('./routes/trabajadores');
+const trabajadoresRoutes =
+  require('./routes/trabajadores');
 
-// Ruta de registro de usuarios y login
-const authRoutes = require('./routes/auth');
+const authRoutes =
+  require('./routes/auth');
 
-const verificacionRoutes = require('./routes/verificacion');
+const verificacionRoutes =
+  require('./routes/verificacion');
 
-// Ruta del carrito de servicios
-const carritoRoutes = require('./routes/carrito');
+const carritoRoutes =
+  require('./routes/carrito');
 
 
 // ==========================================
@@ -47,11 +62,17 @@ conectarDB();
 // CONFIGURAR EJS
 // ==========================================
 
-app.set('view engine', 'ejs');
+app.set(
+  'view engine',
+  'ejs'
+);
 
 app.set(
   'views',
-  path.join(__dirname, 'views')
+  path.join(
+    __dirname,
+    'views'
+  )
 );
 
 
@@ -61,7 +82,10 @@ app.set(
 
 app.use(
   express.static(
-    path.join(__dirname, 'public')
+    path.join(
+      __dirname,
+      'public'
+    )
   )
 );
 
@@ -70,23 +94,26 @@ app.use(
 // LEER FORMULARIOS Y JSON
 // ==========================================
 
-// Permite leer formularios enviados por POST
 app.use(
   express.urlencoded({
     extended: true
   })
 );
 
-// Permite leer JSON
-app.use(express.json());
+app.use(
+  express.json()
+);
 
 
 // ==========================================
 // CONFIGURAR SESIONES
 // ==========================================
 
-// La sesion se utilizara para guardar temporalmente
-// los servicios seleccionados en el carrito.
+// La sesion ahora se utiliza principalmente
+// para identificar al usuario que inicio sesion.
+//
+// Los servicios del carrito ya NO se guardan
+// aqui. Ahora se guardan en MongoDB.
 
 app.use(
   session({
@@ -95,23 +122,29 @@ app.use(
       process.env.SESSION_SECRET ||
       'praxo-clave-desarrollo',
 
-    resave: false,
+    resave:
+      false,
 
-    saveUninitialized: false,
+    saveUninitialized:
+      false,
 
     cookie: {
 
-      // Duracion de la sesion:
-      // 2 horas
+      // La sesion dura 2 horas.
       maxAge:
         1000 * 60 * 60 * 2,
 
       // Evita que JavaScript del navegador
-      // pueda leer directamente la cookie
-      httpOnly: true,
+      // pueda acceder directamente a la cookie.
+      httpOnly:
+        true,
 
-      // En localhost debe estar en false
-      secure: false
+      // Adecuado para localhost.
+      secure:
+        false,
+
+      sameSite:
+        'lax'
 
     }
 
@@ -122,56 +155,158 @@ app.use(
 // ==========================================
 // VARIABLES GLOBALES PARA LAS VISTAS
 // ==========================================
+//
+// Estas variables estarán disponibles
+// automáticamente en los archivos EJS.
+//
+// Ejemplos:
+//
+// usuarioAutenticado
+// usuarioActual
+// cantidadCarrito
+//
+// La cantidad del carrito ahora se obtiene
+// directamente desde MongoDB.
 
-// Esto permitirá después mostrar el número
-// de servicios del carrito en el navbar.
+app.use(
+  async (req, res, next) => {
 
-app.use((req, res, next) => {
+    try {
 
-  const carrito =
-    req.session.carrito || [];
+      // --------------------------------------
+      // SABER SI HAY SESION
+      // --------------------------------------
 
-  res.locals.cantidadCarrito =
-    carrito.length;
+      res.locals.usuarioAutenticado =
+        Boolean(
+          req.session &&
+          req.session.usuario
+        );
 
-  next();
 
-});
+      // --------------------------------------
+      // USUARIO ACTUAL
+      // --------------------------------------
+
+      res.locals.usuarioActual =
+        req.session?.usuario || null;
+
+
+      // --------------------------------------
+      // CANTIDAD INICIAL DEL CARRITO
+      // --------------------------------------
+
+      res.locals.cantidadCarrito =
+        0;
+
+
+      // Si no hay usuario autenticado,
+      // no necesitamos consultar MongoDB.
+
+      if (
+        !req.session?.usuario?.id
+      ) {
+
+        return next();
+
+      }
+
+
+      // --------------------------------------
+      // CONTAR SERVICIOS DEL USUARIO
+      // --------------------------------------
+
+      const cantidad =
+        await SolicitudServicio
+          .countDocuments({
+
+            clienteId:
+              req.session.usuario.id,
+
+            estado:
+              'Pendiente'
+
+          });
+
+
+      res.locals.cantidadCarrito =
+        cantidad;
+
+
+      next();
+
+
+    } catch (error) {
+
+      console.error(
+        'Error obteniendo cantidad del carrito:',
+        error
+      );
+
+
+      // Aunque falle el contador,
+      // dejamos que la página continúe.
+
+      res.locals.cantidadCarrito =
+        0;
+
+      next();
+
+    }
+
+  }
+);
 
 
 // ==========================================
 // REGISTRAR RUTAS
 // ==========================================
 
-// Inicio
+
+// ------------------------------------------
+// INICIO
+// ------------------------------------------
+
 app.use(
   '/',
   indexRoutes
 );
 
 
-// Profesionales
+// ------------------------------------------
+// PROFESIONALES
+// ------------------------------------------
+
 app.use(
   '/trabajadores',
   trabajadoresRoutes
 );
 
 
-// Registro y login
+// ------------------------------------------
+// AUTENTICACION
+// ------------------------------------------
+
 app.use(
   '/api/auth',
   authRoutes
 );
 
 
-// Verificacion de correo
+// ------------------------------------------
+// VERIFICACION DE CORREO
+// ------------------------------------------
+
 app.use(
   '/verificacion',
   verificacionRoutes
 );
 
 
-// Carrito de servicios
+// ------------------------------------------
+// CARRITO DE SERVICIOS
+// ------------------------------------------
+
 app.use(
   '/carrito',
   carritoRoutes
@@ -179,16 +314,20 @@ app.use(
 
 
 // ==========================================
-// MANEJO DE RUTA NO ENCONTRADA
+// RUTA NO ENCONTRADA
 // ==========================================
 
-app.use((req, res) => {
+app.use(
+  (req, res) => {
 
-  res.status(404).send(
-    'Página no encontrada'
-  );
+    res
+      .status(404)
+      .send(
+        'Página no encontrada'
+      );
 
-});
+  }
+);
 
 
 // ==========================================

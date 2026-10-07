@@ -1,20 +1,23 @@
 // routes/carrito.js
-// Manejo del carrito de servicios de PRAXO.
+// Carrito persistente de servicios de PRAXO.
 
 const express = require('express');
-const { randomUUID } = require('crypto');
 
-const router = express.Router();
+const router =
+  express.Router();
 
-const Trabajador = require('../models/Trabajador');
+const Trabajador =
+  require('../models/Trabajador');
 
-// Middleware para proteger el carrito
+const SolicitudServicio =
+  require('../models/SolicitudServicio');
+
 const requiereSesion =
   require('../middlewares/requiereSesion');
 
 
 // ==========================================
-// PROTEGER TODAS LAS RUTAS DEL CARRITO
+// PROTEGER TODO EL CARRITO
 // ==========================================
 
 router.use(requiereSesion);
@@ -24,11 +27,14 @@ router.use(requiereSesion);
 // FUNCION AUXILIAR
 // ==========================================
 
-// Limpia textos recibidos desde formularios.
 function limpiarTexto(valor) {
 
-  if (typeof valor !== 'string') {
+  if (
+    typeof valor !== 'string'
+  ) {
+
     return '';
+
   }
 
   return valor.trim();
@@ -41,20 +47,75 @@ function limpiarTexto(valor) {
 // GET /carrito
 // ==========================================
 
-router.get('/', (req, res) => {
+router.get(
+  '/',
+  async (req, res) => {
 
-  const carrito =
-    req.session.carrito || [];
+    try {
 
-  res.render('carrito', {
+      const clienteId =
+        req.session.usuario.id;
 
-    titulo: 'Mis servicios',
 
-    carrito
+      const solicitudes =
+        await SolicitudServicio
+          .find({
+            clienteId
+          })
+          .sort({
+            createdAt: -1
+          })
+          .lean();
 
-  });
 
-});
+      // Tu carrito.ejs actualmente utiliza item.id.
+      // Convertimos _id de MongoDB a id
+      // para no tener que cambiar toda la vista.
+
+      const carrito =
+        solicitudes.map(
+          (solicitud) => ({
+
+            ...solicitud,
+
+            id:
+              solicitud._id.toString()
+
+          })
+        );
+
+
+      res.render(
+        'carrito',
+        {
+
+          titulo:
+            'Mis servicios',
+
+          carrito
+
+        }
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Error al cargar el carrito:',
+        error
+      );
+
+
+      res
+        .status(500)
+        .send(
+          'No se pudieron cargar tus servicios.'
+        );
+
+    }
+
+  }
+);
 
 
 // ==========================================
@@ -62,291 +123,251 @@ router.get('/', (req, res) => {
 // POST /carrito/agregar
 // ==========================================
 
-router.post('/agregar', async (req, res) => {
+router.post(
+  '/agregar',
+  async (req, res) => {
 
-  try {
+    try {
 
-    const {
+      const {
 
-      trabajadorId,
-      fecha,
-      hora,
-      ubicacion,
-      descripcion
+        trabajadorId,
+        fecha,
+        hora,
+        ubicacion,
+        descripcion
 
-    } = req.body;
+      } = req.body;
 
 
-    // --------------------------------------
-    // VALIDAR ID DEL TRABAJADOR
-    // --------------------------------------
+      // ======================================
+      // USUARIO ACTUAL
+      // ======================================
 
-    if (!trabajadorId) {
+      const clienteId =
+        req.session.usuario.id;
 
-      return res
-        .status(400)
-        .send(
-          'No se recibió el prestador del servicio.'
-        );
 
-    }
+      // ======================================
+      // VALIDAR TRABAJADOR
+      // ======================================
 
+      if (!trabajadorId) {
 
-    // --------------------------------------
-    // VALIDAR DATOS DEL SERVICIO
-    // --------------------------------------
-
-    const fechaLimpia =
-      limpiarTexto(fecha);
-
-    const horaLimpia =
-      limpiarTexto(hora);
-
-    const ubicacionLimpia =
-      limpiarTexto(ubicacion);
-
-    const descripcionLimpia =
-      limpiarTexto(descripcion);
-
-
-    if (
-      !fechaLimpia ||
-      !horaLimpia ||
-      !ubicacionLimpia ||
-      !descripcionLimpia
-    ) {
-
-      return res
-        .status(400)
-        .send(
-          'Completa todos los datos del servicio.'
-        );
-
-    }
-
-
-    // --------------------------------------
-    // VALIDAR QUE LA FECHA NO SEA ANTERIOR
-    // --------------------------------------
-
-    const hoy = new Date();
-
-    hoy.setHours(
-      0,
-      0,
-      0,
-      0
-    );
-
-
-    const fechaSeleccionada =
-      new Date(
-        `${fechaLimpia}T00:00:00`
-      );
-
-
-    if (
-      Number.isNaN(
-        fechaSeleccionada.getTime()
-      )
-    ) {
-
-      return res
-        .status(400)
-        .send(
-          'La fecha seleccionada no es válida.'
-        );
-
-    }
-
-
-    if (
-      fechaSeleccionada < hoy
-    ) {
-
-      return res
-        .status(400)
-        .send(
-          'No puedes contratar un servicio para una fecha anterior.'
-        );
-
-    }
-
-
-    // --------------------------------------
-    // BUSCAR TRABAJADOR EN MONGODB
-    // --------------------------------------
-
-    const trabajador =
-      await Trabajador.findById(
-        trabajadorId
-      );
-
-
-    if (!trabajador) {
-
-      return res
-        .status(404)
-        .send(
-          'El prestador seleccionado no existe.'
-        );
-
-    }
-
-
-    // --------------------------------------
-    // CREAR CARRITO SI NO EXISTE
-    // --------------------------------------
-
-    if (
-      !Array.isArray(
-        req.session.carrito
-      )
-    ) {
-
-      req.session.carrito = [];
-
-    }
-
-
-    // --------------------------------------
-    // DATOS DEL TRABAJADOR
-    // --------------------------------------
-
-    const nombreTrabajador =
-
-      trabajador.nombre ||
-
-      trabajador.nombreCompleto ||
-
-      'Profesional PRAXO';
-
-
-    const nombreServicio =
-
-      trabajador.oficio ||
-
-      trabajador.servicio ||
-
-      trabajador.categoria ||
-
-      'Servicio profesional';
-
-
-    // --------------------------------------
-    // CREAR SERVICIO DEL CARRITO
-    // --------------------------------------
-
-    const nuevoServicio = {
-
-      // ID propio del elemento del carrito.
-      id: randomUUID(),
-
-      trabajadorId:
-        trabajador._id.toString(),
-
-      trabajador:
-        nombreTrabajador,
-
-      servicio:
-        nombreServicio,
-
-      fecha:
-        fechaLimpia,
-
-      hora:
-        horaLimpia,
-
-      ubicacion:
-        ubicacionLimpia,
-
-      descripcion:
-        descripcionLimpia,
-
-      ciudad:
-        trabajador.ciudad || '',
-
-      estado:
-        'Pendiente'
-
-    };
-
-
-    // --------------------------------------
-    // AGREGAR AL CARRITO
-    // --------------------------------------
-
-    req.session.carrito.push(
-      nuevoServicio
-    );
-
-
-    // --------------------------------------
-    // GUARDAR SESION
-    // --------------------------------------
-
-    req.session.save(
-      (error) => {
-
-        if (error) {
-
-          console.error(
-            'Error guardando el carrito:',
-            error
+        return res
+          .status(400)
+          .send(
+            'No se recibió el prestador del servicio.'
           );
 
-          return res
-            .status(500)
-            .send(
-              'No se pudo guardar el servicio.'
-            );
-
-        }
+      }
 
 
-        // Después de agregar,
-        // mandar al usuario al carrito.
+      // ======================================
+      // LIMPIAR DATOS
+      // ======================================
 
-        res.redirect(
-          '/carrito'
-        );
+      const fechaLimpia =
+        limpiarTexto(fecha);
+
+      const horaLimpia =
+        limpiarTexto(hora);
+
+      const ubicacionLimpia =
+        limpiarTexto(ubicacion);
+
+      const descripcionLimpia =
+        limpiarTexto(descripcion);
+
+
+      if (
+        !fechaLimpia ||
+        !horaLimpia ||
+        !ubicacionLimpia ||
+        !descripcionLimpia
+      ) {
+
+        return res
+          .status(400)
+          .send(
+            'Completa todos los datos del servicio.'
+          );
 
       }
-    );
 
 
-  } catch (error) {
+      // ======================================
+      // VALIDAR FECHA
+      // ======================================
 
-    console.error(
-      'Error al agregar servicio al carrito:',
-      error
-    );
+      const hoy =
+        new Date();
+
+      hoy.setHours(
+        0,
+        0,
+        0,
+        0
+      );
 
 
-    // Si MongoDB recibe un ID incorrecto.
+      const fechaSeleccionada =
+        new Date(
+          `${fechaLimpia}T00:00:00`
+        );
 
-    if (
-      error.name === 'CastError'
-    ) {
+
+      if (
+        Number.isNaN(
+          fechaSeleccionada.getTime()
+        )
+      ) {
+
+        return res
+          .status(400)
+          .send(
+            'La fecha seleccionada no es válida.'
+          );
+
+      }
+
+
+      if (
+        fechaSeleccionada < hoy
+      ) {
+
+        return res
+          .status(400)
+          .send(
+            'No puedes contratar un servicio para una fecha anterior.'
+          );
+
+      }
+
+
+      // ======================================
+      // BUSCAR PRESTADOR EN MONGODB
+      // ======================================
+
+      const trabajador =
+        await Trabajador.findById(
+          trabajadorId
+        );
+
+
+      if (!trabajador) {
+
+        return res
+          .status(404)
+          .send(
+            'El prestador seleccionado no existe.'
+          );
+
+      }
+
+
+      // ======================================
+      // DATOS DEL SERVICIO
+      // ======================================
+
+      const nombreTrabajador =
+
+        trabajador.nombre ||
+
+        trabajador.nombreCompleto ||
+
+        'Profesional PRAXO';
+
+
+      const nombreServicio =
+
+        trabajador.oficio ||
+
+        trabajador.servicio ||
+
+        trabajador.categoria ||
+
+        'Servicio profesional';
+
+
+      // ======================================
+      // GUARDAR EN MONGODB
+      // ======================================
+
+      await SolicitudServicio.create({
+
+        clienteId,
+
+        trabajadorId:
+          trabajador._id,
+
+        trabajador:
+          nombreTrabajador,
+
+        servicio:
+          nombreServicio,
+
+        fecha:
+          fechaLimpia,
+
+        hora:
+          horaLimpia,
+
+        ubicacion:
+          ubicacionLimpia,
+
+        descripcion:
+          descripcionLimpia,
+
+        ciudad:
+          trabajador.ciudad || '',
+
+        estado:
+          'Pendiente'
+
+      });
+
+
+      // ======================================
+      // IR AL CARRITO
+      // ======================================
+
+      return res.redirect(
+        '/carrito'
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Error al agregar servicio:',
+        error
+      );
+
+
+      if (
+        error.name === 'CastError'
+      ) {
+
+        return res
+          .status(400)
+          .send(
+            'El prestador seleccionado no es válido.'
+          );
+
+      }
+
 
       return res
-        .status(400)
+        .status(500)
         .send(
-          'El prestador seleccionado no es válido.'
+          'Ocurrió un error al agregar el servicio.'
         );
 
     }
 
-
-    res
-      .status(500)
-      .send(
-        'Ocurrió un error al agregar el servicio.'
-      );
-
   }
-
-});
+);
 
 
 // ==========================================
@@ -356,117 +377,152 @@ router.post('/agregar', async (req, res) => {
 
 router.post(
   '/eliminar/:id',
-  (req, res) => {
+  async (req, res) => {
 
-    const carrito =
-      req.session.carrito || [];
+    try {
+
+      const clienteId =
+        req.session.usuario.id;
 
 
-    req.session.carrito =
-      carrito.filter(
-        (item) =>
-          item.id !== req.params.id
+      // Muy importante:
+      // buscamos por _id Y clienteId.
+      //
+      // Así un usuario no puede borrar
+      // servicios de otra cuenta.
+
+      await SolicitudServicio
+        .findOneAndDelete({
+
+          _id:
+            req.params.id,
+
+          clienteId
+
+        });
+
+
+      return res.redirect(
+        '/carrito'
       );
 
 
-    req.session.save(
-      (error) => {
+    } catch (error) {
 
-        if (error) {
-
-          console.error(
-            'Error eliminando servicio:',
-            error
-          );
-
-          return res
-            .status(500)
-            .send(
-              'No se pudo eliminar el servicio.'
-            );
-
-        }
+      console.error(
+        'Error eliminando servicio:',
+        error
+      );
 
 
-        res.redirect(
-          '/carrito'
+      return res
+        .status(500)
+        .send(
+          'No se pudo eliminar el servicio.'
         );
 
-      }
-    );
+    }
 
   }
 );
 
 
 // ==========================================
-// VACIAR TODO EL CARRITO
+// VACIAR CARRITO
 // POST /carrito/vaciar
 // ==========================================
 
 router.post(
   '/vaciar',
-  (req, res) => {
+  async (req, res) => {
 
-    req.session.carrito = [];
+    try {
 
-
-    req.session.save(
-      (error) => {
-
-        if (error) {
-
-          console.error(
-            'Error vaciando carrito:',
-            error
-          );
-
-          return res
-            .status(500)
-            .send(
-              'No se pudo vaciar el carrito.'
-            );
-
-        }
+      const clienteId =
+        req.session.usuario.id;
 
 
-        res.redirect(
-          '/carrito'
+      // Borra solamente los servicios
+      // pertenecientes al usuario actual.
+
+      await SolicitudServicio.deleteMany({
+        clienteId
+      });
+
+
+      return res.redirect(
+        '/carrito'
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Error vaciando carrito:',
+        error
+      );
+
+
+      return res
+        .status(500)
+        .send(
+          'No se pudo vaciar el carrito.'
         );
 
-      }
-    );
+    }
 
   }
 );
 
 
 // ==========================================
-// OBTENER CANTIDAD DEL CARRITO
+// CANTIDAD DEL CARRITO
 // GET /carrito/cantidad
 // ==========================================
 
 router.get(
   '/cantidad',
-  (req, res) => {
+  async (req, res) => {
 
-    const carrito =
-      req.session.carrito || [];
+    try {
+
+      const clienteId =
+        req.session.usuario.id;
 
 
-    res.json({
+      const cantidad =
+        await SolicitudServicio.countDocuments({
+          clienteId
+        });
 
-      cantidad:
-        carrito.length
 
-    });
+      return res.json({
+        cantidad
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        'Error contando servicios:',
+        error
+      );
+
+
+      return res.status(500).json({
+        cantidad:
+          0
+      });
+
+    }
 
   }
 );
 
 
 // ==========================================
-// EXPORTAR ROUTER
+// EXPORTAR
 // ==========================================
 
-module.exports = router;
+module.exports =
+  router;
