@@ -73,6 +73,22 @@ router.get('/login', (req, res) => {
   });
 });
 
+// GET /inicio-cliente -> panel de opciones para clientes (requiere sesion de cliente)
+router.get('/inicio-cliente', requireTipo('cliente'), (req, res) => {
+  res.render('inicio-cliente', {
+    titulo: 'Inicio',
+    usuario: req.session.usuario,
+  });
+});
+
+// GET /inicio-prestador -> panel de opciones para prestadores (requiere sesion de prestador)
+router.get('/inicio-prestador', requireTipo('prestador'), (req, res) => {
+  res.render('inicio-prestador', {
+    titulo: 'Inicio',
+    usuario: req.session.usuario,
+  });
+});
+
 // GET /revisa-correo -> pagina mostrada justo despues de registrarse
 router.get('/revisa-correo', (req, res) => {
   res.render('revisa-correo', {
