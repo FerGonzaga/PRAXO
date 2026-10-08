@@ -11,15 +11,19 @@ const trabajadoresController =
 // ==========================================
 // LISTAR TRABAJADORES
 // ==========================================
-
+//
 // GET /trabajadores
 //
-// Muestra todos los profesionales registrados.
-// También puede recibir filtros desde la URL:
+// Esta ruta es PUBLICA.
+// Cualquier persona puede consultar
+// los profesionales disponibles.
+//
+// También acepta filtros:
 //
 // /trabajadores?oficio=Electricista
 // /trabajadores?ciudad=Mixquiahuala
 //
+
 router.get(
   '/',
   trabajadoresController.listarTrabajadores
@@ -27,17 +31,18 @@ router.get(
 
 
 // ==========================================
-// PERFIL DE UN TRABAJADOR
+// PERFIL PUBLICO DE UN TRABAJADOR
 // ==========================================
-
+//
 // GET /trabajadores/:id
 //
-// Muestra la información completa de
-// un profesional específico.
+// Esta ruta también es PUBLICA.
 //
-// Ejemplo:
-// /trabajadores/670000000000000000000001
+// No requiere iniciar sesión porque los
+// clientes necesitan consultar los perfiles
+// antes de decidir a quién contratar.
 //
+
 router.get(
   '/:id',
   trabajadoresController.verPerfil

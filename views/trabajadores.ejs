@@ -136,12 +136,16 @@
 
       gap: 10px;
 
+      flex-wrap: wrap;
+
     }
 
 
     .botones-trabajador .btn {
 
       flex: 1;
+
+      min-width: 130px;
 
     }
 
@@ -223,6 +227,31 @@
   <%- include('partials/navbar') %>
 
 
+  <!-- ========================================= -->
+  <!-- VARIABLES DE SESION -->
+  <!-- ========================================= -->
+
+  <%
+
+    const sesionIniciada =
+      typeof usuarioAutenticado !== 'undefined' &&
+      usuarioAutenticado &&
+      typeof usuarioActual !== 'undefined' &&
+      usuarioActual;
+
+
+    const esCliente =
+      sesionIniciada &&
+      usuarioActual.tipoUsuario === 'cliente';
+
+
+    const esPrestador =
+      sesionIniciada &&
+      usuarioActual.tipoUsuario === 'prestador';
+
+  %>
+
+
 
   <!-- ========================================= -->
   <!-- CONTENIDO -->
@@ -260,37 +289,51 @@
         </div>
 
 
-        <!-- BOTON CARRITO -->
 
-        <div>
+        <!-- =====================================
+             MIS SERVICIOS
+             SOLO PARA CLIENTES
+        ====================================== -->
 
-          <a
-            href="/carrito"
-            class="btn btn-outline-dark"
-          >
+        <% if (esCliente) { %>
 
-            <i class="bi bi-bag-check me-1"></i>
 
-            Mis servicios
+          <div>
 
-            <% if (
-              typeof cantidadCarrito !== 'undefined' &&
-              cantidadCarrito > 0
-            ) { %>
+            <a
+              href="/carrito"
+              class="btn btn-outline-dark"
+            >
 
-              <span
-                class="badge bg-dark ms-1"
-              >
+              <i class="bi bi-bag-check me-1"></i>
 
-                <%= cantidadCarrito %>
+              Mis servicios
 
-              </span>
 
-            <% } %>
+              <% if (
+                typeof cantidadCarrito !== 'undefined' &&
+                cantidadCarrito > 0
+              ) { %>
 
-          </a>
 
-        </div>
+                <span
+                  class="badge bg-dark ms-1"
+                >
+
+                  <%= cantidadCarrito %>
+
+                </span>
+
+
+              <% } %>
+
+
+            </a>
+
+          </div>
+
+
+        <% } %>
 
 
       </div>
@@ -333,7 +376,6 @@
 
 
       </section>
-
 
 
     <% } else { %>
@@ -455,9 +497,7 @@
 
                     <span class="calificacion">
 
-                      <i
-                        class="bi bi-star-fill"
-                      ></i>
+                      <i class="bi bi-star-fill"></i>
 
                       <%= trabajador.calificacionPromedio %>
 
@@ -478,16 +518,17 @@
                 <div class="botones-trabajador">
 
 
-                  <!-- VER PERFIL -->
+                  <!-- =================================
+                       VER PERFIL
+                       SIEMPRE DISPONIBLE
+                  ================================== -->
 
                   <a
                     href="/trabajadores/<%= trabajador._id %>"
                     class="btn btn-outline-primary"
                   >
 
-                    <i
-                      class="bi bi-person me-1"
-                    ></i>
+                    <i class="bi bi-person me-1"></i>
 
                     Ver perfil
 
@@ -495,22 +536,64 @@
 
 
 
-                  <!-- CONTRATAR -->
+                  <!-- =================================
+                       CLIENTE CON SESION
+                  ================================== -->
 
-                  <button
-                    type="button"
-                    class="btn btn-dark"
-                    data-bs-toggle="modal"
-                    data-bs-target="#contratarModal<%= trabajador._id %>"
-                  >
+                  <% if (esCliente) { %>
 
-                    <i
-                      class="bi bi-calendar-check me-1"
-                    ></i>
 
-                    Contratar
+                    <button
+                      type="button"
+                      class="btn btn-dark"
+                      data-bs-toggle="modal"
+                      data-bs-target="#contratarModal<%= trabajador._id %>"
+                    >
 
-                  </button>
+                      <i
+                        class="bi bi-calendar-check me-1"
+                      ></i>
+
+                      Contratar
+
+                    </button>
+
+
+                  <% } %>
+
+
+
+                  <!-- =================================
+                       USUARIO SIN SESION
+                  ================================== -->
+
+                  <% if (!sesionIniciada) { %>
+
+
+                    <a
+                      href="/login"
+                      class="btn btn-dark"
+                    >
+
+                      <i
+                        class="bi bi-box-arrow-in-right me-1"
+                      ></i>
+
+                      Inicia sesión para contratar
+
+                    </a>
+
+
+                  <% } %>
+
+
+                  <!--
+                    Si es prestador:
+                    solamente aparecerá "Ver perfil".
+
+                    Un prestador no necesita contratar
+                    a otro profesional desde esta interfaz.
+                  -->
 
 
                 </div>
@@ -528,338 +611,345 @@
 
           <!-- ===================================== -->
           <!-- MODAL DE CONTRATACION -->
+          <!-- SOLO SE GENERA PARA CLIENTES -->
           <!-- ===================================== -->
 
-          <div
-            class="modal fade"
-            id="contratarModal<%= trabajador._id %>"
-            tabindex="-1"
-            aria-labelledby="contratarModalLabel<%= trabajador._id %>"
-            aria-hidden="true"
-          >
+          <% if (esCliente) { %>
 
 
             <div
-              class="modal-dialog modal-dialog-centered"
+              class="modal fade"
+              id="contratarModal<%= trabajador._id %>"
+              tabindex="-1"
+              aria-labelledby="contratarModalLabel<%= trabajador._id %>"
+              aria-hidden="true"
             >
 
 
-              <div class="modal-content">
+              <div
+                class="modal-dialog modal-dialog-centered"
+              >
 
 
-                <!-- ENCABEZADO -->
-
-                <div class="modal-header">
+                <div class="modal-content">
 
 
-                  <div>
+                  <!-- ENCABEZADO -->
+
+                  <div class="modal-header">
 
 
-                    <h5
-                      class="modal-title fw-bold"
-                      id="contratarModalLabel<%= trabajador._id %>"
-                    >
-
-                      Solicitar servicio
-
-                    </h5>
+                    <div>
 
 
-                    <small class="text-muted">
-
-                      Completa los datos de tu solicitud
-
-                    </small>
-
-
-                  </div>
-
-
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Cerrar"
-                  ></button>
-
-
-                </div>
-
-
-
-                <!-- ================================= -->
-                <!-- FORMULARIO -->
-                <!-- ================================= -->
-
-                <form
-                  action="/carrito/agregar"
-                  method="POST"
-                >
-
-
-                  <div class="modal-body">
-
-
-                    <!-- ID DEL TRABAJADOR -->
-
-                    <input
-                      type="hidden"
-                      name="trabajadorId"
-                      value="<%= trabajador._id %>"
-                    >
-
-
-
-                    <!-- ================================= -->
-                    <!-- RESUMEN DEL PROFESIONAL -->
-                    <!-- ================================= -->
-
-                    <div class="profesional-resumen">
-
-
-                      <div
-                        class="d-flex align-items-center gap-3"
+                      <h5
+                        class="modal-title fw-bold"
+                        id="contratarModalLabel<%= trabajador._id %>"
                       >
 
+                        Solicitar servicio
 
-                        <div
-                          class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center"
-                          style="
-                            width: 48px;
-                            height: 48px;
-                            flex-shrink: 0;
-                          "
-                        >
-
-                          <i
-                            class="bi bi-person fs-5"
-                          ></i>
-
-                        </div>
+                      </h5>
 
 
-                        <div>
+                      <small class="text-muted">
 
+                        Completa los datos de tu solicitud
 
-                          <div class="fw-bold">
-
-                            <%= trabajador.nombre %>
-
-                          </div>
-
-
-                          <div class="text-muted small">
-
-                            <%= trabajador.oficio %>
-
-                          </div>
-
-
-                        </div>
-
-
-                      </div>
+                      </small>
 
 
                     </div>
-
-
-
-                    <!-- ================================= -->
-                    <!-- FECHA -->
-                    <!-- ================================= -->
-
-                    <div class="mb-3">
-
-
-                      <label
-                        for="fecha<%= trabajador._id %>"
-                        class="form-label fw-semibold"
-                      >
-
-                        <i
-                          class="bi bi-calendar-event me-1"
-                        ></i>
-
-                        Fecha del servicio
-
-                      </label>
-
-
-                      <input
-                        type="date"
-                        id="fecha<%= trabajador._id %>"
-                        name="fecha"
-                        class="form-control fecha-servicio"
-                        required
-                      >
-
-
-                    </div>
-
-
-
-                    <!-- ================================= -->
-                    <!-- HORA -->
-                    <!-- ================================= -->
-
-                    <div class="mb-3">
-
-
-                      <label
-                        for="hora<%= trabajador._id %>"
-                        class="form-label fw-semibold"
-                      >
-
-                        <i
-                          class="bi bi-clock me-1"
-                        ></i>
-
-                        Hora
-
-                      </label>
-
-
-                      <input
-                        type="time"
-                        id="hora<%= trabajador._id %>"
-                        name="hora"
-                        class="form-control"
-                        required
-                      >
-
-
-                    </div>
-
-
-
-                    <!-- ================================= -->
-                    <!-- UBICACION -->
-                    <!-- ================================= -->
-
-                    <div class="mb-3">
-
-
-                      <label
-                        for="ubicacion<%= trabajador._id %>"
-                        class="form-label fw-semibold"
-                      >
-
-                        <i
-                          class="bi bi-geo-alt me-1"
-                        ></i>
-
-                        ¿Dónde necesitas el servicio?
-
-                      </label>
-
-
-                      <input
-                        type="text"
-                        id="ubicacion<%= trabajador._id %>"
-                        name="ubicacion"
-                        class="form-control"
-                        placeholder="Ej. Col. Centro, Mixquiahuala, Hidalgo"
-                        maxlength="150"
-                        required
-                      >
-
-
-                      <div class="form-text">
-
-                        Escribe la dirección o zona donde
-                        necesitas recibir el servicio.
-
-                      </div>
-
-
-                    </div>
-
-
-
-                    <!-- ================================= -->
-                    <!-- DESCRIPCION -->
-                    <!-- ================================= -->
-
-                    <div class="mb-3">
-
-
-                      <label
-                        for="descripcion<%= trabajador._id %>"
-                        class="form-label fw-semibold"
-                      >
-
-                        <i
-                          class="bi bi-chat-left-text me-1"
-                        ></i>
-
-                        Describe lo que necesitas
-
-                      </label>
-
-
-                      <textarea
-                        id="descripcion<%= trabajador._id %>"
-                        name="descripcion"
-                        class="form-control"
-                        rows="4"
-                        maxlength="500"
-                        placeholder="Ej. Necesito reparar una fuga debajo del fregadero..."
-                        required
-                      ></textarea>
-
-
-                      <div class="form-text">
-
-                        Explica brevemente qué trabajo
-                        necesitas que realice el profesional.
-
-                      </div>
-
-
-                    </div>
-
-
-                  </div>
-
-
-
-                  <!-- ================================= -->
-                  <!-- BOTONES DEL MODAL -->
-                  <!-- ================================= -->
-
-                  <div class="modal-footer">
 
 
                     <button
                       type="button"
-                      class="btn btn-outline-secondary"
+                      class="btn-close"
                       data-bs-dismiss="modal"
-                    >
-
-                      Cancelar
-
-                    </button>
-
-
-                    <button
-                      type="submit"
-                      class="btn btn-dark"
-                    >
-
-                      <i
-                        class="bi bi-bag-plus me-1"
-                      ></i>
-
-                      Agregar a mis servicios
-
-                    </button>
+                      aria-label="Cerrar"
+                    ></button>
 
 
                   </div>
 
 
-                </form>
+
+                  <!-- ================================= -->
+                  <!-- FORMULARIO -->
+                  <!-- ================================= -->
+
+                  <form
+                    action="/carrito/agregar"
+                    method="POST"
+                  >
+
+
+                    <div class="modal-body">
+
+
+                      <!-- ID DEL TRABAJADOR -->
+
+                      <input
+                        type="hidden"
+                        name="trabajadorId"
+                        value="<%= trabajador._id %>"
+                      >
+
+
+
+                      <!-- ================================= -->
+                      <!-- RESUMEN DEL PROFESIONAL -->
+                      <!-- ================================= -->
+
+                      <div class="profesional-resumen">
+
+
+                        <div
+                          class="d-flex align-items-center gap-3"
+                        >
+
+
+                          <div
+                            class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center"
+                            style="
+                              width: 48px;
+                              height: 48px;
+                              flex-shrink: 0;
+                            "
+                          >
+
+                            <i
+                              class="bi bi-person fs-5"
+                            ></i>
+
+                          </div>
+
+
+                          <div>
+
+
+                            <div class="fw-bold">
+
+                              <%= trabajador.nombre %>
+
+                            </div>
+
+
+                            <div class="text-muted small">
+
+                              <%= trabajador.oficio %>
+
+                            </div>
+
+
+                          </div>
+
+
+                        </div>
+
+
+                      </div>
+
+
+
+                      <!-- ================================= -->
+                      <!-- FECHA -->
+                      <!-- ================================= -->
+
+                      <div class="mb-3">
+
+
+                        <label
+                          for="fecha<%= trabajador._id %>"
+                          class="form-label fw-semibold"
+                        >
+
+                          <i
+                            class="bi bi-calendar-event me-1"
+                          ></i>
+
+                          Fecha del servicio
+
+                        </label>
+
+
+                        <input
+                          type="date"
+                          id="fecha<%= trabajador._id %>"
+                          name="fecha"
+                          class="form-control fecha-servicio"
+                          required
+                        >
+
+
+                      </div>
+
+
+
+                      <!-- ================================= -->
+                      <!-- HORA -->
+                      <!-- ================================= -->
+
+                      <div class="mb-3">
+
+
+                        <label
+                          for="hora<%= trabajador._id %>"
+                          class="form-label fw-semibold"
+                        >
+
+                          <i
+                            class="bi bi-clock me-1"
+                          ></i>
+
+                          Hora
+
+                        </label>
+
+
+                        <input
+                          type="time"
+                          id="hora<%= trabajador._id %>"
+                          name="hora"
+                          class="form-control"
+                          required
+                        >
+
+
+                      </div>
+
+
+
+                      <!-- ================================= -->
+                      <!-- UBICACION -->
+                      <!-- ================================= -->
+
+                      <div class="mb-3">
+
+
+                        <label
+                          for="ubicacion<%= trabajador._id %>"
+                          class="form-label fw-semibold"
+                        >
+
+                          <i
+                            class="bi bi-geo-alt me-1"
+                          ></i>
+
+                          ¿Dónde necesitas el servicio?
+
+                        </label>
+
+
+                        <input
+                          type="text"
+                          id="ubicacion<%= trabajador._id %>"
+                          name="ubicacion"
+                          class="form-control"
+                          placeholder="Ej. Col. Centro, Mixquiahuala, Hidalgo"
+                          maxlength="150"
+                          required
+                        >
+
+
+                        <div class="form-text">
+
+                          Escribe la dirección o zona donde
+                          necesitas recibir el servicio.
+
+                        </div>
+
+
+                      </div>
+
+
+
+                      <!-- ================================= -->
+                      <!-- DESCRIPCION -->
+                      <!-- ================================= -->
+
+                      <div class="mb-3">
+
+
+                        <label
+                          for="descripcion<%= trabajador._id %>"
+                          class="form-label fw-semibold"
+                        >
+
+                          <i
+                            class="bi bi-chat-left-text me-1"
+                          ></i>
+
+                          Describe lo que necesitas
+
+                        </label>
+
+
+                        <textarea
+                          id="descripcion<%= trabajador._id %>"
+                          name="descripcion"
+                          class="form-control"
+                          rows="4"
+                          maxlength="500"
+                          placeholder="Ej. Necesito reparar una fuga debajo del fregadero..."
+                          required
+                        ></textarea>
+
+
+                        <div class="form-text">
+
+                          Explica brevemente qué trabajo
+                          necesitas que realice el profesional.
+
+                        </div>
+
+
+                      </div>
+
+
+                    </div>
+
+
+
+                    <!-- ================================= -->
+                    <!-- BOTONES DEL MODAL -->
+                    <!-- ================================= -->
+
+                    <div class="modal-footer">
+
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal"
+                      >
+
+                        Cancelar
+
+                      </button>
+
+
+                      <button
+                        type="submit"
+                        class="btn btn-dark"
+                      >
+
+                        <i
+                          class="bi bi-bag-plus me-1"
+                        ></i>
+
+                        Agregar a mis servicios
+
+                      </button>
+
+
+                    </div>
+
+
+                  </form>
+
+
+                </div>
 
 
               </div>
@@ -868,7 +958,7 @@
             </div>
 
 
-          </div>
+          <% } %>
 
 
         <% }) %>
@@ -911,72 +1001,76 @@
   <!-- FECHAS DEL SERVICIO -->
   <!-- ========================================= -->
 
-  <script>
+  <% if (esCliente) { %>
 
-    document.addEventListener(
-      'DOMContentLoaded',
-      function () {
+    <script>
 
-
-        // =====================================
-        // OBTENER FECHA ACTUAL
-        // =====================================
-
-        const hoy =
-          new Date();
+      document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
 
-        const año =
-          hoy.getFullYear();
+          // =====================================
+          // OBTENER FECHA ACTUAL
+          // =====================================
+
+          const hoy =
+            new Date();
 
 
-        const mes =
-          String(
-            hoy.getMonth() + 1
-          ).padStart(
-            2,
-            '0'
+          const año =
+            hoy.getFullYear();
+
+
+          const mes =
+            String(
+              hoy.getMonth() + 1
+            ).padStart(
+              2,
+              '0'
+            );
+
+
+          const dia =
+            String(
+              hoy.getDate()
+            ).padStart(
+              2,
+              '0'
+            );
+
+
+          const fechaActual =
+            `${año}-${mes}-${dia}`;
+
+
+
+          // =====================================
+          // EVITAR FECHAS PASADAS
+          // =====================================
+
+          const camposFecha =
+            document.querySelectorAll(
+              '.fecha-servicio'
+            );
+
+
+          camposFecha.forEach(
+            function (campo) {
+
+              campo.min =
+                fechaActual;
+
+            }
           );
 
 
-        const dia =
-          String(
-            hoy.getDate()
-          ).padStart(
-            2,
-            '0'
-          );
+        }
+      );
 
+    </script>
 
-        const fechaActual =
-          `${año}-${mes}-${dia}`;
-
-
-
-        // =====================================
-        // EVITAR FECHAS PASADAS
-        // =====================================
-
-        const camposFecha =
-          document.querySelectorAll(
-            '.fecha-servicio'
-          );
-
-
-        camposFecha.forEach(
-          function (campo) {
-
-            campo.min =
-              fechaActual;
-
-          }
-        );
-
-
-      }
-    );
-
-  </script>
+  <% } %>
 
 
 </body>

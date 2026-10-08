@@ -40,7 +40,7 @@ exports.verPerfil = async (req, res) => {
       return res.status(404).send('Trabajador no encontrado.');
     }
 
-    res.render('perfil', {
+    res.render('perfil-trabajador', {
       titulo: trabajador.nombre,
       trabajador,
     });
