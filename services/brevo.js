@@ -10,7 +10,7 @@ async function enviarCorreoVerificacion({
   const apiKey = process.env.BREVO_API_KEY;
   const senderName = process.env.BREVO_SENDER_NAME;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
-  const appUrl = process.env.APP_URL;
+  const appUrl = (process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || '').replace(/\/+$/, '');
 
   if (!apiKey || !senderName || !senderEmail || !appUrl) {
     throw new Error(

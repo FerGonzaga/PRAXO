@@ -2,81 +2,862 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>
-    <%= titulo %> - Encuentra tu Servicio
-  </title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Fuente Montserrat de Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-    rel="stylesheet">
 
-  <!-- Tu archivo CSS principal -->
-  <link rel="stylesheet" href="/css/custom.css">
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title><%= titulo %> - PRAXO</title>
+
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  >
+
+
+  <!-- CSS PRAXO -->
+  <link
+    rel="stylesheet"
+    href="/css/custom.css"
+  >
+
+
+  <style>
+
+    body {
+      background-color: #f5f6f8;
+    }
+
+
+    .perfil-container {
+      max-width: 900px;
+      margin: 50px auto;
+    }
+
+
+    .perfil-card {
+
+      background: white;
+
+      border-radius: 22px;
+
+      border: none;
+
+      overflow: hidden;
+
+      box-shadow:
+        0 5px 25px rgba(0, 0, 0, 0.07);
+
+    }
+
+
+    .perfil-header {
+
+      background: #212529;
+
+      color: white;
+
+      padding: 35px;
+
+    }
+
+
+    .avatar {
+
+      width: 100px;
+      height: 100px;
+
+      border-radius: 50%;
+
+      background: white;
+
+      color: #212529;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      font-size: 45px;
+
+      flex-shrink: 0;
+
+    }
+
+
+    .tipo-cuenta {
+
+      display: inline-block;
+
+      background: rgba(255,255,255,.15);
+
+      padding: 6px 13px;
+
+      border-radius: 30px;
+
+      font-size: 13px;
+
+      margin-top: 8px;
+
+    }
+
+
+    .perfil-body {
+      padding: 35px;
+    }
+
+
+    .dato-perfil {
+
+      padding: 18px 0;
+
+      border-bottom:
+        1px solid #eeeeee;
+
+    }
+
+
+    .dato-perfil:last-child {
+      border-bottom: none;
+    }
+
+
+    .dato-label {
+
+      color: #6c757d;
+
+      font-size: 13px;
+
+      margin-bottom: 4px;
+
+    }
+
+
+    .dato-valor {
+
+      font-weight: 600;
+
+      color: #212529;
+
+    }
+
+
+    .icono-dato {
+
+      width: 42px;
+      height: 42px;
+
+      border-radius: 10px;
+
+      background: #f1f3f5;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      font-size: 18px;
+
+      flex-shrink: 0;
+
+    }
+
+
+    .seccion-titulo {
+
+      font-weight: 700;
+
+      margin-top: 10px;
+      margin-bottom: 15px;
+
+    }
+
+
+    .prestador-info {
+
+      margin-top: 25px;
+
+      padding-top: 25px;
+
+      border-top:
+        1px solid #e9ecef;
+
+    }
+
+
+    @media(max-width: 576px) {
+
+      .perfil-header {
+        text-align: center;
+      }
+
+      .perfil-header-contenido {
+        flex-direction: column;
+      }
+
+      .avatar {
+        margin: auto;
+      }
+
+    }
+
+  </style>
+
 </head>
+
 
 <body>
 
+
+  <!-- NAVBAR -->
+
   <%- include('partials/navbar') %>
 
-    <div class="container my-5">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
 
-          <div class="card shadow-sm">
-            <div class="card-body p-4">
 
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <h1 class="h3 mb-1">
-                    <%= trabajador.nombre %>
-                  </h1>
-                  <h2 class="h6 text-muted">
-                    <%= trabajador.oficio %>
-                  </h2>
-                </div>
+  <main class="container">
 
-                <% if (trabajador.disponibleAhora) { %>
-                  <span class="badge bg-success">Disponible ahora</span>
-                  <% } else { %>
-                    <span class="badge bg-secondary">No disponible</span>
-                    <% } %>
-              </div>
 
-              <hr>
+    <div class="perfil-container">
 
-              <p>
-                <%= trabajador.descripcion %>
-              </p>
 
-              <ul class="list-unstyled">
-                <li><strong>Ciudad:</strong>
-                  <%= trabajador.ciudad %>
-                </li>
-                <li><strong>Teléfono:</strong>
-                  <%= trabajador.telefono %>
-                </li>
-                <li><strong>Calificación:</strong>
-                  <%= trabajador.calificacionPromedio %> / 5
-                </li>
-              </ul>
+      <!-- ================================= -->
+      <!-- TARJETA PRINCIPAL -->
+      <!-- ================================= -->
 
-              <a href="/trabajadores" class="btn btn-outline-secondary">Volver a la lista</a>
+      <section class="perfil-card">
+
+
+        <!-- ENCABEZADO -->
+
+        <div class="perfil-header">
+
+
+          <div
+            class="perfil-header-contenido d-flex align-items-center gap-4"
+          >
+
+
+            <div class="avatar">
+
+              <i class="bi bi-person-fill"></i>
 
             </div>
+
+
+            <div>
+
+
+              <h1 class="h3 fw-bold mb-1">
+
+                <%= usuario.nombre %>
+
+              </h1>
+
+
+              <div>
+
+                <%= usuario.correo %>
+
+              </div>
+
+
+              <span class="tipo-cuenta">
+
+
+                <% if (usuario.tipoUsuario === 'cliente') { %>
+
+                  <i class="bi bi-person-check me-1"></i>
+
+                  Cliente
+
+                <% } else { %>
+
+                  <i class="bi bi-tools me-1"></i>
+
+                  Prestador de servicios
+
+                <% } %>
+
+
+              </span>
+
+
+            </div>
+
+
           </div>
 
+
         </div>
-      </div>
+
+
+
+        <!-- ================================= -->
+        <!-- INFORMACION -->
+        <!-- ================================= -->
+
+        <div class="perfil-body">
+
+
+          <h2 class="h5 seccion-titulo">
+
+            Información de la cuenta
+
+          </h2>
+
+
+
+          <!-- NOMBRE -->
+
+          <div class="dato-perfil">
+
+
+            <div class="d-flex gap-3 align-items-center">
+
+
+              <div class="icono-dato">
+
+                <i class="bi bi-person"></i>
+
+              </div>
+
+
+              <div>
+
+
+                <div class="dato-label">
+
+                  Nombre
+
+                </div>
+
+
+                <div class="dato-valor">
+
+                  <%= usuario.nombre %>
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          <!-- CORREO -->
+
+          <div class="dato-perfil">
+
+
+            <div class="d-flex gap-3 align-items-center">
+
+
+              <div class="icono-dato">
+
+                <i class="bi bi-envelope"></i>
+
+              </div>
+
+
+              <div>
+
+
+                <div class="dato-label">
+
+                  Correo electrónico
+
+                </div>
+
+
+                <div class="dato-valor">
+
+                  <%= usuario.correo %>
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          <!-- TIPO DE USUARIO -->
+
+          <div class="dato-perfil">
+
+
+            <div class="d-flex gap-3 align-items-center">
+
+
+              <div class="icono-dato">
+
+                <i class="bi bi-person-badge"></i>
+
+              </div>
+
+
+              <div>
+
+
+                <div class="dato-label">
+
+                  Tipo de cuenta
+
+                </div>
+
+
+                <div class="dato-valor">
+
+
+                  <% if (usuario.tipoUsuario === 'cliente') { %>
+
+                    Cliente
+
+                  <% } else { %>
+
+                    Prestador de servicios
+
+                  <% } %>
+
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          <!-- EMAIL VERIFICADO -->
+
+          <div class="dato-perfil">
+
+
+            <div class="d-flex gap-3 align-items-center">
+
+
+              <div class="icono-dato">
+
+                <i class="bi bi-shield-check"></i>
+
+              </div>
+
+
+              <div>
+
+
+                <div class="dato-label">
+
+                  Estado de la cuenta
+
+                </div>
+
+
+                <div class="dato-valor">
+
+
+                  <% if (usuario.emailVerificado) { %>
+
+                    <span class="text-success">
+
+                      <i class="bi bi-check-circle-fill me-1"></i>
+
+                      Correo verificado
+
+                    </span>
+
+                  <% } else { %>
+
+                    <span class="text-warning">
+
+                      Correo pendiente de verificar
+
+                    </span>
+
+                  <% } %>
+
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          <!-- ================================= -->
+          <!-- INFORMACION DEL PRESTADOR -->
+          <!-- ================================= -->
+
+          <% if (
+            usuario.tipoUsuario === 'prestador' &&
+            trabajador
+          ) { %>
+
+
+            <div class="prestador-info">
+
+
+              <h2 class="h5 seccion-titulo">
+
+                <i class="bi bi-briefcase me-2"></i>
+
+                Información profesional
+
+              </h2>
+
+
+
+              <!-- OFICIO -->
+
+              <div class="dato-perfil">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <div class="icono-dato">
+
+                    <i class="bi bi-tools"></i>
+
+                  </div>
+
+
+                  <div>
+
+
+                    <div class="dato-label">
+
+                      Servicio u oficio
+
+                    </div>
+
+
+                    <div class="dato-valor">
+
+                      <%= trabajador.oficio %>
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+
+              <!-- TELEFONO -->
+
+              <div class="dato-perfil">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <div class="icono-dato">
+
+                    <i class="bi bi-telephone"></i>
+
+                  </div>
+
+
+                  <div>
+
+
+                    <div class="dato-label">
+
+                      Teléfono
+
+                    </div>
+
+
+                    <div class="dato-valor">
+
+                      <%= trabajador.telefono || 'No especificado' %>
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+
+              <!-- CIUDAD -->
+
+              <div class="dato-perfil">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <div class="icono-dato">
+
+                    <i class="bi bi-geo-alt"></i>
+
+                  </div>
+
+
+                  <div>
+
+
+                    <div class="dato-label">
+
+                      Ciudad
+
+                    </div>
+
+
+                    <div class="dato-valor">
+
+                      <%= trabajador.ciudad || 'No especificada' %>
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+
+              <!-- DESCRIPCION -->
+
+              <div class="dato-perfil">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <div class="icono-dato">
+
+                    <i class="bi bi-card-text"></i>
+
+                  </div>
+
+
+                  <div>
+
+
+                    <div class="dato-label">
+
+                      Descripción profesional
+
+                    </div>
+
+
+                    <div class="dato-valor">
+
+                      <%= trabajador.descripcion ||
+                        'Sin descripción.' %>
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+
+              <!-- CALIFICACION -->
+
+              <div class="dato-perfil">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <div class="icono-dato">
+
+                    <i class="bi bi-star"></i>
+
+                  </div>
+
+
+                  <div>
+
+
+                    <div class="dato-label">
+
+                      Calificación
+
+                    </div>
+
+
+                    <div class="dato-valor">
+
+
+                      <span
+                        class="badge bg-warning text-dark"
+                      >
+
+                        <i class="bi bi-star-fill"></i>
+
+                        <%= trabajador.calificacionPromedio ?? 0 %>
+
+                      </span>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+            </div>
+
+
+          <% } %>
+
+
+
+          <!-- ================================= -->
+          <!-- OPCIONES SEGUN USUARIO -->
+          <!-- ================================= -->
+
+          <div
+            class="d-flex flex-wrap gap-2 mt-4"
+          >
+
+
+            <% if (usuario.tipoUsuario === 'cliente') { %>
+
+
+              <a
+                href="/carrito"
+                class="btn btn-dark"
+              >
+
+                <i class="bi bi-bag-check me-1"></i>
+
+                Mis servicios
+
+              </a>
+
+
+              <a
+                href="/trabajadores"
+                class="btn btn-outline-dark"
+              >
+
+                <i class="bi bi-search me-1"></i>
+
+                Buscar profesionales
+
+              </a>
+
+
+            <% } else { %>
+
+
+              <% if (trabajador) { %>
+
+                <a
+                  href="/trabajadores/<%= trabajador._id %>"
+                  class="btn btn-dark"
+                >
+
+                  <i class="bi bi-eye me-1"></i>
+
+                  Ver mi perfil público
+
+                </a>
+
+              <% } %>
+
+
+            <% } %>
+
+
+          </div>
+
+
+        </div>
+
+
+      </section>
+
+
     </div>
 
-    <%- include('partials/footer') %>
 
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="/js/main.js"></script>
+  </main>
+
+
+
+  <!-- FOOTER -->
+
+  <%- include('partials/footer') %>
+
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  ></script>
+
+
+  <script src="/js/main.js"></script>
+
+
 </body>
 
 </html>

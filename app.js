@@ -50,6 +50,10 @@ const verificacionRoutes =
 const carritoRoutes =
   require('./routes/carrito');
 
+const perfilRoutes =
+  require('./routes/perfil');
+  
+
 
 // ==========================================
 // CONECTAR A MONGODB
@@ -300,6 +304,15 @@ app.use(
 app.use(
   '/verificacion',
   verificacionRoutes
+);
+
+// ------------------------------------------
+// PERFIL DE USUARIO
+// ------------------------------------------
+
+app.use(
+  '/perfil',
+  perfilRoutes
 );
 
 
