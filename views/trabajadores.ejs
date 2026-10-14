@@ -1,1078 +1,322 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= titulo %> - Encuentra tu Servicio</title>
-
-
+  
   <!-- Bootstrap -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
-
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    rel="stylesheet"
-  >
-
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <!-- CSS de PRAXO -->
-  <link
-    rel="stylesheet"
-    href="/css/custom.css"
-  >
-
-
+  <link rel="stylesheet" href="/css/custom.css">
+  
   <style>
-
-    body {
-      background-color: #f6f7f9;
-    }
-
-
-    .titulo-seccion {
-      margin-bottom: 30px;
-    }
-
-
+    body { background-color: #f6f7f9; }
+    .titulo-seccion { margin-bottom: 30px; }
     .trabajador-card {
-
       border: none;
-
       border-radius: 18px;
-
       overflow: hidden;
-
-      box-shadow:
-        0 4px 18px rgba(0, 0, 0, 0.07);
-
-      transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       background-color: white;
-
     }
-
-
     .trabajador-card:hover {
-
       transform: translateY(-4px);
-
-      box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.10);
-
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
     }
-
-
     .trabajador-img {
-
       width: 100%;
-
       height: 220px;
-
       object-fit: cover;
-
     }
-
-
-    .trabajador-oficio {
-
-      color: #6c757d;
-
-      font-size: 14px;
-
-    }
-
-
-    .trabajador-ciudad {
-
-      color: #6c757d;
-
-      font-size: 14px;
-
-    }
-
-
+    .trabajador-oficio { color: #6c757d; font-size: 14px; }
+    .trabajador-ciudad { color: #6c757d; font-size: 14px; }
     .calificacion {
-
       display: inline-flex;
-
       align-items: center;
-
       gap: 5px;
-
       padding: 6px 10px;
-
       border-radius: 50px;
-
       background-color: #fff3cd;
-
       color: #664d03;
-
       font-size: 13px;
-
       font-weight: 600;
-
     }
-
-
     .botones-trabajador {
-
       margin-top: auto;
-
       display: flex;
-
       gap: 10px;
-
       flex-wrap: wrap;
-
     }
-
-
     .botones-trabajador .btn {
-
       flex: 1;
-
       min-width: 130px;
-
     }
-
-
     .modal-content {
-
       border: none;
-
       border-radius: 18px;
-
       overflow: hidden;
-
     }
-
-
-    .modal-header {
-
-      padding: 22px;
-
-    }
-
-
-    .modal-body {
-
-      padding: 22px;
-
-    }
-
-
-    .modal-footer {
-
-      padding: 18px 22px;
-
-    }
-
-
+    .modal-header { padding: 22px; }
+    .modal-body { padding: 22px; }
+    .modal-footer { padding: 18px 22px; }
     .profesional-resumen {
-
       background-color: #f8f9fa;
-
       border-radius: 12px;
-
       padding: 15px;
-
       margin-bottom: 20px;
-
     }
-
-
     @media (max-width: 576px) {
-
-      .botones-trabajador {
-
-        flex-direction: column;
-
-      }
-
-
-      .botones-trabajador .btn {
-
-        width: 100%;
-
-      }
-
+      .botones-trabajador { flex-direction: column; }
+      .botones-trabajador .btn { width: 100%; }
     }
-
   </style>
-
 </head>
-
 
 <body>
 
-
-  <!-- ========================================= -->
   <!-- NAVBAR -->
-  <!-- ========================================= -->
-
   <%- include('partials/navbar') %>
 
-
-  <!-- ========================================= -->
   <!-- VARIABLES DE SESION -->
-  <!-- ========================================= -->
-
   <%
-
-    const sesionIniciada =
-      typeof usuarioAutenticado !== 'undefined' &&
-      usuarioAutenticado &&
-      typeof usuarioActual !== 'undefined' &&
-      usuarioActual;
-
-
-    const esCliente =
-      sesionIniciada &&
-      usuarioActual.tipoUsuario === 'cliente';
-
-
-    const esPrestador =
-      sesionIniciada &&
-      usuarioActual.tipoUsuario === 'prestador';
-
+    const sesionIniciada = typeof usuarioAutenticado !== 'undefined' && usuarioAutenticado && typeof usuarioActual !== 'undefined' && usuarioActual;
+    const esCliente = sesionIniciada && usuarioActual.tipoUsuario === 'cliente';
+    const esPrestador = sesionIniciada && usuarioActual.tipoUsuario === 'prestador';
   %>
-
-
-
-  <!-- ========================================= -->
-  <!-- CONTENIDO -->
-  <!-- ========================================= -->
 
   <main class="container my-5">
 
-
     <!-- TITULO -->
-
     <section class="titulo-seccion">
-
-
-      <div
-        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3"
-      >
-
-
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div>
-
-          <h1 class="fw-bold mb-2">
-
-            <%= titulo %>
-
-          </h1>
-
-
-          <p class="text-muted mb-0">
-
-            Encuentra al profesional adecuado para el
-            servicio que necesitas.
-
-          </p>
-
+          <h1 class="fw-bold mb-2"><%= titulo %></h1>
+          <p class="text-muted mb-0">Encuentra al profesional adecuado para el servicio que necesitas.</p>
         </div>
 
-
-
-        <!-- =====================================
-             MIS SERVICIOS
-             SOLO PARA CLIENTES
-        ====================================== -->
-
+        <!-- MIS SERVICIOS (SOLO PARA CLIENTES) -->
         <% if (esCliente) { %>
-
-
           <div>
-
-            <a
-              href="/carrito"
-              class="btn btn-outline-dark"
-            >
-
-              <i class="bi bi-bag-check me-1"></i>
-
-              Mis servicios
-
-
-              <% if (
-                typeof cantidadCarrito !== 'undefined' &&
-                cantidadCarrito > 0
-              ) { %>
-
-
-                <span
-                  class="badge bg-dark ms-1"
-                >
-
-                  <%= cantidadCarrito %>
-
-                </span>
-
-
+            <a href="/carrito" class="btn btn-outline-dark">
+              <i class="bi bi-bag-check me-1"></i> Mis servicios
+              <% if (typeof cantidadCarrito !== 'undefined' && cantidadCarrito > 0) { %>
+                <span class="badge bg-dark ms-1"><%= cantidadCarrito %></span>
               <% } %>
-
-
             </a>
-
           </div>
-
-
         <% } %>
-
-
       </div>
-
-
     </section>
 
-
-
-    <!-- ========================================= -->
     <!-- SIN TRABAJADORES -->
-    <!-- ========================================= -->
-
     <% if (!trabajadores || trabajadores.length === 0) { %>
-
-
-      <section
-        class="bg-white rounded-4 shadow-sm p-5 text-center"
-      >
-
-
-        <i
-          class="bi bi-person-x fs-1 text-muted"
-        ></i>
-
-
-        <h2 class="h4 mt-3">
-
-          No encontramos profesionales
-
-        </h2>
-
-
-        <p class="text-muted mb-0">
-
-          Todavía no hay trabajadores registrados
-          para esta búsqueda.
-
-        </p>
-
-
+      <section class="bg-white rounded-4 shadow-sm p-5 text-center">
+        <i class="bi bi-person-x fs-1 text-muted"></i>
+        <h2 class="h4 mt-3">No encontramos profesionales</h2>
+        <p class="text-muted mb-0">Todavía no hay trabajadores registrados para esta búsqueda.</p>
       </section>
-
-
     <% } else { %>
 
-
-
-      <!-- ========================================= -->
       <!-- LISTA DE TRABAJADORES -->
-      <!-- ========================================= -->
-
       <div class="row g-4">
-
-
         <% trabajadores.forEach((trabajador) => { %>
-
-
           <div class="col-12 col-md-6 col-lg-4">
-
-
-            <article
-              class="card trabajador-card h-100"
-            >
-
-
-              <!-- ================================= -->
+            <article class="card trabajador-card h-100">
+              
               <!-- FOTO -->
-              <!-- ================================= -->
-
               <img
-                src="<%= trabajador.fotoUrl
-                  ? trabajador.fotoUrl.replace(/\\/g, '/')
-                  : '/assets/img/trabajadores/' +
-                    trabajador.nombre.toLowerCase().split(' ')[0] +
-                    '.jpg'
-                %>"
-
+                src="<%= trabajador.fotoUrl ? trabajador.fotoUrl.replace(/\\\\/g, '/') : '/assets/img/trabajadores/' + trabajador.nombre.toLowerCase().split(' ')[0] + '.jpg' %>"
                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(trabajador.nombre) %>&background=random&size=300';"
-
                 class="trabajador-img"
-
                 alt="<%= trabajador.nombre %>"
               >
 
-
-
-              <!-- ================================= -->
               <!-- INFORMACION -->
-              <!-- ================================= -->
-
-              <div
-                class="card-body d-flex flex-column p-4"
-              >
-
-
-                <!-- NOMBRE -->
-
-                <h2 class="h5 fw-bold mb-1">
-
-                  <%= trabajador.nombre %>
-
-                </h2>
-
-
-
-                <!-- OFICIO -->
-
-                <div
-                  class="trabajador-oficio mb-3"
-                >
-
-                  <i
-                    class="bi bi-tools me-1"
-                  ></i>
-
-                  <%= trabajador.oficio %>
-
+              <div class="card-body d-flex flex-column p-4">
+                <h2 class="h5 fw-bold mb-1"><%= trabajador.nombre %></h2>
+                
+                <div class="trabajador-oficio mb-3">
+                  <i class="bi bi-tools me-1"></i> <%= trabajador.oficio %>
                 </div>
-
-
-
-                <!-- DESCRIPCION -->
-
+                
                 <p class="card-text">
-
-                  <%= trabajador.descripcion ||
-                    'Profesional disponible en PRAXO.' %>
-
+                  <%= trabajador.descripcion || 'Profesional disponible en PRAXO.' %>
                 </p>
-
-
-
-                <!-- CIUDAD -->
-
-                <div
-                  class="trabajador-ciudad mb-3"
-                >
-
-                  <i
-                    class="bi bi-geo-alt-fill me-1"
-                  ></i>
-
-                  <%= trabajador.ciudad ||
-                    'Ubicación no especificada' %>
-
+                
+                <div class="trabajador-ciudad mb-3">
+                  <i class="bi bi-geo-alt-fill me-1"></i> <%= trabajador.ciudad || 'Ubicación no especificada' %>
                 </div>
 
-
-
-                <!-- CALIFICACION -->
-
-                <% if (
-                  trabajador.calificacionPromedio !== undefined &&
-                  trabajador.calificacionPromedio !== null
-                ) { %>
-
-
+                <% if (trabajador.calificacionPromedio !== undefined && trabajador.calificacionPromedio !== null) { %>
                   <div class="mb-4">
-
-
                     <span class="calificacion">
-
-                      <i class="bi bi-star-fill"></i>
-
-                      <%= trabajador.calificacionPromedio %>
-
+                      <i class="bi bi-star-fill"></i> <%= trabajador.calificacionPromedio %>
                     </span>
-
-
                   </div>
-
-
                 <% } %>
 
-
-
-                <!-- ================================= -->
                 <!-- BOTONES -->
-                <!-- ================================= -->
-
                 <div class="botones-trabajador">
-
-
-                  <!-- =================================
-                       VER PERFIL
-                       SIEMPRE DISPONIBLE
-                  ================================== -->
-
-                  <a
-                    href="/trabajadores/<%= trabajador._id %>"
-                    class="btn btn-outline-primary"
-                  >
-
-                    <i class="bi bi-person me-1"></i>
-
-                    Ver perfil
-
+                  <a href="/trabajadores/<%= trabajador._id %>" class="btn btn-outline-primary">
+                    <i class="bi bi-person me-1"></i> Ver perfil
                   </a>
 
-
-
-                  <!-- =================================
-                       CLIENTE CON SESION
-                  ================================== -->
-
                   <% if (esCliente) { %>
-
-
-                    <button
-                      type="button"
-                      class="btn btn-dark"
-                      data-bs-toggle="modal"
-                      data-bs-target="#contratarModal<%= trabajador._id %>"
-                    >
-
-                      <i
-                        class="bi bi-calendar-check me-1"
-                      ></i>
-
-                      Contratar
-
+                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#contratarModal<%= trabajador._id %>">
+                      <i class="bi bi-calendar-check me-1"></i> Contratar
                     </button>
-
-
                   <% } %>
-
-
-
-                  <!-- =================================
-                       USUARIO SIN SESION
-                  ================================== -->
 
                   <% if (!sesionIniciada) { %>
-
-
-                    <a
-                      href="/login"
-                      class="btn btn-dark"
-                    >
-
-                      <i
-                        class="bi bi-box-arrow-in-right me-1"
-                      ></i>
-
-                      Inicia sesión para contratar
-
+                    <a href="/login" class="btn btn-dark">
+                      <i class="bi bi-box-arrow-in-right me-1"></i> Inicia sesión
                     </a>
-
-
                   <% } %>
-
-
-                  <!--
-                    Si es prestador:
-                    solamente aparecerá "Ver perfil".
-
-                    Un prestador no necesita contratar
-                    a otro profesional desde esta interfaz.
-                  -->
-
-
                 </div>
-
-
               </div>
-
-
             </article>
-
-
           </div>
 
-
-
           <!-- ===================================== -->
-          <!-- MODAL DE CONTRATACION -->
-          <!-- SOLO SE GENERA PARA CLIENTES -->
+          <!-- MODAL DE CONTRATACION ACTUALIZADO     -->
           <!-- ===================================== -->
-
           <% if (esCliente) { %>
-
-
-            <div
-              class="modal fade"
-              id="contratarModal<%= trabajador._id %>"
-              tabindex="-1"
-              aria-labelledby="contratarModalLabel<%= trabajador._id %>"
-              aria-hidden="true"
-            >
-
-
-              <div
-                class="modal-dialog modal-dialog-centered"
-              >
-
-
+            <div class="modal fade" id="contratarModal<%= trabajador._id %>" tabindex="-1" aria-labelledby="contratarModalLabel<%= trabajador._id %>" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
-
-
+                  
                   <!-- ENCABEZADO -->
-
-                  <div class="modal-header">
-
-
+                  <div class="modal-header bg-light">
                     <div>
-
-
-                      <h5
-                        class="modal-title fw-bold"
-                        id="contratarModalLabel<%= trabajador._id %>"
-                      >
-
-                        Solicitar servicio
-
-                      </h5>
-
-
-                      <small class="text-muted">
-
-                        Completa los datos de tu solicitud
-
-                      </small>
-
-
+                      <h5 class="modal-title fw-bold" id="contratarModalLabel<%= trabajador._id %>">Solicitar servicio</h5>
+                      <small class="text-muted">Completa los datos para <%= trabajador.nombre %></small>
                     </div>
-
-
-                    <button
-                      type="button"
-                      class="btn-close"
-                      data-bs-dismiss="modal"
-                      aria-label="Cerrar"
-                    ></button>
-
-
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                   </div>
 
+                  <!-- 🟢 FORMULARIO CON MULTIPART PARA FOTOS -->
+                  <form action="/carrito/agregar" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body p-4">
+                      
+                      <!-- ID DEL TRABAJADOR OCULTO -->
+                      <input type="hidden" name="trabajadorId" value="<%= trabajador._id %>">
 
-
-                  <!-- ================================= -->
-                  <!-- FORMULARIO -->
-                  <!-- ================================= -->
-
-                  <form
-                    action="/carrito/agregar"
-                    method="POST"
-                  >
-
-
-                    <div class="modal-body">
-
-
-                      <!-- ID DEL TRABAJADOR -->
-
-                      <input
-                        type="hidden"
-                        name="trabajadorId"
-                        value="<%= trabajador._id %>"
-                      >
-
-
-
-                      <!-- ================================= -->
-                      <!-- RESUMEN DEL PROFESIONAL -->
-                      <!-- ================================= -->
-
-                      <div class="profesional-resumen">
-
-
-                        <div
-                          class="d-flex align-items-center gap-3"
-                        >
-
-
-                          <div
-                            class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center"
-                            style="
-                              width: 48px;
-                              height: 48px;
-                              flex-shrink: 0;
-                            "
-                          >
-
-                            <i
-                              class="bi bi-person fs-5"
-                            ></i>
-
-                          </div>
-
-
-                          <div>
-
-
-                            <div class="fw-bold">
-
-                              <%= trabajador.nombre %>
-
-                            </div>
-
-
-                            <div class="text-muted small">
-
-                              <%= trabajador.oficio %>
-
-                            </div>
-
-
-                          </div>
-
-
+                      <!-- FILA 1: FECHA Y HORA -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                          <label for="fecha<%= trabajador._id %>" class="form-label fw-semibold">
+                            <i class="bi bi-calendar-event me-1"></i> Fecha del servicio <span class="text-danger">*</span>
+                          </label>
+                          <input type="date" id="fecha<%= trabajador._id %>" name="fecha" class="form-control fecha-servicio" required>
                         </div>
-
-
+                        <div class="col-md-6">
+                          <label for="hora<%= trabajador._id %>" class="form-label fw-semibold">
+                            <i class="bi bi-clock me-1"></i> Hora <span class="text-danger">*</span>
+                          </label>
+                          <input type="time" id="hora<%= trabajador._id %>" name="hora" class="form-control" required>
+                        </div>
                       </div>
 
-
-
-                      <!-- ================================= -->
-                      <!-- FECHA -->
-                      <!-- ================================= -->
-
-                      <div class="mb-3">
-
-
-                        <label
-                          for="fecha<%= trabajador._id %>"
-                          class="form-label fw-semibold"
-                        >
-
-                          <i
-                            class="bi bi-calendar-event me-1"
-                          ></i>
-
-                          Fecha del servicio
-
-                        </label>
-
-
-                        <input
-                          type="date"
-                          id="fecha<%= trabajador._id %>"
-                          name="fecha"
-                          class="form-control fecha-servicio"
-                          required
-                        >
-
-
+                      <!-- 🟢 FILA 2: URGENCIA Y FOTO (NUEVOS CAMPOS) -->
+                      <div class="row g-3 mb-3 border-top pt-3 mt-1">
+                        <div class="col-md-6">
+                          <label for="urgencia<%= trabajador._id %>" class="form-label fw-semibold text-primary">
+                            <i class="bi bi-exclamation-circle me-1"></i> Nivel de Urgencia
+                          </label>
+                          <select class="form-select" id="urgencia<%= trabajador._id %>" name="urgencia">
+                            <option value="Programado" selected>Servicio Programado (Normal)</option>
+                            <option value="Urgencia">¡Es una Urgencia/Emergencia!</option>
+                          </select>
+                        </div>
+                        <div class="col-md-6">
+                          <label for="imagenEvidencia<%= trabajador._id %>" class="form-label fw-semibold text-primary">
+                            <i class="bi bi-camera me-1"></i> Foto de evidencia (Opcional)
+                          </label>
+                          <input type="file" class="form-control" id="imagenEvidencia<%= trabajador._id %>" name="imagenEvidencia" accept="image/jpeg, image/png, image/jpg">
+                          <div class="form-text small">Sube una foto para que el profesional vea el trabajo.</div>
+                        </div>
                       </div>
 
-
-
-                      <!-- ================================= -->
-                      <!-- HORA -->
-                      <!-- ================================= -->
-
-                      <div class="mb-3">
-
-
-                        <label
-                          for="hora<%= trabajador._id %>"
-                          class="form-label fw-semibold"
-                        >
-
-                          <i
-                            class="bi bi-clock me-1"
-                          ></i>
-
-                          Hora
-
-                        </label>
-
-
-                        <input
-                          type="time"
-                          id="hora<%= trabajador._id %>"
-                          name="hora"
-                          class="form-control"
-                          required
-                        >
-
-
-                      </div>
-
-
-
-                      <!-- ================================= -->
                       <!-- UBICACION -->
-                      <!-- ================================= -->
-
                       <div class="mb-3">
-
-
-                        <label
-                          for="ubicacion<%= trabajador._id %>"
-                          class="form-label fw-semibold"
-                        >
-
-                          <i
-                            class="bi bi-geo-alt me-1"
-                          ></i>
-
-                          ¿Dónde necesitas el servicio?
-
+                        <label for="ubicacion<%= trabajador._id %>" class="form-label fw-semibold">
+                          <i class="bi bi-geo-alt me-1"></i> Dirección General <span class="text-danger">*</span>
                         </label>
-
-
-                        <input
-                          type="text"
-                          id="ubicacion<%= trabajador._id %>"
-                          name="ubicacion"
-                          class="form-control"
-                          placeholder="Ej. Col. Centro, Mixquiahuala, Hidalgo"
-                          maxlength="150"
-                          required
-                        >
-
-
-                        <div class="form-text">
-
-                          Escribe la dirección o zona donde
-                          necesitas recibir el servicio.
-
-                        </div>
-
-
+                        <input type="text" id="ubicacion<%= trabajador._id %>" name="ubicacion" class="form-control" placeholder="Ej. Col. Centro, Calle Morelos #123" maxlength="150" required>
                       </div>
 
+                      <!-- 🟢 REFERENCIAS (NUEVO CAMPO) -->
+                      <div class="mb-3 border-bottom pb-3">
+                        <label for="referenciasUbicacion<%= trabajador._id %>" class="form-label fw-semibold text-primary">
+                          <i class="bi bi-signpost-split me-1"></i> Referencias de ubicación (Opcional)
+                        </label>
+                        <input type="text" id="referenciasUbicacion<%= trabajador._id %>" name="referenciasUbicacion" class="form-control" placeholder="Ej. Casa de dos pisos frente a la papelería azul." maxlength="250">
+                      </div>
 
-
-                      <!-- ================================= -->
                       <!-- DESCRIPCION -->
-                      <!-- ================================= -->
-
-                      <div class="mb-3">
-
-
-                        <label
-                          for="descripcion<%= trabajador._id %>"
-                          class="form-label fw-semibold"
-                        >
-
-                          <i
-                            class="bi bi-chat-left-text me-1"
-                          ></i>
-
-                          Describe lo que necesitas
-
+                      <div class="mb-3 pt-2">
+                        <label for="descripcion<%= trabajador._id %>" class="form-label fw-semibold">
+                          <i class="bi bi-chat-left-text me-1"></i> Describe lo que necesitas <span class="text-danger">*</span>
                         </label>
-
-
-                        <textarea
-                          id="descripcion<%= trabajador._id %>"
-                          name="descripcion"
-                          class="form-control"
-                          rows="4"
-                          maxlength="500"
-                          placeholder="Ej. Necesito reparar una fuga debajo del fregadero..."
-                          required
-                        ></textarea>
-
-
-                        <div class="form-text">
-
-                          Explica brevemente qué trabajo
-                          necesitas que realice el profesional.
-
-                        </div>
-
-
+                        <textarea id="descripcion<%= trabajador._id %>" name="descripcion" class="form-control" rows="3" maxlength="500" placeholder="Ej. Necesito reparar una fuga debajo del fregadero de la cocina..." required></textarea>
                       </div>
 
+                      <!-- 🟢 SOLICITAR COTIZACION (NUEVO CAMPO) -->
+                      <div class="form-check bg-light p-3 rounded border border-primary-subtle mt-4">
+                        <input class="form-check-input ms-1" type="checkbox" id="requiereCotizacion<%= trabajador._id %>" name="requiereCotizacion">
+                        <label class="form-check-label fw-bold ms-4 text-dark" for="requiereCotizacion<%= trabajador._id %>">
+                          <i class="bi bi-cash-coin text-success me-1"></i> Solicitar cotización antes del servicio
+                        </label>
+                        <div class="form-text ms-4 small">El profesional evaluará tu solicitud y te indicará el costo aproximado.</div>
+                      </div>
 
                     </div>
 
-
-
-                    <!-- ================================= -->
                     <!-- BOTONES DEL MODAL -->
-                    <!-- ================================= -->
-
-                    <div class="modal-footer">
-
-
-                      <button
-                        type="button"
-                        class="btn btn-outline-secondary"
-                        data-bs-dismiss="modal"
-                      >
-
-                        Cancelar
-
+                    <div class="modal-footer bg-light">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-dark">
+                        <i class="bi bi-bag-plus me-1"></i> Agregar a mis servicios
                       </button>
-
-
-                      <button
-                        type="submit"
-                        class="btn btn-dark"
-                      >
-
-                        <i
-                          class="bi bi-bag-plus me-1"
-                        ></i>
-
-                        Agregar a mis servicios
-
-                      </button>
-
-
                     </div>
-
-
                   </form>
-
-
                 </div>
-
-
               </div>
-
-
             </div>
-
-
           <% } %>
-
-
         <% }) %>
-
-
       </div>
-
-
     <% } %>
-
-
   </main>
 
-
-
-  <!-- ========================================= -->
   <!-- FOOTER -->
-  <!-- ========================================= -->
-
   <%- include('partials/footer') %>
 
-
-
-  <!-- ========================================= -->
   <!-- BOOTSTRAP -->
-  <!-- ========================================= -->
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  ></script>
-
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <!-- JS DE PRAXO -->
-
   <script src="/js/main.js"></script>
 
-
-
-  <!-- ========================================= -->
   <!-- FECHAS DEL SERVICIO -->
-  <!-- ========================================= -->
-
   <% if (esCliente) { %>
-
     <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const fechaActual = `${año}-${mes}-${dia}`;
 
-      document.addEventListener(
-        'DOMContentLoaded',
-        function () {
-
-
-          // =====================================
-          // OBTENER FECHA ACTUAL
-          // =====================================
-
-          const hoy =
-            new Date();
-
-
-          const año =
-            hoy.getFullYear();
-
-
-          const mes =
-            String(
-              hoy.getMonth() + 1
-            ).padStart(
-              2,
-              '0'
-            );
-
-
-          const dia =
-            String(
-              hoy.getDate()
-            ).padStart(
-              2,
-              '0'
-            );
-
-
-          const fechaActual =
-            `${año}-${mes}-${dia}`;
-
-
-
-          // =====================================
-          // EVITAR FECHAS PASADAS
-          // =====================================
-
-          const camposFecha =
-            document.querySelectorAll(
-              '.fecha-servicio'
-            );
-
-
-          camposFecha.forEach(
-            function (campo) {
-
-              campo.min =
-                fechaActual;
-
-            }
-          );
-
-
-        }
-      );
-
+        const camposFecha = document.querySelectorAll('.fecha-servicio');
+        camposFecha.forEach(function (campo) {
+          campo.min = fechaActual;
+        });
+      });
     </script>
-
   <% } %>
-
-
 </body>
-
 </html>
