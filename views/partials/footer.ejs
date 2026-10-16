@@ -1,6 +1,189 @@
 <!-- views/partials/footer.ejs -->
-<footer class="bg-dark text-light text-center py-3 mt-5">
+
+<%
+  // Misma comprobación segura de sesión que usa la barra de navegación.
+  const footerSesion =
+    typeof usuarioAutenticado !== 'undefined' &&
+    usuarioAutenticado &&
+    typeof usuarioActual !== 'undefined' &&
+    usuarioActual;
+%>
+
+<footer class="bg-dark text-light pt-5 pb-3 mt-5">
+
   <div class="container">
-    <p class="mb-0">&copy; <%= new Date().getFullYear() %> PRAXO®</p>
+
+    <div class="row g-4">
+
+
+      <!-- MARCA -->
+
+      <div class="col-lg-4">
+
+        <a
+          href="/"
+          class="d-inline-block mb-3"
+          aria-label="PRAXO, ir al inicio"
+        >
+          <img
+            src="/assets/img/logo/logo-praxo-claro.svg"
+            alt="PRAXO"
+            width="148"
+            height="38"
+          >
+        </a>
+
+        <p class="small text-white-50 mb-3">
+          Conectamos a personas que necesitan un servicio con profesionales
+          cerca de ellas, ahora mismo o para el día que elijan.
+        </p>
+
+        <p
+          class="small fw-bold text-uppercase mb-0"
+          style="letter-spacing: .12em; color: var(--praxo-orange);"
+        >
+          Find. Connect. Solve.
+        </p>
+
+      </div>
+
+
+      <!-- PRAXO -->
+
+      <div class="col-6 col-lg-2 offset-lg-1">
+
+        <h2 class="h6 text-uppercase text-white-50 mb-3" style="letter-spacing: .08em;">
+          PRAXO
+        </h2>
+
+        <ul class="list-unstyled small mb-0">
+          <li class="mb-2"><a href="/quienes-somos">Quiénes somos</a></li>
+          <li class="mb-2"><a href="/trabajadores">Trabajadores</a></li>
+          <li class="mb-2"><a href="/contacto">Contacto</a></li>
+        </ul>
+
+      </div>
+
+
+      <!-- SERVICIOS -->
+
+      <div class="col-6 col-lg-2">
+
+        <h2 class="h6 text-uppercase text-white-50 mb-3" style="letter-spacing: .08em;">
+          Servicios
+        </h2>
+
+        <ul class="list-unstyled small mb-0">
+          <li class="mb-2"><a href="/trabajadores?oficio=Electricista">Electricista</a></li>
+          <li class="mb-2"><a href="/trabajadores?oficio=Plomero">Plomero</a></li>
+          <li class="mb-2"><a href="/trabajadores?oficio=Cerrajero">Cerrajero</a></li>
+          <li class="mb-2"><a href="/trabajadores">Ver todos</a></li>
+        </ul>
+
+      </div>
+
+
+      <!-- CUENTA -->
+
+      <div class="col-lg-3">
+
+        <h2 class="h6 text-uppercase text-white-50 mb-3" style="letter-spacing: .08em;">
+          Tu cuenta
+        </h2>
+
+        <% if (footerSesion) { %>
+
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2"><a href="/perfil">Ver perfil</a></li>
+          </ul>
+
+        <% } else { %>
+
+          <ul class="list-unstyled small mb-3">
+            <li class="mb-2"><a href="/login">Iniciar sesión</a></li>
+            <li class="mb-2"><a href="/registro">Crear cuenta</a></li>
+          </ul>
+
+          <a href="/registro/prestador" class="btn btn-primary btn-sm">
+            <i class="bi bi-tools me-1"></i>
+            Ofrece tus servicios
+          </a>
+
+        <% } %>
+
+      </div>
+
+
+    </div>
+
+
+    <hr class="my-4 opacity-25">
+
+
+    <p class="small text-white-50 text-center mb-0">
+      &copy; <%= new Date().getFullYear() %> PRAXO®. Todos los derechos reservados.
+    </p>
+
   </div>
+
 </footer>
+
+
+<!-- ==========================================
+     BOTON "VOLVER ARRIBA"
+     Está en el footer a propósito: todas las páginas lo incluyen, así que
+     el botón aparece en cualquiera sin depender del JS de cada página.
+     Usa un SVG propio (no necesita Bootstrap Icons) y sus estilos están
+     en praxo-theme.css (sección 12).
+=========================================== -->
+
+<button
+  type="button"
+  id="btnSubirInicio"
+  class="btn-subir"
+  aria-label="Volver al inicio de la página"
+  title="Volver arriba"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+    stroke-linejoin="round" aria-hidden="true">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
+
+<script>
+
+  (function () {
+
+    const boton = document.getElementById('btnSubirInicio');
+
+    if (!boton) {
+      return;
+    }
+
+    // Se muestra después de bajar este número de píxeles
+    const UMBRAL = 400;
+
+    function actualizarVisibilidad() {
+      boton.classList.toggle('is-visible', window.scrollY > UMBRAL);
+    }
+
+    window.addEventListener('scroll', actualizarVisibilidad, { passive: true });
+    actualizarVisibilidad();
+
+    boton.addEventListener('click', function () {
+
+      // Respeta a quien tiene activada la opción de "reducir movimiento"
+      const reducirMovimiento =
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      window.scrollTo({
+        top: 0,
+        behavior: reducirMovimiento ? 'auto' : 'smooth'
+      });
+
+    });
+
+  })();
+
+</script>

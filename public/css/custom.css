@@ -1,5 +1,6 @@
 /* public/css/custom.css */
 /* Aqui van tus estilos propios que ajustan o extienden Bootstrap. */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
 body {
   font-family: 'Montserrat', sans-serif !important;
@@ -220,4 +221,429 @@ h1, h2, h3, h4, h5, h6, .display-4, .display-5 {
         display: none;
     }
 
+}
+
+/*disenos de praxo
+/* public/css/praxo-theme.css
+   Tema visual de PRAXO basado en los colores de los logos oficiales:
+   azul marino + naranja. Se carga DESPUES de custom.css para que
+   sus reglas tengan prioridad sobre Bootstrap sin borrar nada tuyo. */
+
+/* =========================================================
+   1. VARIABLES DE MARCA
+   ========================================================= */
+:root {
+  --praxo-navy: #0b1f3a;
+  --praxo-navy-700: #163258;
+  --praxo-navy-500: #28507f;
+  --praxo-orange: #f7931e;
+  --praxo-orange-600: #e07b00;
+  --praxo-orange-700: #b45f06;   /* naranja oscuro: legible para texto sobre blanco */
+  --praxo-soft: #f4f6fa;
+  --praxo-ink: #1d2736;
+  --praxo-muted: #667085;
+  --praxo-border: #e3e8ef;
+  --praxo-radius: 0.85rem;
+  --praxo-shadow: 0 10px 30px rgba(11, 31, 58, 0.10);
+
+  /* Bootstrap 5.3 lee estas variables: asi los colores cambian en todo el sitio */
+  --bs-primary: #f7931e;
+  --bs-primary-rgb: 247, 147, 30;
+  --bs-dark: #0b1f3a;
+  --bs-dark-rgb: 11, 31, 58;
+  --bs-light: #f4f6fa;
+  --bs-light-rgb: 244, 246, 250;
+  --bs-body-color: #1d2736;
+  --bs-body-color-rgb: 29, 39, 54;
+  --bs-secondary-color: #667085;
+  --bs-link-color: #b45f06;
+  --bs-link-color-rgb: 180, 95, 6;
+  --bs-link-hover-color: #8a4704;
+  --bs-link-hover-color-rgb: 138, 71, 4;
+  --bs-border-radius: 0.6rem;
+  --bs-border-radius-lg: var(--praxo-radius);
+}
+
+/* =========================================================
+   2. BASE
+   ========================================================= */
+body {
+  font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+  color: var(--praxo-ink);
+  background-color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--praxo-navy);
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--praxo-orange);
+  color: var(--praxo-navy);
+}
+
+a {
+  transition: color 0.15s ease;
+}
+
+/* =========================================================
+   3. BOTONES
+   ========================================================= */
+.btn {
+  font-weight: 600;
+  border-radius: 0.6rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+/* Principal de accion: naranja con texto marino (buen contraste) */
+.btn-primary {
+  --bs-btn-color: var(--praxo-navy);
+  --bs-btn-bg: var(--praxo-orange);
+  --bs-btn-border-color: var(--praxo-orange);
+  --bs-btn-hover-color: var(--praxo-navy);
+  --bs-btn-hover-bg: #ffa43d;
+  --bs-btn-hover-border-color: #ffa43d;
+  --bs-btn-active-color: var(--praxo-navy);
+  --bs-btn-active-bg: var(--praxo-orange-600);
+  --bs-btn-active-border-color: var(--praxo-orange-600);
+  --bs-btn-focus-shadow-rgb: 247, 147, 30;
+  --bs-btn-disabled-color: var(--praxo-navy);
+  --bs-btn-disabled-bg: var(--praxo-orange);
+  --bs-btn-disabled-border-color: var(--praxo-orange);
+}
+
+/* Boton oscuro: azul marino de la marca */
+.btn-dark {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--praxo-navy);
+  --bs-btn-border-color: var(--praxo-navy);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--praxo-navy-700);
+  --bs-btn-hover-border-color: var(--praxo-navy-700);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--praxo-navy-700);
+  --bs-btn-active-border-color: var(--praxo-navy-700);
+  --bs-btn-focus-shadow-rgb: 247, 147, 30;
+  --bs-btn-disabled-bg: var(--praxo-navy);
+  --bs-btn-disabled-border-color: var(--praxo-navy);
+}
+
+.btn-outline-dark {
+  --bs-btn-color: var(--praxo-navy);
+  --bs-btn-border-color: var(--praxo-navy);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--praxo-navy);
+  --bs-btn-hover-border-color: var(--praxo-navy);
+  --bs-btn-active-bg: var(--praxo-navy-700);
+  --bs-btn-active-border-color: var(--praxo-navy-700);
+  --bs-btn-focus-shadow-rgb: 247, 147, 30;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--praxo-orange-700);
+  --bs-btn-border-color: var(--praxo-orange);
+  --bs-btn-hover-color: var(--praxo-navy);
+  --bs-btn-hover-bg: var(--praxo-orange);
+  --bs-btn-hover-border-color: var(--praxo-orange);
+  --bs-btn-active-color: var(--praxo-navy);
+  --bs-btn-active-bg: var(--praxo-orange-600);
+  --bs-btn-active-border-color: var(--praxo-orange-600);
+  --bs-btn-focus-shadow-rgb: 247, 147, 30;
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--praxo-navy-700);
+  --bs-btn-border-color: #ced4da;
+  --bs-btn-hover-color: var(--praxo-navy);
+  --bs-btn-hover-bg: var(--praxo-soft);
+  --bs-btn-hover-border-color: var(--praxo-navy-500);
+  --bs-btn-active-bg: var(--praxo-soft);
+  --bs-btn-active-color: var(--praxo-navy);
+}
+
+.btn-link {
+  color: var(--praxo-orange-700);
+  font-weight: 600;
+}
+
+/* =========================================================
+   4. FORMULARIOS
+   ========================================================= */
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--praxo-navy);
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+  border-color: #d6dce6;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+}
+
+.input-group-text {
+  background: var(--praxo-soft);
+  color: var(--praxo-navy-500);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--praxo-orange);
+  box-shadow: 0 0 0 0.2rem rgba(247, 147, 30, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: var(--praxo-orange);
+  border-color: var(--praxo-orange);
+}
+
+/* =========================================================
+   5. TARJETAS, ETIQUETAS Y UTILIDADES
+   ========================================================= */
+.card {
+  border-radius: var(--praxo-radius);
+}
+
+.card.shadow-sm {
+  box-shadow: var(--praxo-shadow) !important;
+}
+
+a.text-decoration-none > .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+a.text-decoration-none:hover > .card {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(11, 31, 58, 0.16) !important;
+}
+
+.text-primary {
+  color: var(--praxo-orange-600) !important;
+}
+
+.badge.bg-warning {
+  background-color: var(--praxo-orange) !important;
+  color: var(--praxo-navy) !important;
+}
+
+.alert {
+  border-radius: 0.7rem;
+  border: 0;
+}
+
+/* =========================================================
+   6. BARRA DE NAVEGACION (estilos que funcionan con el
+      navbar de Bootstrap actual: bg-dark / navbar-dark)
+   ========================================================= */
+.navbar.bg-dark,
+.navbar-dark.bg-dark {
+  background-image: linear-gradient(90deg, var(--praxo-navy) 0%, var(--praxo-navy-700) 100%);
+  border-bottom: 3px solid var(--praxo-orange);
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  box-shadow: 0 4px 18px rgba(11, 31, 58, 0.25);
+}
+
+.navbar-brand {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.navbar-brand img {
+  height: 38px;
+  width: auto;
+}
+
+.navbar .nav-link {
+  font-weight: 500;
+  position: relative;
+  transition: color 0.15s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus,
+.navbar-dark .navbar-nav .nav-link.active {
+  color: var(--praxo-orange);
+}
+
+@media (min-width: 992px) {
+  .navbar .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.15rem;
+    height: 2px;
+    background: var(--praxo-orange);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+  }
+
+  .navbar .nav-link:hover::after,
+  .navbar .nav-link.active::after {
+    transform: scaleX(1);
+  }
+}
+
+.navbar .dropdown-menu {
+  border: 0;
+  border-radius: 0.8rem;
+  box-shadow: var(--praxo-shadow);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background: rgba(247, 147, 30, 0.12);
+  color: var(--praxo-navy);
+}
+
+/* =========================================================
+   7. PIE DE PAGINA
+   ========================================================= */
+footer.bg-dark {
+  background-image: linear-gradient(180deg, var(--praxo-navy-700) 0%, var(--praxo-navy) 100%);
+  border-top: 3px solid var(--praxo-orange);
+}
+
+footer a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--praxo-orange);
+}
+
+/* =========================================================
+   8. PAGINA DE INICIO (si usa las clases del hero y categorias)
+   ========================================================= */
+.hero-seccion {
+  background-image: linear-gradient(135deg, var(--praxo-navy) 0%, var(--praxo-navy-700) 100%);
+}
+
+.categoria-icono {
+  color: var(--praxo-navy);
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.categoria-card:hover .categoria-icono {
+  background-color: var(--praxo-orange) !important;
+  color: var(--praxo-navy);
+  transform: translateY(-3px);
+}
+
+/* =========================================================
+   9. INICIO DE SESION
+   ========================================================= */
+.login-wrapper {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(247, 147, 30, 0.14), transparent 40%),
+    radial-gradient(circle at 88% 82%, rgba(22, 50, 88, 0.12), transparent 45%),
+    var(--praxo-soft);
+  padding: 3rem 0;
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 1.4rem;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(11, 31, 58, 0.18);
+}
+
+.login-brand {
+  position: relative;
+  background-image: linear-gradient(160deg, var(--praxo-navy) 0%, var(--praxo-navy-700) 100%);
+  color: #fff;
+  padding: 3rem 2.5rem;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.login-brand::before,
+.login-brand::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-brand::before {
+  width: 280px;
+  height: 280px;
+  right: -110px;
+  bottom: -110px;
+  background: rgba(247, 147, 30, 0.9);
+}
+
+.login-brand::after {
+  width: 160px;
+  height: 160px;
+  right: 30px;
+  bottom: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.login-brand > * {
+  position: relative;
+  z-index: 1;
+}
+
+.login-brand h2 {
+  color: #fff;
+  font-weight: 800;
+}
+
+.login-brand .brand-motto {
+  color: var(--praxo-orange);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.login-brand ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+}
+
+.login-brand li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+}
+
+.login-brand li i {
+  color: var(--praxo-orange);
+  font-size: 1.1rem;
+}
+
+.login-form-panel {
+  padding: 3rem 2.5rem;
+}
+
+@media (max-width: 575.98px) {
+  .login-form-panel {
+    padding: 2rem 1.25rem;
+  }
+}
+
+.login-logo {
+  height: 44px;
+  width: auto;
 }

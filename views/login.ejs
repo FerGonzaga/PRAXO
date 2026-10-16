@@ -27,108 +27,155 @@
 
 <body>
 
-  <!-- NAVBAR -->
+  <!-- NAVBAR (también carga el tema de color praxo-theme.css) -->
   <%- include('partials/navbar') %>
 
 
     <!-- LOGIN -->
-    <main class="container py-5">
+    <main class="login-wrapper">
 
-      <div class="row justify-content-center">
+      <div class="container">
 
-        <div class="col-md-8 col-lg-5">
+        <div class="row justify-content-center">
 
-          <div class="card border-0 shadow-sm">
+          <div class="col-xl-10 col-xxl-9">
 
-            <div class="card-body p-4 p-md-5">
+            <div class="login-card">
 
-              <!-- ENCABEZADO -->
-              <div class="text-center mb-4">
-
-                <i class="bi bi-person-circle display-5"></i>
-
-                <h1 class="h2 fw-bold mt-3">
-                  Iniciar sesión
-                </h1>
-
-                <p class="text-muted">
-                  Ingresa a tu cuenta de PRAXO.
-                </p>
-
-              </div>
+              <div class="row g-0">
 
 
-              <!-- MENSAJE -->
-              <div id="mensajeLogin" class="alert d-none" role="alert">
-              </div>
+                <!-- PANEL DE MARCA (solo en pantallas grandes) -->
+                <aside class="col-lg-5 login-brand d-none d-lg-flex">
+
+                  <img src="/assets/img/logo/logo-praxo-claro.svg" alt="PRAXO" class="login-logo mb-4">
+
+                  <p class="brand-motto mb-3">
+                    Find. Connect. Solve.
+                  </p>
+
+                  <h2 class="h4 mb-4">
+                    Un profesional para cada necesidad
+                  </h2>
+
+                  <ul class="list-unstyled mb-0">
+
+                    <li class="mb-3">
+                      <i class="bi bi-search me-2"></i>
+                      Encuentra profesionales cerca de ti
+                    </li>
+
+                    <li class="mb-3">
+                      <i class="bi bi-calendar-check me-2"></i>
+                      Solicita ahora o programa tu servicio
+                    </li>
+
+                    <li>
+                      <i class="bi bi-patch-check me-2"></i>
+                      Cuentas con correo verificado
+                    </li>
+
+                  </ul>
+
+                </aside>
 
 
-              <!-- FORMULARIO -->
-              <form id="formLogin" novalidate>
+                <!-- PANEL DEL FORMULARIO -->
+                <section class="col-lg-7 login-form-panel">
 
-                <!-- CORREO -->
-                <div class="mb-3">
+                  <!-- ENCABEZADO -->
+                  <div class="mb-4">
 
-                  <label for="correoLogin" class="form-label">
-                    Correo electrónico
-                  </label>
+                    <!-- Logo visible solo en móvil, donde no se ve el panel de marca -->
+                    <img src="/assets/img/logo/logo-praxo.svg" alt="PRAXO" class="login-logo d-lg-none mb-3">
 
-                  <input type="email" class="form-control" id="correoLogin" name="correo"
-                    placeholder="ejemplo@correo.com" required>
+                    <h1 class="h2 fw-bold">
+                      Iniciar sesión
+                    </h1>
 
-                  <div class="invalid-feedback">
-                    Ingresa un correo electrónico válido.
+                    <p class="text-muted mb-0">
+                      Ingresa a tu cuenta de PRAXO.
+                    </p>
+
                   </div>
 
-                </div>
+
+                  <!-- MENSAJE -->
+                  <div id="mensajeLogin" class="alert d-none" role="alert">
+                  </div>
 
 
-                <!-- CONTRASEÑA -->
-                <div class="mb-4">
+                  <!-- FORMULARIO -->
+                  <form id="formLogin" novalidate>
 
-                  <label for="passwordLogin" class="form-label">
-                    Contraseña
-                  </label>
+                    <!-- CORREO -->
+                    <div class="mb-3">
 
-                  <div class="input-group">
+                      <label for="correoLogin" class="form-label">
+                        Correo electrónico
+                      </label>
 
-                    <input type="password" class="form-control" id="passwordLogin" name="password"
-                      placeholder="Ingresa tu contraseña" required>
+                      <input type="email" class="form-control" id="correoLogin" name="correo"
+                        placeholder="ejemplo@correo.com" autocomplete="email" required>
 
-                    <button class="btn btn-outline-secondary" type="button" id="btnMostrarPasswordLogin"
-                      aria-label="Mostrar contraseña">
-                      <i class="bi bi-eye"></i>
+                      <div class="invalid-feedback">
+                        Ingresa un correo electrónico válido.
+                      </div>
+
+                    </div>
+
+
+                    <!-- CONTRASEÑA -->
+                    <div class="mb-4">
+
+                      <label for="passwordLogin" class="form-label">
+                        Contraseña
+                      </label>
+
+                      <div class="input-group">
+
+                        <input type="password" class="form-control" id="passwordLogin" name="password"
+                          placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+
+                        <button class="btn btn-outline-secondary" type="button" id="btnMostrarPasswordLogin"
+                          aria-label="Mostrar contraseña">
+                          <i class="bi bi-eye"></i>
+                        </button>
+
+                      </div>
+
+                      <div class="invalid-feedback">
+                        Ingresa tu contraseña.
+                      </div>
+
+                    </div>
+
+
+                    <!-- BOTÓN -->
+                    <button type="submit" id="btnLogin" class="btn btn-dark w-100">
+
+                      <i class="bi bi-box-arrow-in-right me-2"></i>
+                      Iniciar sesión
+
                     </button>
 
+                  </form>
+
+
+                  <!-- REGISTRO -->
+                  <div class="text-center mt-4">
+
+                    <p class="mb-0 text-muted">
+                      ¿No tienes una cuenta?
+                      <a href="/registro" class="text-decoration-none fw-semibold">
+                        Regístrate
+                      </a>
+                    </p>
+
                   </div>
 
-                  <div class="invalid-feedback">
-                    Ingresa tu contraseña.
-                  </div>
+                </section>
 
-                </div>
-
-
-                <!-- BOTÓN -->
-                <button type="submit" id="btnLogin" class="btn btn-dark w-100">
-
-                  <i class="bi bi-box-arrow-in-right me-2"></i>
-                  Iniciar sesión
-
-                </button>
-
-              </form>
-
-
-              <!-- REGISTRO -->
-              <div class="text-center mt-4">
-
-                <p class="mb-0 text-muted">
-                  ¿No tienes una cuenta?
-                  <a href="/registro" class="text-decoration-none">
-                    Regístrate
-                  </a>
-                </p>
 
               </div>
 
@@ -153,6 +200,24 @@
 
       <!-- JavaScript de autenticación -->
       <script src="/js/auth.js"></script>
+
+      <!-- Aviso cuando llegan desde el enlace del correo de verificación -->
+      <script>
+        (function () {
+
+          const parametros = new URLSearchParams(window.location.search);
+
+          if (parametros.get('verificado') === '1') {
+
+            const aviso = document.getElementById('mensajeLogin');
+
+            aviso.textContent = '¡Correo verificado! Ya puedes iniciar sesión.';
+            aviso.className = 'alert alert-success';
+
+          }
+
+        })();
+      </script>
 
 </body>
 

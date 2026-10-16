@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PRAXO - Oficios al instante</title>
   <!-- Fuente Montserrat de Google Fonts -->
-  <link rel="precon nect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,9 +15,8 @@
   <link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
 
-  <!-- Ícono de la pestaña -->
-
-  <link rel="icon" type="image/png" href="assets\img\logo\logo.png">
+  <!-- Ícono de la pestaña (con diagonales normales "/", las "\" no funcionan en todos los navegadores) -->
+  <link rel="icon" type="image/png" href="/assets/img/logo/logo.png">
 
 </head>
 
@@ -25,8 +24,12 @@
 
   <%- include('partials/navbar') %>
 
-    <!-- HERO estilo Apple / Banner de pantalla completa con Slider de fondo -->
-    <section class="hero-seccion position-relative text-white overflow-hidden" style="height: 80vh; min-height: 500px;">
+    <!-- =====================================
+         HERO: banner con slider de fondo
+         El degradado azul marino (.hero-overlay) garantiza que el texto
+         se lea sobre cualquiera de las fotos.
+    ====================================== -->
+    <section class="hero-seccion position-relative text-white overflow-hidden" style="height: 80vh; min-height: 580px;">
 
       <!-- SLIDER DE FONDO -->
       <div id="sliderPrincipal" class="carousel slide carousel-fade position-absolute top-0 start-0 w-100 h-100"
@@ -91,43 +94,53 @@
 
       </div>
 
-      <!-- CAPA DE OSCURECIMIENTO (OVERLAY) -->
-      <div class="position-absolute top-0 start-0 w-100 h-100"
-        style="z-index: 2; background-color: rgba(0, 0, 0, 0.30); pointer-events: none;"></div>
+      <!-- CAPA DE DEGRADADO AZUL MARINO (sustituye al negro plano al 30%) -->
+      <div class="hero-overlay"></div>
 
-      <!-- CONTENIDO AL FRENTE (TEXTO Y BUSCADOR CENTRADOS) -->
-      <div class="container position-relative d-flex align-items-center justify-content-center h-100 py-5"
-        style="z-index: 3;">
-        <div class="row justify-content-center text-center w-100">
-          <div class="col-lg-8 col-xl-7">
+      <!-- CONTENIDO AL FRENTE: texto alineado a la izquierda, sobre la zona más oscura -->
+      <div class="container position-relative d-flex align-items-center h-100 py-5" style="z-index: 3;">
+        <div class="hero-contenido">
 
-            <h1 class="display-4 fw-bold mb-3 text-shadow">
-              Un profesional para cada necesidad, cuando lo necesites
-            </h1>
-            <p class="lead mb-4 text-white-80 fs-5">
-              Electricistas, plomeros, cerrajeros y más, disponibles ahora mismo o programados para el día que tú
-              elijas.
-            </p>
+          <span class="hero-insignia mb-3">
+            <i class="bi bi-lightning-charge-fill"></i> Oficios al instante
+          </span>
 
-            <!-- Buscador Centrado -->
-            <form action="/trabajadores" method="GET"
-              class="bg-white rounded-4 p-2 d-flex flex-column flex-md-row gap-2 shadow-lg mx-auto"
-              style="max-width: 650px;">
-              <select name="oficio" class="form-select border-0 text-dark py-2">
-                <option selected value="">¿Qué servicio buscas?</option>
-                <option value="Electricista">Electricista</option>
-                <option value="Plomero">Plomero</option>
-                <option value="Cerrajero">Cerrajero</option>
-                <option value="Albañil">Albañil</option>
-                <option value="Pintor">Pintor</option>
-              </select>
-              <input type="text" name="ciudad" class="form-control border-0 text-dark py-2" placeholder="Tu ciudad">
-              <button type="submit" class="btn btn-dark px-4 py-2 rounded-3 fw-bold">
-                <i class="bi bi-search"></i> Buscar
-              </button>
-            </form>
+          <h1 class="hero-titulo display-4 fw-bold mb-3 text-white">
+            Un profesional para cada necesidad,
+            <span class="hero-acento">cuando lo necesites</span>
+          </h1>
 
+          <p class="hero-subtitulo lead mb-4">
+            Electricistas, plomeros, cerrajeros y más, disponibles ahora mismo o programados para el día que tú
+            elijas.
+          </p>
+
+          <!-- Buscador -->
+          <form action="/trabajadores" method="GET"
+            class="bg-white rounded-4 p-2 d-flex flex-column flex-md-row gap-2 shadow-lg"
+            style="max-width: 640px;">
+            <select name="oficio" class="form-select border-0 text-dark py-2" aria-label="Servicio que buscas">
+              <option selected value="">¿Qué servicio buscas?</option>
+              <option value="Electricista">Electricista</option>
+              <option value="Plomero">Plomero</option>
+              <option value="Cerrajero">Cerrajero</option>
+              <option value="Albañil">Albañil</option>
+              <option value="Pintor">Pintor</option>
+            </select>
+            <input type="text" name="ciudad" class="form-control border-0 text-dark py-2" placeholder="Tu ciudad"
+              aria-label="Tu ciudad">
+            <button type="submit" class="btn btn-primary px-4 py-2 rounded-3">
+              <i class="bi bi-search"></i> Buscar
+            </button>
+          </form>
+
+          <!-- Puntos de confianza -->
+          <div class="hero-confianza mt-4">
+            <span><i class="bi bi-patch-check"></i>Cuentas con correo verificado</span>
+            <span><i class="bi bi-calendar-check"></i>Ahora o programado</span>
+            <span><i class="bi bi-cash-coin"></i>Pide cotización antes</span>
           </div>
+
         </div>
       </div>
 
@@ -184,9 +197,9 @@
 
     <!-- DESTACADOS: trabajadores mejor calificados -->
     <section class="container py-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-3 text-center">Profesionales mejor calificados</h2>
-        <a href="/trabajadores" class="small">Ver todos</a>
+      <div class="d-flex justify-content-between align-items-end mb-3">
+        <h2 class="h5 mb-0">Profesionales mejor calificados</h2>
+        <a href="/trabajadores" class="small fw-semibold">Ver todos</a>
       </div>
 
       <% if (destacados.length===0) { %>
@@ -198,20 +211,12 @@
                 <a href="/trabajadores/<%= trabajador._id %>" class="text-decoration-none text-dark">
                   <div class="card h-100 border-0 shadow-sm">
 
-
-                    <!-- Para revisar si los nombres de las imagenes de los trabajadores coincidan en la base de datos  
-                    <img
-                      src="<%= trabajador.fotoUrl ? trabajador.fotoUrl.replace(/\\/g, '/') : '/assets/img/trabajadores/default-trabajador.png' %>"
-                      class="card-img-top" alt="<%= trabajador.nombre %>" style="height: 140px; object-fit: cover;"
-                    >
-                    -->
-                    <!-- Opción local de imagen si no existe la fotoUrl, se genera un avatar con el nombre del trabajador usando ui-avatars.com
-                    -->
+                    <!-- Si no existe fotoUrl se busca una imagen local con el primer nombre del trabajador;
+                         si tampoco existe, se genera un avatar con ui-avatars.com -->
                     <img
                       src="<%= (trabajador.fotoUrl ? trabajador.fotoUrl.replace(/\\/g, '/') : '/assets/img/trabajadores/' + trabajador.nombre.toLowerCase().split(' ')[0] + '.jpg') %>"
                       onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(trabajador.nombre) %>&background=random&size=200';"
                       class="card-img-top" alt="<%= trabajador.nombre %>" style="height: 140px; object-fit: cover;">
-
 
                     <div class="card-body p-2">
                       <h3 class="h6 mb-0">
@@ -233,46 +238,225 @@
           <% } %>
     </section>
 
-    <!-- COMO FUNCIONA -->
+    <!-- =====================================
+         POR QUÉ PRAXO: lo que ya se puede hacer en la plataforma
+    ====================================== -->
     <section class="bg-light py-5">
       <div class="container">
-        <h2 class="h5 text-center mb-4">¿Cómo funciona?</h2>
+
+        <div class="seccion-titulo">
+          <span class="seccion-etiqueta">¿Por qué PRAXO?</span>
+          <h2 class="h3 fw-bold mt-1">Todo lo que necesitas para contratar con confianza</h2>
+          <p>Desde encontrar al profesional adecuado hasta explicar el problema, en un solo lugar.</p>
+        </div>
+
+        <div class="row g-4">
+
+          <div class="col-md-6 col-lg-4">
+            <div class="beneficio-card">
+              <div class="beneficio-icono"><i class="bi bi-person-badge"></i></div>
+              <h3>Perfiles claros</h3>
+              <p>Consulta el oficio, la ciudad, la descripción y la calificación de cada profesional antes de decidir.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="beneficio-card">
+              <div class="beneficio-icono"><i class="bi bi-calendar-check"></i></div>
+              <h3>Ahora o cuando quieras</h3>
+              <p>Elige fecha y hora, o indica que es una urgencia para que el profesional lo sepa desde el principio.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="beneficio-card">
+              <div class="beneficio-icono"><i class="bi bi-cash-coin"></i></div>
+              <h3>Cotización antes del servicio</h3>
+              <p>Pide que el profesional evalúe tu solicitud y te indique el costo aproximado.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="beneficio-card">
+              <div class="beneficio-icono"><i class="bi bi-camera"></i></div>
+              <h3>Muestra el problema</h3>
+              <p>Adjunta una foto y referencias de tu ubicación para que el profesional vea el trabajo.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="beneficio-card">
+              <div class="beneficio-icono"><i class="bi bi-bag-check"></i></div>
+              <h3>Todo en un solo lugar</h3>
+              <p>Reúne varios servicios en «Mis servicios» y revisa los datos antes de continuar.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-4">
+            <div class="beneficio-card">
+              <div class="beneficio-icono"><i class="bi bi-patch-check"></i></div>
+              <h3>Cuentas verificadas</h3>
+              <p>Cada cuenta se activa al confirmar el correo electrónico con el que se registra.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section class="py-5">
+      <div class="container">
+
+        <div class="seccion-titulo">
+          <span class="seccion-etiqueta">Paso a paso</span>
+          <h2 class="h3 fw-bold mt-1">¿Cómo funciona?</h2>
+        </div>
+
         <div class="row text-center g-4">
           <div class="col-md-4">
-            <i class="bi bi-search fs-1 text-primary"></i>
-            <h3 class="h6 mt-2">1. Busca</h3>
+            <div class="paso-numero">1</div>
+            <h3 class="h6">Busca</h3>
             <p class="small text-muted">Elige el oficio que necesitas y tu ubicación.</p>
           </div>
           <div class="col-md-4">
-            <i class="bi bi-chat-dots fs-1 text-primary"></i>
-            <h3 class="h6 mt-2">2. Contacta</h3>
+            <div class="paso-numero">2</div>
+            <h3 class="h6">Contacta</h3>
             <p class="small text-muted">Revisa perfiles, calificaciones y comunícate.</p>
           </div>
           <div class="col-md-4">
-            <i class="bi bi-check-circle fs-1 text-primary"></i>
-            <h3 class="h6 mt-2">3. Recibe el servicio</h3>
+            <div class="paso-numero">3</div>
+            <h3 class="h6">Recibe el servicio</h3>
             <p class="small text-muted">Ahora mismo o programado para el día que elijas.</p>
           </div>
         </div>
+
       </div>
     </section>
 
     <!-- CTA para anunciarse como profesional -->
-    <section class="container py-5">
+    <section class="container pb-5">
       <div class="row align-items-center bg-dark text-white rounded-4 p-4 p-md-5">
         <div class="col-md-8">
           <h2 class="h4">¿Ofreces un servicio? Anúnciate gratis</h2>
-          <p class="mb-md-0 text-white-50">
+          <p class="text-white-50 mb-3">
             Llega a más clientes cerca de ti y recibe solicitudes ahora mismo.
           </p>
+          <ul class="list-unstyled small mb-md-0">
+            <li class="mb-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Crea tu perfil con tu oficio, ciudad y descripción</li>
+            <li class="mb-1"><i class="bi bi-check-circle-fill text-primary me-2"></i>Recibe solicitudes de clientes</li>
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i>Anunciarte no tiene costo</li>
+          </ul>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-          <a href="/registro" class="btn btn-light">Regístrate como profesional</a>
+          <a href="/registro/prestador" class="btn btn-primary btn-lg">Regístrate como profesional</a>
         </div>
       </div>
     </section>
 
+    <!-- =====================================
+         PREGUNTAS FRECUENTES
+    ====================================== -->
+    <section class="bg-light py-5">
+      <div class="container" style="max-width: 820px;">
+
+        <div class="seccion-titulo">
+          <span class="seccion-etiqueta">Ayuda</span>
+          <h2 class="h3 fw-bold mt-1">Preguntas frecuentes</h2>
+        </div>
+
+        <div class="accordion faq" id="faqPraxo">
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1"
+                aria-expanded="true" aria-controls="faq1">
+                ¿Cómo solicito un servicio?
+              </button>
+            </h3>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqPraxo">
+              <div class="accordion-body">
+                Crea tu cuenta de cliente, busca al profesional que necesitas y presiona «Contratar». Indica la fecha,
+                la hora y tu dirección, y describe lo que necesitas. El servicio se agrega a «Mis servicios» para que
+                lo revises antes de continuar.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                ¿Puedo pedir una cotización antes de contratar?
+              </button>
+            </h3>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqPraxo">
+              <div class="accordion-body">
+                Sí. Al llenar la solicitud marca la opción «Solicitar cotización antes del servicio». El profesional
+                evaluará tu solicitud y te indicará el costo aproximado.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                ¿Qué hago si es una urgencia?
+              </button>
+            </h3>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqPraxo">
+              <div class="accordion-body">
+                En la solicitud elige el nivel de urgencia «Urgencia/Emergencia» para que el profesional sepa que es
+                prioritario. También puedes adjuntar una foto del problema para que vea el trabajo.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                ¿Cómo me anuncio como prestador de servicios?
+              </button>
+            </h3>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqPraxo">
+              <div class="accordion-body">
+                Crea una cuenta de prestador y completa tu oficio, teléfono, ciudad y una descripción de tus
+                servicios. Anunciarte no tiene costo.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5">
+                ¿Por qué debo verificar mi correo?
+              </button>
+            </h3>
+            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqPraxo">
+              <div class="accordion-body">
+                Al registrarte te enviamos un enlace de verificación. Confirmarlo activa tu cuenta y permite iniciar
+                sesión. Revisa también tu carpeta de spam si no lo ves.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
     <!-- Mapa -->
+    <section class="container pt-5 pb-3">
+      <div class="seccion-titulo mb-0">
+        <span class="seccion-etiqueta">Ubicación</span>
+        <h2 class="h3 fw-bold mt-1">Explora el mapa</h2>
+        <p>Ubica la zona donde necesitas el servicio.</p>
+      </div>
+    </section>
+
     <div id="map" style="width: 100%; height: 350px;"></div>
 
     <%- include('partials/footer') %>

@@ -1,5 +1,14 @@
 <!-- views/partials/navbar.ejs -->
 
+<!-- Tema de color PRAXO (azul marino + naranja).
+     Se carga desde aquí para que se aplique en TODAS las páginas que incluyen
+     la barra, sin editar el <head> de cada vista. Al estar dentro del <body>
+     se carga DESPUÉS de Bootstrap, custom.css y los <style> internos de cada
+     página, así que siempre gana.
+     El ?v=3 evita que el navegador use una copia vieja guardada en caché:
+     súbelo a ?v=4, ?v=5... cada vez que cambies praxo-theme.css. -->
+<link rel="stylesheet" href="/css/praxo-theme.css?v=3">
+
 <%
   // Comprobamos de forma segura si existe una sesión activa.
   const sesionActiva =
@@ -7,32 +16,44 @@
     usuarioAutenticado &&
     typeof usuarioActual !== 'undefined' &&
     usuarioActual;
+
+  const navEsCliente =
+    sesionActiva && usuarioActual.tipoUsuario === 'cliente';
+
+  const navTotalCarrito =
+    (typeof cantidadCarrito !== 'undefined' && cantidadCarrito > 0)
+      ? cantidadCarrito
+      : 0;
+
+  const navInicial =
+    sesionActiva && usuarioActual.nombre
+      ? String(usuarioActual.nombre).trim().charAt(0).toUpperCase()
+      : '';
 %>
 
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
 
   <div class="container">
 
 
     <!-- ==========================================
-         LOGO PRAXO
+         LOGO PRAXO (logo de ejemplo; cuando exista el oficial
+         basta con reemplazar el archivo, conservando el nombre)
     =========================================== -->
 
     <a
-      class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4"
+      class="navbar-brand d-flex align-items-center"
       href="/"
+      aria-label="PRAXO, ir al inicio"
     >
 
       <img
-        src="/assets/img/logo/logo.png"
-        alt="PRAXO Logo"
-        width="35"
-        height="35"
-        class="d-inline-block align-text-top rounded"
+        src="/assets/img/logo/logo-praxo-claro.svg"
+        alt="PRAXO"
+        width="148"
+        height="38"
       >
-
-      PRAXO
 
     </a>
 
@@ -75,44 +96,27 @@
         <!-- QUIENES SOMOS -->
 
         <li class="nav-item">
-
-          <a
-            class="nav-link"
-            href="/quienes-somos"
-          >
+          <a class="nav-link" href="/quienes-somos">
             Quiénes somos
           </a>
-
         </li>
-
 
 
         <!-- TRABAJADORES -->
 
         <li class="nav-item">
-
-          <a
-            class="nav-link"
-            href="/trabajadores"
-          >
+          <a class="nav-link" href="/trabajadores">
             Trabajadores
           </a>
-
         </li>
-
 
 
         <!-- CONTACTO -->
 
         <li class="nav-item">
-
-          <a
-            class="nav-link"
-            href="/contacto"
-          >
+          <a class="nav-link" href="/contacto">
             Contacto
           </a>
-
         </li>
 
 
@@ -131,9 +135,7 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-
             Categorías
-
           </a>
 
 
@@ -142,106 +144,61 @@
             aria-labelledby="categoriasDropdown"
           >
 
-
             <li>
-
               <h6 class="dropdown-header">
                 Hogar y mantenimiento
               </h6>
-
             </li>
 
-
             <li>
-
-              <a
-                class="dropdown-item"
-                href="/trabajadores?oficio=Electricista"
-              >
+              <a class="dropdown-item" href="/trabajadores?oficio=Electricista">
                 Electricista
               </a>
-
             </li>
 
-
             <li>
-
-              <a
-                class="dropdown-item"
-                href="/trabajadores?oficio=Plomero"
-              >
+              <a class="dropdown-item" href="/trabajadores?oficio=Plomero">
                 Plomero
               </a>
-
             </li>
-
 
             <li>
-
-              <a
-                class="dropdown-item"
-                href="/trabajadores?oficio=Cerrajero"
-              >
+              <a class="dropdown-item" href="/trabajadores?oficio=Cerrajero">
                 Cerrajero
               </a>
-
             </li>
-
 
             <li>
               <hr class="dropdown-divider">
             </li>
 
-
             <li>
-
               <h6 class="dropdown-header">
                 Limpieza y cuidado
               </h6>
-
             </li>
 
-
             <li>
-
-              <a
-                class="dropdown-item"
-                href="/trabajadores?oficio=Limpieza%20domestica"
-              >
+              <a class="dropdown-item" href="/trabajadores?oficio=Limpieza%20domestica">
                 Limpieza doméstica
               </a>
-
             </li>
-
 
             <li>
-
-              <a
-                class="dropdown-item"
-                href="/trabajadores?oficio=Niñera"
-              >
+              <a class="dropdown-item" href="/trabajadores?oficio=Niñera">
                 Niñera
               </a>
-
             </li>
-
 
             <li>
               <hr class="dropdown-divider">
             </li>
 
-
             <li>
-
-              <a
-                class="dropdown-item"
-                href="/trabajadores"
-              >
+              <a class="dropdown-item" href="/trabajadores">
                 Ver todos los servicios
               </a>
-
             </li>
-
 
           </ul>
 
@@ -253,15 +210,48 @@
              CUENTA
         =========================================== -->
 
-        <li class="nav-item dropdown">
+        <% if (sesionActiva) { %>
+
+
+          <!-- ======================================
+               ACCESO DIRECTO A "MIS SERVICIOS" (SOLO CLIENTES)
+          ======================================= -->
+
+          <% if (navEsCliente) { %>
+
+            <li class="nav-item">
+
+              <a
+                class="nav-link d-flex align-items-center gap-2"
+                href="/carrito"
+                title="Mis servicios"
+              >
+
+                <i class="bi bi-bag-check fs-5"></i>
+
+                <span class="d-lg-none">Mis servicios</span>
+
+                <% if (navTotalCarrito > 0) { %>
+
+                  <span class="badge rounded-pill bg-primary text-dark">
+                    <%= navTotalCarrito %>
+                  </span>
+
+                <% } %>
+
+              </a>
+
+            </li>
+
+          <% } %>
+
 
 
           <!-- ======================================
                USUARIO CON SESION INICIADA
           ======================================= -->
 
-          <% if (sesionActiva) { %>
-
+          <li class="nav-item dropdown ms-lg-2">
 
             <a
               class="nav-link dropdown-toggle d-flex align-items-center gap-2"
@@ -272,14 +262,18 @@
               aria-expanded="false"
             >
 
-              <i class="bi bi-person-circle"></i>
+              <span
+                class="rounded-circle bg-primary text-dark fw-bold d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                style="width: 30px; height: 30px; font-size: .85rem;"
+              >
+                <%= navInicial %>
+              </span>
 
-              <span>
+              <span class="text-truncate" style="max-width: 150px;">
                 <%= usuarioActual.nombre %>
               </span>
 
             </a>
-
 
 
             <ul
@@ -293,20 +287,13 @@
 
               <li class="px-3 py-2">
 
-
                 <div class="fw-bold">
-
                   <%= usuarioActual.nombre %>
-
                 </div>
-
 
                 <div class="small text-muted">
 
-
-                  <% if (
-                    usuarioActual.tipoUsuario === 'prestador'
-                  ) { %>
+                  <% if (usuarioActual.tipoUsuario === 'prestador') { %>
 
                     Prestador de servicios
 
@@ -316,18 +303,14 @@
 
                   <% } %>
 
-
                 </div>
 
-
               </li>
-
 
 
               <li>
                 <hr class="dropdown-divider">
               </li>
-
 
 
               <!-- VER PERFIL -->
@@ -338,25 +321,16 @@
                   class="dropdown-item d-flex align-items-center gap-2"
                   href="/perfil"
                 >
-
                   <i class="bi bi-person"></i>
-
                   Ver perfil
-
                 </a>
 
               </li>
 
 
+              <!-- OPCION SOLO PARA CLIENTES -->
 
-              <!-- ==================================
-                   OPCION SOLO PARA CLIENTES
-              =================================== -->
-
-              <% if (
-                usuarioActual.tipoUsuario === 'cliente'
-              ) { %>
-
+              <% if (navEsCliente) { %>
 
                 <li>
 
@@ -369,32 +343,19 @@
 
                     Mis servicios
 
+                    <% if (navTotalCarrito > 0) { %>
 
-                    <% if (
-                      typeof cantidadCarrito !== 'undefined' &&
-                      cantidadCarrito > 0
-                    ) { %>
-
-
-                      <span
-                        class="badge bg-dark rounded-pill ms-auto"
-                      >
-
-                        <%= cantidadCarrito %>
-
+                      <span class="badge bg-dark rounded-pill ms-auto">
+                        <%= navTotalCarrito %>
                       </span>
 
-
                     <% } %>
-
 
                   </a>
 
                 </li>
 
-
               <% } %>
-
 
 
               <!-- SEPARADOR -->
@@ -402,7 +363,6 @@
               <li>
                 <hr class="dropdown-divider">
               </li>
-
 
 
               <!-- CERRAR SESION -->
@@ -414,94 +374,45 @@
                   id="btnCerrarSesion"
                   class="dropdown-item text-danger d-flex align-items-center gap-2"
                 >
-
                   <i class="bi bi-box-arrow-right"></i>
-
                   Cerrar sesión
-
                 </button>
 
               </li>
 
-
             </ul>
 
+          </li>
 
 
-          <% } else { %>
+        <% } else { %>
 
 
-            <!-- ======================================
-                 USUARIO SIN SESION
-            ======================================= -->
+          <!-- ======================================
+               USUARIO SIN SESION: botones visibles
+               (antes estaban escondidos en un menú)
+          ======================================= -->
 
-            <a
-              class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-              href="#"
-              id="cuentaDropdown"
-              role="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
 
-              <i class="bi bi-person-circle"></i>
-
-              Cuenta
-
+            <a class="btn btn-outline-light btn-sm px-3" href="/login">
+              <i class="bi bi-box-arrow-in-right me-1"></i>
+              Iniciar sesión
             </a>
 
+          </li>
+
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+
+            <a class="btn btn-primary btn-sm px-3" href="/registro">
+              <i class="bi bi-person-plus me-1"></i>
+              Crear cuenta
+            </a>
+
+          </li>
 
 
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="cuentaDropdown"
-            >
-
-
-              <!-- INICIAR SESION -->
-
-              <li>
-
-                <a
-                  class="dropdown-item d-flex align-items-center gap-2"
-                  href="/login"
-                >
-
-                  <i class="bi bi-box-arrow-in-right"></i>
-
-                  Iniciar sesión
-
-                </a>
-
-              </li>
-
-
-
-              <!-- CREAR CUENTA -->
-
-              <li>
-
-                <a
-                  class="dropdown-item d-flex align-items-center gap-2"
-                  href="/registro"
-                >
-
-                  <i class="bi bi-person-plus"></i>
-
-                  Crear cuenta
-
-                </a>
-
-              </li>
-
-
-            </ul>
-
-
-          <% } %>
-
-
-        </li>
+        <% } %>
 
 
       </ul>
@@ -515,7 +426,49 @@
 
 
 <!-- ==========================================
-     CERRAR SESION
+     MARCAR EN NARANJA LA PAGINA ACTUAL
+=========================================== -->
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const rutaActual =
+      window.location.pathname.replace(/\/+$/, '') || '/';
+
+    document
+      .querySelectorAll('#navbarNav .navbar-nav > .nav-item > a.nav-link[href]')
+      .forEach(function (enlace) {
+
+        const href = enlace.getAttribute('href');
+
+        if (!href || href === '#') {
+          return;
+        }
+
+        const rutaEnlace =
+          href.split('?')[0].replace(/\/+$/, '') || '/';
+
+        const coincide =
+          rutaEnlace !== '/' &&
+          (rutaActual === rutaEnlace ||
+            rutaActual.startsWith(rutaEnlace + '/'));
+
+        if (coincide) {
+          enlace.classList.add('active');
+          enlace.setAttribute('aria-current', 'page');
+        }
+
+      });
+
+  });
+
+</script>
+
+
+
+<!-- ==========================================
+     CERRAR SESION (misma logica de antes)
 =========================================== -->
 
 <% if (sesionActiva) { %>
@@ -523,161 +476,95 @@
 
 <script>
 
-  document.addEventListener(
-    'DOMContentLoaded',
-    function () {
+  document.addEventListener('DOMContentLoaded', function () {
 
+    const botonCerrarSesion =
+      document.getElementById('btnCerrarSesion');
 
-      const botonCerrarSesion =
-        document.getElementById(
-          'btnCerrarSesion'
-        );
+    if (!botonCerrarSesion) {
+      return;
+    }
 
+    botonCerrarSesion.addEventListener('click', async function () {
 
-      if (!botonCerrarSesion) {
+      const confirmar =
+        confirm('¿Deseas cerrar tu sesión?');
+
+      if (!confirmar) {
         return;
       }
 
+      try {
 
-      botonCerrarSesion.addEventListener(
-        'click',
-        async function () {
+        // Deshabilitamos el botón para evitar múltiples clics.
+
+        botonCerrarSesion.disabled = true;
+
+        botonCerrarSesion.innerHTML = `
+          <span
+            class="spinner-border spinner-border-sm"
+            aria-hidden="true"
+          ></span>
+
+          Cerrando sesión...
+        `;
 
 
-          const confirmar =
-            confirm(
-              '¿Deseas cerrar tu sesión?'
-            );
+        // PETICION AL BACKEND
 
+        const respuesta = await fetch('/api/auth/logout', {
 
-          if (!confirmar) {
-            return;
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
           }
 
+        });
 
-          try {
-
-
-            // Deshabilitamos el botón para
-            // evitar múltiples clics.
-
-            botonCerrarSesion.disabled =
-              true;
+        const datos = await respuesta.json();
 
 
-            botonCerrarSesion.innerHTML =
-              `
-                <span
-                  class="spinner-border spinner-border-sm"
-                  aria-hidden="true"
-                ></span>
+        // ERROR
 
-                Cerrando sesión...
-              `;
+        if (!respuesta.ok) {
 
+          alert(datos.mensaje || 'No se pudo cerrar la sesión.');
 
+          botonCerrarSesion.disabled = false;
 
-            // ==================================
-            // PETICION AL BACKEND
-            // ==================================
+          botonCerrarSesion.innerHTML = `
+            <i class="bi bi-box-arrow-right"></i>
+            Cerrar sesión
+          `;
 
-            const respuesta =
-              await fetch(
-                '/api/auth/logout',
-                {
-
-                  method:
-                    'POST',
-
-                  headers: {
-
-                    'Content-Type':
-                      'application/json'
-
-                  }
-
-                }
-              );
-
-
-
-            const datos =
-              await respuesta.json();
-
-
-
-            // ==================================
-            // ERROR
-            // ==================================
-
-            if (!respuesta.ok) {
-
-
-              alert(
-                datos.mensaje ||
-                'No se pudo cerrar la sesión.'
-              );
-
-
-              botonCerrarSesion.disabled =
-                false;
-
-
-              botonCerrarSesion.innerHTML =
-                `
-                  <i class="bi bi-box-arrow-right"></i>
-                  Cerrar sesión
-                `;
-
-
-              return;
-
-            }
-
-
-
-            // ==================================
-            // SESION CERRADA
-            // ==================================
-
-            window.location.href =
-              '/';
-
-
-          } catch (error) {
-
-
-            console.error(
-              'Error al cerrar sesión:',
-              error
-            );
-
-
-            alert(
-              'Ocurrió un error al cerrar la sesión.'
-            );
-
-
-            botonCerrarSesion.disabled =
-              false;
-
-
-            botonCerrarSesion.innerHTML =
-              `
-                <i class="bi bi-box-arrow-right"></i>
-                Cerrar sesión
-              `;
-
-
-          }
-
+          return;
 
         }
-      );
 
 
-    }
-  );
+        // SESION CERRADA
+
+        window.location.href = '/';
+
+      } catch (error) {
+
+        console.error('Error al cerrar sesión:', error);
+
+        alert('Ocurrió un error al cerrar la sesión.');
+
+        botonCerrarSesion.disabled = false;
+
+        botonCerrarSesion.innerHTML = `
+          <i class="bi bi-box-arrow-right"></i>
+          Cerrar sesión
+        `;
+
+      }
+
+    });
+
+  });
 
 </script>
 
