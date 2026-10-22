@@ -21,25 +21,35 @@
 
     <div class="row g-4">
 
-      <div class="col-md-4">
+      <div class="col-md-6 col-lg-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4">
           <i class="bi bi-bell display-5 text-primary mb-3"></i>
           <h2 class="h5">Solicitudes recibidas</h2>
-          <p class="text-muted small">Clientes interesados en tu servicio.</p>
-          <a href="#" class="btn btn-outline-dark mt-auto">Próximamente</a>
+          <p class="text-muted small">Clientes interesados en tu servicio y el precio de cada trabajo.</p>
+          <a href="/prestador/solicitudes" class="btn btn-dark mt-auto">Ver solicitudes</a>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <!-- NUEVO: precio base del prestador -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm text-center p-4">
+          <i class="bi bi-tag display-5 text-primary mb-3"></i>
+          <h2 class="h5">Mi precio</h2>
+          <p class="text-muted small">Define tu precio base y cámbialo cuando lo necesites.</p>
+          <a href="/prestador/precio" class="btn btn-primary mt-auto">Definir precio</a>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4">
           <i class="bi bi-person-badge display-5 text-primary mb-3"></i>
-          <h2 class="h5">Mi perfil público</h2>
-          <p class="text-muted small">Así te ven los clientes.</p>
-          <a href="/trabajadores" class="btn btn-dark mt-auto">Ver trabajadores</a>
+          <h2 class="h5">Mi perfil</h2>
+          <p class="text-muted small">Tus datos y tu información profesional.</p>
+          <a href="/perfil" class="btn btn-dark mt-auto">Ver mi perfil</a>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-6 col-lg-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4">
           <i class="bi bi-toggle-on display-5 text-primary mb-3"></i>
           <h2 class="h5">Disponibilidad</h2>

@@ -1,0 +1,133 @@
+<%# views/partials/precio-solicitud.ejs
+     Bloque de precio de UN servicio dentro del carrito del cliente.
+
+     USO (dentro del ciclo de carrito.ejs, con la variable "item"):
+       include('partials/precio-solicitud', { item })   con la etiqueta de salida de EJS
+
+     NOTA: comentario de EJS a proposito (ver precio.ejs). %>
+<%
+  const _formato = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+  const _unidades = { servicio: 'por servicio', hora: 'por hora', dia: 'por día' };
+  const _acciones = {
+    propuesta: 'Precio propuesto',
+    ajuste: 'Precio ajustado',
+    aceptado: 'Aceptado por ti',
+    rechazado: 'Rechazado por ti'
+  };
+
+  // Las solicitudes antiguas pueden no traer estos campos: todo se valida
+  const _referencia = typeof item.precioReferencia === 'number' ? item.precioReferencia : null;
+  const _propuesto = typeof item.precioPropuesto === 'number' ? item.precioPropuesto : null;
+  const _estado = item.estadoPrecio || 'Sin definir';
+  const _historial = Array.isArray(item.historialPrecio) ? item.historialPrecio : [];
+%>
+
+<div class="mt-3 p-3 rounded-3 border bg-light">
+
+  <div class="fw-semibold mb-2">
+    <i class="bi bi-cash-coin me-1"></i> Precio
+  </div>
+
+
+  <% if (_propuesto !== null) { %>
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+
+      <span class="fs-5 fw-bold"><%= _formato.format(_propuesto) %></span>
+
+      <small class="text-muted">precio total del trabajo</small>
+
+      <% if (_estado === 'Aceptado') { %>
+        <span class="badge bg-success">Aceptado</span>
+      <% } else if (_estado === 'Propuesto') { %>
+        <span class="badge bg-warning text-dark">Espera tu respuesta</span>
+      <% } else if (_estado === 'Rechazado') { %>
+        <span class="badge bg-secondary">Rechazado</span>
+      <% } %>
+
+    </div>
+
+
+    <% if (_estado === 'Propuesto') { %>
+
+      <div class="d-flex flex-wrap gap-2 mt-3">
+
+        <!-- Se envia el precio que el cliente ve: si el prestador lo cambia
+             mientras tanto, el servidor no acepta uno distinto por accidente -->
+        <form action="/carrito/precio/<%= item.id %>/aceptar" method="POST">
+          <input type="hidden" name="precio" value="<%= _propuesto %>">
+          <button type="submit" class="btn btn-success btn-sm">
+            <i class="bi bi-check-lg me-1"></i> Aceptar precio
+          </button>
+        </form>
+
+        <form action="/carrito/precio/<%= item.id %>/rechazar" method="POST">
+          <button type="submit" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-x-lg me-1"></i> Rechazar
+          </button>
+        </form>
+
+      </div>
+
+    <% } else if (_estado === 'Rechazado') { %>
+
+      <p class="small text-muted mt-2 mb-0">
+        Rechazaste este precio. El prestador puede enviarte uno nuevo.
+      </p>
+
+    <% } %>
+
+
+  <% } else if (_referencia !== null) { %>
+
+    <div>
+      Referencia del prestador:
+      <strong>Desde <%= _formato.format(_referencia) %></strong>
+      <span class="text-muted small"><%= _unidades[item.unidadPrecioReferencia] || 'por servicio' %></span>
+    </div>
+
+    <p class="small text-muted mb-0 mt-1">
+      El prestador te enviará el precio de tu trabajo y tú decides si lo aceptas.
+    </p>
+
+  <% } else { %>
+
+    <div class="text-muted">Precio a cotizar</div>
+
+    <p class="small text-muted mb-0 mt-1">
+      El prestador te enviará el precio de tu trabajo y tú decides si lo aceptas.
+    </p>
+
+  <% } %>
+
+
+  <% if (_historial.length > 0) { %>
+
+    <details class="mt-2">
+
+      <summary class="small text-muted" style="cursor: pointer;">
+        Historial del precio (<%= _historial.length %>)
+      </summary>
+
+      <ul class="list-unstyled small mt-2 mb-0">
+
+        <% _historial.slice().reverse().forEach((mov) => { %>
+
+          <li class="mb-2">
+            <strong><%= typeof mov.precio === 'number' ? _formato.format(mov.precio) : '' %></strong>
+            · <%= _acciones[mov.accion] || 'Cambio de precio' %>
+            <span class="text-muted">
+              (<%= new Date(mov.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) %>)
+            </span>
+            <div class="text-muted"><%= mov.motivo %></div>
+          </li>
+
+        <% }) %>
+
+      </ul>
+
+    </details>
+
+  <% } %>
+
+</div>

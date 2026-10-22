@@ -712,6 +712,59 @@
 
 
 
+              <!-- PRECIO BASE -->
+
+              <div class="dato-perfil">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <div class="icono-dato">
+
+                    <i class="bi bi-tag"></i>
+
+                  </div>
+
+
+                  <div>
+
+
+                    <div class="dato-label">
+
+                      Precio base
+
+                    </div>
+
+
+                    <div class="dato-valor">
+
+                      <%- include('partials/precio', { trabajador }) %>
+
+                    </div>
+
+
+                    <% if (trabajador.precioNota) { %>
+
+                      <div class="small text-muted">
+
+                        <%= trabajador.precioNota %>
+
+                      </div>
+
+                    <% } %>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+
+
               <!-- CALIFICACION -->
 
               <div class="dato-perfil">
@@ -819,6 +872,30 @@
                   <i class="bi bi-eye me-1"></i>
 
                   Ver mi perfil público
+
+                </a>
+
+
+                <a
+                  href="/prestador/precio"
+                  class="btn btn-primary"
+                >
+
+                  <i class="bi bi-tag me-1"></i>
+
+                  Mi precio
+
+                </a>
+
+
+                <a
+                  href="/prestador/solicitudes"
+                  class="btn btn-outline-dark"
+                >
+
+                  <i class="bi bi-bell me-1"></i>
+
+                  Solicitudes recibidas
 
                 </a>
 

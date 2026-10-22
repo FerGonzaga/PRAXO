@@ -2,13 +2,13 @@
 
 // Define la forma que debe tener cada documento de la coleccion "trabajadores".
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const trabajadorSchema = new mongoose.Schema(
   {
     usuarioId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Usuario',
+      ref: "Usuario",
     },
 
     nombre: {
@@ -45,17 +45,30 @@ const trabajadorSchema = new mongoose.Schema(
       default: false,
     },
 
+    precioBase: { type: Number, min: 0, default: null }, // null = "a cotizar"
+    unidadPrecio: {
+      type: String,
+      enum: ["servicio", "hora", "dia"],
+      default: "servicio",
+    },
+    precioNota: { type: String, maxlength: 140, default: "" },
+    precioActualizadoEn: { type: Date },
+    historialPrecios: [
+      {
+        precio: { type: Number, default: null },
+        unidad: { type: String },
+        motivo: { type: String },
+        fecha: { type: Date, default: Date.now },
+      },
+    ],
+
     fotoUrl: {
       type: String,
     },
   },
   {
     timestamps: true, // agrega createdAt y updatedAt automaticamente
-  }
+  },
 );
 
-module.exports = mongoose.model(
-  'Trabajador',
-  trabajadorSchema,
-  'trabajadores'
-);
+module.exports = mongoose.model("Trabajador", trabajadorSchema, "trabajadores");

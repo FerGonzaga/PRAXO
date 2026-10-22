@@ -1,0 +1,37 @@
+<%# views/partials/precio.ejs
+     Muestra el precio base de un trabajador con el mismo formato en todo el sitio.
+
+     USO (dentro de cualquier vista que tenga una variable "trabajador"):
+       include('partials/precio', { trabajador })   con la etiqueta de salida de EJS
+
+     NOTA: este comentario usa la etiqueta de comentario de EJS a proposito.
+     Si el ejemplo de uso se escribe dentro de un comentario HTML, EJS lo ejecuta
+     igual y el archivo termina incluyendose a si mismo. %>
+<%
+  const _etiquetasUnidad = { servicio: 'por servicio', hora: 'por hora', dia: 'por día' };
+
+  const _precio =
+    (typeof trabajador !== 'undefined' && trabajador) ? trabajador.precioBase : null;
+
+  const _tienePrecio =
+    typeof _precio === 'number' && Number.isFinite(_precio) && _precio > 0;
+%>
+<% if (_tienePrecio) { %>
+
+  <span>
+    <span class="text-muted small">Desde</span>
+    <strong class="text-dark">
+      <%= new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(_precio) %>
+    </strong>
+    <span class="text-muted small">
+      <%= _etiquetasUnidad[trabajador.unidadPrecio] || 'por servicio' %>
+    </span>
+  </span>
+
+<% } else { %>
+
+  <span class="text-muted small">
+    <i class="bi bi-chat-left-dots me-1"></i>Precio a cotizar
+  </span>
+
+<% } %>

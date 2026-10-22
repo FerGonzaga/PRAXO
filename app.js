@@ -52,6 +52,9 @@ const carritoRoutes =
 
 const perfilRoutes =
   require('./routes/perfil');
+
+const prestadorRoutes =
+  require('./routes/prestador');
   
 
 
@@ -107,7 +110,6 @@ app.use(
 app.use(
   express.json()
 );
-
 
 // ==========================================
 // CONFIGURAR SESIONES
@@ -323,6 +325,19 @@ app.use(
 app.use(
   '/carrito',
   carritoRoutes
+);
+
+
+// ------------------------------------------
+// PRESTADORES: precio base y solicitudes recibidas
+// ------------------------------------------
+//
+// Va AQUI (despues de express-session y de las variables
+// globales) para que req.session y usuarioActual existan.
+
+app.use(
+  '/prestador',
+  prestadorRoutes
 );
 
 

@@ -101,7 +101,23 @@ const solicitudServicioSchema = new mongoose.Schema(
     imagenEvidencia: {
       type: String, // Aquí guardaremos la ruta como: '/uploads/solicitudes/123.jpg'
       default: null
-    }
+    },
+
+        // ---- Precio del trabajo ----
+    precioReferencia: { type: Number, default: null },
+    unidadPrecioReferencia: { type: String, enum: ['servicio', 'hora', 'dia'], default: 'servicio' },
+    precioPropuesto: { type: Number, min: 0, default: null },
+    estadoPrecio: { type: String, enum: ['Sin definir', 'Propuesto', 'Aceptado', 'Rechazado'], default: 'Sin definir' },
+    historialPrecio: [
+      {
+        precio: { type: Number, default: null },
+        motivo: { type: String },
+        fecha: { type: Date, default: Date.now },
+        autor: { type: String, enum: ['prestador', 'cliente'] },
+        accion: { type: String, enum: ['propuesta', 'ajuste', 'aceptado', 'rechazado'] },
+      },
+    ],
+
   },
   {
     timestamps: true
