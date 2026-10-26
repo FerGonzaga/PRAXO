@@ -340,6 +340,11 @@ app.use(
   prestadorRoutes
 );
 
+// ------------------------------------------
+// Uso del chat entre cliente y prestador de servicio
+// ------------------------------------------
+app.use('/chat', require('./routes/chat'));
+
 
 // ==========================================
 // RUTA NO ENCONTRADA
@@ -356,6 +361,8 @@ app.use(
 
   }
 );
+
+
 
 
 // ==========================================

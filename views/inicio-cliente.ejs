@@ -20,6 +20,53 @@
     <p class="text-muted mb-4">¿Qué quieres hacer hoy?</p>
 
     <div class="row g-4">
+<!-- ========================================== -->
+<!-- 🟢 SECCIÓN DE MIS SERVICIOS Y ACCESO AL CHAT -->
+<!-- ========================================== -->
+<div class="container py-4">
+  <h2 class="fw-bold mb-4"><i class="bi bi-journal-check me-2"></i> Mis Servicios Solicitados</h2>
+
+  <% if (typeof solicitudes !== 'undefined' && solicitudes.length > 0) { %>
+    <div class="row g-4">
+      <% solicitudes.forEach(solicitud => { %>
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-<%= solicitud.estado === 'Pendiente' ? 'warning text-dark' : (solicitud.estado === 'Cotizada' ? 'success' : 'primary') %> px-3 py-2 rounded-pill">
+                Estado: <%= solicitud.estado %>
+              </span>
+              <small class="text-muted"><%= new Date(solicitud.fechaCreacion).toLocaleDateString() %></small>
+            </div>
+
+            <h5 class="fw-bold"><%= solicitud.servicio %></h5>
+            <p class="text-muted mb-2"><strong>Prestador:</strong> <%= solicitud.trabajadorId && solicitud.trabajadorId.usuarioId ? solicitud.trabajadorId.usuarioId.nombre : 'Profesional PRAXO' %></p>
+            <p class="text-muted mb-3"><strong>Ubicación:</strong> <%= solicitud.ubicacion %></p>
+
+            <!-- Si el prestador ya cotizó, le avisamos al cliente aquí mismo -->
+            <% if (solicitud.estado === 'Cotizada') { %>
+              <div class="alert alert-success py-2 px-3 small mb-3">
+                <i class="bi bi-cash-coin me-1"></i> <strong>¡Cotización lista!</strong> Precio: $<%= solicitud.precioAcordado %> MXN
+              </div>
+            <% } %>
+
+            <!-- Botón para entrar a la Sala de Acuerdos -->
+            <a href="/chat/<%= solicitud._id %>" class="btn btn-dark w-100">
+              <i class="bi bi-chat-dots-fill me-1"></i> 
+              <%= solicitud.estado === 'Cotizada' ? 'Ver Cotización y Chat' : 'Abrir Chat del Servicio' %>
+            </a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+      <i class="bi bi-bag-x fs-1 text-muted"></i>
+      <h5 class="mt-3 fw-bold">No tienes solicitudes activas</h5>
+      <p class="text-muted">Explora los profesionales y solicita un servicio para comenzar.</p>
+      <a href="/trabajadores" class="btn btn-dark mt-2">Buscar profesionales</a>
+    </div>
+  <% } %>
+</div>
 
       <div class="col-md-4">
         <div class="card h-100 border-0 shadow-sm text-center p-4">

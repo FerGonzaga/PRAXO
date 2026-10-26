@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= titulo %> - PRAXO</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-light">
+
+  <%- include('partials/navbar') %>
+
+  <main class="container py-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold"><i class="bi bi-bell-fill text-primary me-2"></i> Bandeja de Solicitudes</h2>
+      <a href="/inicio-prestador" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Volver a mi panel
+      </a>
+    </div>
+
+    <% if (solicitudes && solicitudes.length > 0) { %>
+      <div class="row g-4">
+        <% solicitudes.forEach(solicitud => { %>
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+              <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                <span class="badge bg-<%= solicitud.estado === 'Pendiente' ? 'warning text-dark' : 'primary' %> rounded-pill px-3 py-2">
+                  <i class="bi bi-circle-fill small me-1"></i> Estado: <%= solicitud.estado %>
+                </span>
+                <small class="text-muted"><i class="bi bi-clock"></i> Recibida: <%= new Date(solicitud.fechaCreacion).toLocaleDateString() %></small>
+              </div>
+              
+              <div class="card-body p-4">
+                <div class="row">
+                  <!-- COLUMNA IZQUIERDA: DATOS DEL CLIENTE -->
+                  <div class="col-md-7 border-end-md pe-md-4">
+                    <!-- Evitamos errores si el cliente fue borrado de la BD -->
+                    <h5 class="fw-bold text-dark mb-3">
+                      <i class="bi bi-person-circle me-2"></i> 
+                      Cliente: <%= solicitud.clienteId ? solicitud.clienteId.nombre : 'Usuario Desconocido' %>
+                    </h5>
+                    
+                    <div class="mb-2">
+                      <strong><i class="bi bi-geo-alt text-danger me-1"></i> Ubicación:</strong> <%= solicitud.ubicacion %>
+                    </div>
+                    <% if (solicitud.referenciasUbicacion) { %>
+                      <div class="mb-2 text-muted small">
+                        <strong><i class="bi bi-signpost-split me-1"></i> Ref:</strong> <%= solicitud.referenciasUbicacion %>
+                      </div>
+                    <% } %>
+                    
+                    <div class="d-flex gap-3 mb-3 mt-3">
+                      <div class="bg-light p-2 rounded border">
+                        <small class="text-muted d-block">Fecha requerida</small>
+                        <strong class="text-dark"><i class="bi bi-calendar-event me-1"></i> <%= solicitud.fecha %></strong>
+                      </div>
+                      <div class="bg-light p-2 rounded border">
+                        <small class="text-muted d-block">Hora</small>
+                        <strong class="text-dark"><i class="bi bi-clock me-1"></i> <%= solicitud.hora %></strong>
+                      </div>
+                      <% if (solicitud.urgencia === 'Urgencia') { %>
+                        <div class="bg-danger-subtle text-danger p-2 rounded border border-danger-subtle d-flex align-items-center">
+                          <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> URGENTE</strong>
+                        </div>
+                      <% } %>
+                    </div>
+
+                    <div class="mb-0">
+                      <strong>Problema a resolver:</strong>
+                      <p class="text-muted mt-1 p-3 bg-light rounded"><%= solicitud.descripcion %></p>
+                    </div>
+                  </div>
+
+                  <!-- COLUMNA DERECHA: FOTO Y ACCIONES -->
+                  <div class="col-md-5 ps-md-4 d-flex flex-column justify-content-between">
+                    
+                    <div>
+                      <% if (solicitud.imagenEvidencia) { %>
+                        <strong class="d-block mb-2"><i class="bi bi-camera me-1"></i> Foto de evidencia:</strong>
+                        <img src="<%= solicitud.imagenEvidencia %>" alt="Evidencia" class="img-fluid rounded shadow-sm border mb-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+                      <% } else { %>
+                        <div class="bg-light rounded p-4 text-center text-muted mb-3 border border-dashed">
+                          <i class="bi bi-image fs-3 d-block mb-2"></i>
+                          <small>El cliente no adjuntó fotografía.</small>
+                        </div>
+                      <% } %>
+
+                      <% if (solicitud.requiereCotizacion) { %>
+                        <div class="alert alert-info py-2 px-3 small fw-bold">
+                          <i class="bi bi-cash-coin me-1"></i> El cliente solicitó cotización previa.
+                        </div>
+                      <% } %>
+                    </div>
+
+                    <!-- BOTÓN DE RESPONDER -->
+                    <% if (solicitud.estado === 'Pendiente') { %>
+                      <button type="button" class="btn btn-dark w-100 mt-auto" data-bs-toggle="modal" data-bs-target="#modalResponder-<%= solicitud._id %>">
+                        <i class="bi bi-reply-fill me-1"></i> Responder al Cliente
+                      </button>
+                    <% } else { %>
+                       <a href="/chat/<%= solicitud._id %>" class="btn btn-outline-primary w-100 mt-auto">
+                        <i class="bi bi-chat-dots me-1"></i> Ir al Chat del servicio
+                      </a>
+                    <% } %>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODAL PARA RESPONDER / COTIZAR -->
+          <% if (solicitud.estado === 'Pendiente') { %>
+            <div class="modal fade" id="modalResponder-<%= solicitud._id %>" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-reply-all-fill me-2"></i> Responder a <%= solicitud.clienteId ? solicitud.clienteId.nombre : 'Cliente' %></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  
+                  <form action="/prestador/responder-solicitud/<%= solicitud._id %>" method="POST">
+                    <div class="modal-body p-4">
+                      
+                      <div class="mb-4">
+                        <label class="form-label fw-bold">Mensaje para el cliente</label>
+                        <textarea class="form-control" name="mensajeCotizacion" rows="4" placeholder="Ej. Hola, vi tu problema. Puedo visitarte el día acordado. El trabajo tomará aprox 2 horas..." required></textarea>
+                      </div>
+
+                      <div class="mb-3 p-3 bg-light rounded border">
+                        <label class="form-label fw-bold text-success"><i class="bi bi-cash me-1"></i> Tu Cotización (MXN)</label>
+                        <p class="small text-muted mb-2">Ingresa el precio total estimado por el trabajo.</p>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" name="precioAcordado" placeholder="Ej. 850" min="0" required>
+                        </div>
+                      </div>
+
+                    </div>
+                    
+                    <div class="modal-footer bg-light">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-success">
+                        <i class="bi bi-send-check me-1"></i> Enviar Cotización
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% } %>
+
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+        <i class="bi bi-inbox fs-1 text-muted"></i>
+        <h4 class="mt-3 fw-bold">No tienes solicitudes nuevas</h4>
+        <p class="text-muted">Cuando un cliente solicite tus servicios, aparecerán aquí.</p>
+      </div>
+    <% } %>
+
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

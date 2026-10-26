@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= titulo %> - PRAXO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    body { background-color: #f4f7f6; }
+    .chat-container { height: 60vh; overflow-y: auto; background-color: #ffffff; border-radius: 15px; padding: 20px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); }
+    .burbuja { max-width: 75%; padding: 12px 18px; border-radius: 20px; position: relative; margin-bottom: 15px; }
+    .burbuja-mia { background-color: #0d6efd; color: white; border-bottom-right-radius: 4px; margin-left: auto; }
+    .burbuja-otro { background-color: #f1f3f5; color: #212529; border-bottom-left-radius: 4px; }
+    .fecha-msg { font-size: 0.7rem; opacity: 0.8; display: block; margin-top: 5px; text-align: right; }
+    .cotizacion-box { border-left: 5px solid #198754; background-color: #eafbf3; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <%- include('partials/navbar') %>
+
+  <main class="container py-4">
+    
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="fw-bold mb-0"><i class="bi bi-chat-text text-primary me-2"></i> Sala de Acuerdos</h3>
+          <% if (usuarioLogueado.tipoUsuario === 'prestador') { %>
+            <a href="/prestador/solicitudes" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Volver a Bandeja</a>
+          <% } else { %>
+            <a href="/inicio-cliente" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Volver al Panel</a>
+          <% } %>
+        </div>
+
+        <!-- ZONA DE COTIZACIÓN -->
+        <% if (solicitud.estado === 'Cotizada') { %>
+          <div class="cotizacion-box p-4 mb-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="fw-bold text-success mb-1"><i class="bi bi-file-earmark-check-fill me-1"></i> Cotización Oficial del Prestador</h5>
+                <p class="mb-1 text-dark"><strong>Mensaje:</strong> <%= solicitud.mensajeCotizacion %></p>
+                <p class="mb-0 text-dark fs-5"><strong>Precio acordado:</strong> $<%= solicitud.precioAcordado %> MXN</p>
+              </div>
+              
+              <!-- Si el que mira es el cliente, mostramos el botón de PAGAR/ACEPTAR -->
+              <% if (usuarioLogueado.tipoUsuario === 'cliente') { %>
+                <div class="text-end">
+                  <span class="badge bg-warning text-dark mb-2">Esperando tu confirmación</span>
+                  <br>
+                  <button class="btn btn-success fw-bold px-4"><i class="bi bi-credit-card me-1"></i> Aceptar y Pagar</button>
+                </div>
+              <% } else { %>
+                <div class="text-end">
+                  <span class="badge bg-secondary">Esperando pago del cliente</span>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- ZONA DE CHAT -->
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-0 fw-bold">
+                <%= usuarioLogueado.tipoUsuario === 'cliente' ? 'Hablando con el Prestador' : ('Hablando con ' + solicitud.clienteId.nombre) %>
+              </h6>
+              <small class="opacity-75">Servicio: <%= solicitud.servicio %></small>
+            </div>
+            <span class="badge bg-light text-dark">Estado: <%= solicitud.estado %></span>
+          </div>
+
+          <div class="card-body p-0">
+            <!-- Contenedor de mensajes -->
+            <div class="chat-container d-flex flex-column" id="cajaMensajes">
+              
+              <div class="text-center mb-4 mt-2">
+                <small class="bg-light text-muted px-3 py-1 rounded-pill border">El servicio ha sido creado. Ya pueden chatear.</small>
+              </div>
+
+              <% if (mensajes && mensajes.length > 0) { %>
+                <% mensajes.forEach(msg => { %>
+                  <% const esMio = msg.emisorId._id.toString() === usuarioLogueado.id.toString(); %>
+                  
+                  <div class="burbuja <%= esMio ? 'burbuja-mia' : 'burbuja-otro' %>">
+                    <% if (!esMio) { %>
+                      <strong class="small d-block mb-1 text-primary"><%= msg.emisorId.nombre %></strong>
+                    <% } %>
+                    <%= msg.texto %>
+                    <span class="fecha-msg"><%= new Date(msg.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></span>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <div class="text-center mt-5 text-muted opacity-50">
+                  <i class="bi bi-chat-dots display-1 d-block mb-3"></i>
+                  <p>Aún no hay mensajes. ¡Escribe el primero!</p>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- FORMULARIO DE ENVÍO -->
+          <div class="card-footer bg-white p-3 border-top">
+            <form action="/chat/<%= solicitud._id %>/mensaje" method="POST" class="d-flex gap-2">
+              <input type="text" name="texto" class="form-control rounded-pill px-4" placeholder="Escribe un mensaje aquí..." required autocomplete="off">
+              <button type="submit" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-send-fill"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Auto-scroll al final del chat cuando carga la página
+    document.addEventListener("DOMContentLoaded", function() {
+      const caja = document.getElementById("cajaMensajes");
+      caja.scrollTop = caja.scrollHeight;
+    });
+  </script>
+</body>
+</html>

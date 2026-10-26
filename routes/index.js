@@ -4,6 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const Trabajador = require('../models/Trabajador');
+const Solicitud = require('../models/Solicitud');
 const { requireTipo } = require('../middlewares/auth');
 
 // GET / -> pagina principal, con trabajadores destacados
@@ -74,11 +75,39 @@ router.get('/login', (req, res) => {
 });
 
 // GET /inicio-cliente -> panel de opciones para clientes (requiere sesion de cliente)
-router.get('/inicio-cliente', requireTipo('cliente'), (req, res) => {
-  res.render('inicio-cliente', {
-    titulo: 'Inicio',
-    usuario: req.session.usuario,
-  });
+// routes/index.js
+// Rutas de las paginas generales del sitio.
+
+
+// ... (tus otras rutas de /, /contacto, /login, etc. déjalas igual) ...
+
+// GET /inicio-cliente -> panel de opciones para clientes (requiere sesion de cliente)
+router.get('/inicio-cliente', requireTipo('cliente'), async (req, res) => {
+  try {
+    const clienteId = req.session.usuario.id;
+    
+    // 🟢 2. Buscar todas las solicitudes que hizo este cliente y poblar los datos del trabajador
+    const solicitudes = await Solicitud.find({ clienteId })
+      .populate({
+        path: 'trabajadorId',
+        populate: { path: 'usuarioId', select: 'nombre' }
+      })
+      .sort({ fechaCreacion: -1 })
+      .lean();
+
+    res.render('inicio-cliente', {
+      titulo: 'Inicio',
+      usuario: req.session.usuario,
+      solicitudes // 🟢 3. Pasamos las solicitudes a la vista
+    });
+  } catch (error) {
+    console.error('Error al cargar solicitudes del cliente:', error);
+    res.render('inicio-cliente', {
+      titulo: 'Inicio',
+      usuario: req.session.usuario,
+      solicitudes: []
+    });
+  }
 });
 
 // GET /inicio-prestador -> panel de opciones para prestadores (requiere sesion de prestador)
@@ -95,6 +124,17 @@ router.get('/revisa-correo', (req, res) => {
     titulo: 'Revisa tu correo',
     correo: req.query.correo || '',
     tipoUsuario: req.query.tipoUsuario || '',
+  });
+});
+
+// ==========================================
+// TÉRMINOS Y CONDICIONES (NUEVA RUTA)
+// ==========================================
+router.get('/terminos', (req, res) => {
+  res.render('terminos', { 
+    titulo: 'Términos y Condiciones',
+    usuarioAutenticado: req.session && req.session.usuario ? true : false,
+    usuarioActual: req.session ? req.session.usuario : null
   });
 });
 

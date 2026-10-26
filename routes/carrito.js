@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const Trabajador = require('../models/Trabajador');
 const SolicitudServicio = require('../models/SolicitudServicio');
+const Solicitud = require('../models/Solicitud'); // 🟢 IMPORTAR EL NUEVO MODELO
 const requiereSesion = require('../middlewares/requiereSesion');
 
 // ==========================================
@@ -15,11 +16,9 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // La foto se guardará en la carpeta que acabas de crear
     cb(null, 'public/uploads/solicitudes'); 
   },
   filename: function (req, file, cb) {
-    // Nombre único: praxo_foto_1678...jpg
     cb(null, 'praxo_foto_' + Date.now() + path.extname(file.originalname));
   }
 });
@@ -69,10 +68,9 @@ router.get('/', async (req, res) => {
 });
 
 // ==========================================
-// AGREGAR SERVICIO (MODIFICADO CON MULTER Y NUEVOS CAMPOS)
+// AGREGAR SERVICIO
 // POST /carrito/agregar
 // ==========================================
-// Agregamos upload.single('imagenEvidencia') como middleware
 router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
   try {
     const {
@@ -81,7 +79,6 @@ router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
       hora,
       ubicacion,
       descripcion,
-      // 🟢 NUEVOS CAMPOS RECIBIDOS DEL FORMULARIO
       urgencia,
       referenciasUbicacion,
       requiereCotizacion
@@ -97,8 +94,6 @@ router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
     const horaLimpia = limpiarTexto(hora);
     const ubicacionLimpia = limpiarTexto(ubicacion);
     const descripcionLimpia = limpiarTexto(descripcion);
-    
-    // Limpiamos los nuevos campos de texto
     const referenciasLimpias = limpiarTexto(referenciasUbicacion);
 
     if (!fechaLimpia || !horaLimpia || !ubicacionLimpia || !descripcionLimpia) {
@@ -125,26 +120,14 @@ router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
     const nombreTrabajador = trabajador.nombre || trabajador.nombreCompleto || 'Profesional PRAXO';
     const nombreServicio = trabajador.oficio || trabajador.servicio || trabajador.categoria || 'Servicio profesional';
 
-    // ======================================
-    // 🟢 PROCESAR NUEVOS CAMPOS
-    // ======================================
-    
-    // 1. Manejar la imagen (si el usuario subió una)
     let rutaImagen = null;
     if (req.file) {
-      // Guardamos la ruta relativa para que el navegador pueda acceder a ella
       rutaImagen = '/uploads/solicitudes/' + req.file.filename;
     }
 
-    // 2. Convertir el checkbox (on) a booleano (true/false)
     const cotizacionBool = requiereCotizacion === 'on' ? true : false;
-    
-    // 3. Validar urgencia por seguridad (evitar inyección de HTML)
     const urgenciaValida = urgencia === 'Urgencia' ? 'Urgencia' : 'Programado';
 
-    // ======================================
-    // GUARDAR EN MONGODB
-    // ======================================
     await SolicitudServicio.create({
       clienteId,
       trabajadorId: trabajador._id,
@@ -156,7 +139,6 @@ router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
       descripcion: descripcionLimpia,
       ciudad: trabajador.ciudad || '',
       estado: 'Pendiente',
-      // 🟢 GUARDAMOS LOS NUEVOS DATOS EN LA BASE DE DATOS
       urgencia: urgenciaValida,
       referenciasUbicacion: referenciasLimpias,
       requiereCotizacion: cotizacionBool,
@@ -219,6 +201,62 @@ router.get('/cantidad', async (req, res) => {
   } catch (error) {
     console.error('Error contando servicios:', error);
     return res.status(500).json({ cantidad: 0 });
+  }
+});
+
+// ======================================================
+// 🟢 CONFIRMAR CONTRATACIÓN (Ruta de Diagnóstico)
+// POST /carrito/confirmar
+// ======================================================
+router.post('/confirmar', async (req, res) => {
+  try {
+    console.log("👉 1. Entrando a la ruta de confirmación...");
+    const clienteId = req.session.usuario.id;
+    
+    // 1. Obtener todos los servicios pendientes
+    const carrito = await SolicitudServicio.find({ clienteId });
+    console.log(`👉 2. Encontramos ${carrito.length} servicios en el carrito.`);
+    
+    if (!carrito || carrito.length === 0) {
+      console.log("👉 2.1 El carrito estaba vacío, redirigiendo...");
+      return res.redirect('/carrito');
+    }
+
+    // 2. Transferir a Solicitudes definitivas
+    for (let item of carrito) {
+      console.log(`👉 3. Intentando crear Solicitud para el trabajador: ${item.trabajadorId}`);
+      
+      const nuevaSolicitud = new Solicitud({
+        clienteId: clienteId,
+        trabajadorId: item.trabajadorId,
+        servicio: item.servicio,
+        fecha: item.fecha,
+        hora: item.hora,
+        ubicacion: item.ubicacion,
+        referenciasUbicacion: item.referenciasUbicacion,
+        descripcion: item.descripcion,
+        urgencia: item.urgencia,
+        imagenEvidencia: item.imagenEvidencia,
+        requiereCotizacion: item.requiereCotizacion,
+        estado: 'Pendiente'
+      });
+      
+      console.log("👉 4. Modelo armado, intentando guardar en MongoDB...");
+      await nuevaSolicitud.save();
+      console.log("👉 5. ¡Guardado exitoso en colección solicituds!");
+    }
+
+    // 3. Vaciar el carrito
+    await SolicitudServicio.deleteMany({ clienteId });
+    console.log("👉 6. Carrito vaciado correctamente.");
+
+    // 4. Redirigir
+    console.log("👉 7. Redirigiendo al inicio...");
+    return res.redirect('/inicio-cliente?exito=solicitud_enviada');
+
+  } catch (error) {
+    console.error('❌ ERROR GRAVE al procesar la contratación:', error);
+    return res.status(500).send(`Error en el servidor: ${error.message}`);
   }
 });
 

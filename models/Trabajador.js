@@ -35,6 +35,16 @@ const trabajadorSchema = new mongoose.Schema(
       type: String,
     },
 
+  conceptoPrecio: { 
+    type: String, 
+    trim: true,
+    default: '' // Ej: "Metro cuadrado", "Hora de servicio", "Pieza al mayoreo"
+  },
+  tarifaPrecio: { 
+    type: Number, 
+    default: 0  // Ej: 150
+  },
+
     calificacionPromedio: {
       type: Number,
       default: 0,

@@ -326,7 +326,14 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Regresar</button>
-            <button type="button" class="btn btn-dark" disabled>Confirmar contratación</button>
+            
+            <!-- 🟢 NUEVO FORMULARIO PARA DISPARAR LA CONFIRMACIÓN -->
+            <form action="/carrito/confirmar" method="POST" class="m-0 p-0">
+              <button type="submit" class="btn btn-dark">
+                <i class="bi bi-send-check me-1"></i> Confirmar contratación
+              </button>
+            </form>
+            
           </div>
         </div>
       </div>
