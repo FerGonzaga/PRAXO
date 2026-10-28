@@ -139,6 +139,13 @@ router.get('/revisa-correo', (req, res) => {
 });
 
 // ==========================================
+// POLÍTICAS DE COMPRA (precios, pagos, cancelaciones y garantía)
+// ==========================================
+router.get('/politicas', (req, res) => {
+  res.render('politicas', { titulo: 'Políticas de compra' });
+});
+
+// ==========================================
 // AVISO DE PRIVACIDAD INTEGRAL
 // ==========================================
 router.get('/aviso-privacidad', (req, res) => {

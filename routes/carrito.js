@@ -7,6 +7,59 @@ const Trabajador = require('../models/Trabajador');
 const SolicitudServicio = require('../models/SolicitudServicio');
 const Solicitud = require('../models/Solicitud'); // 🟢 IMPORTAR EL NUEVO MODELO
 const requiereSesion = require('../middlewares/requiereSesion');
+const { calcularDesglose } = require('../config/tarifas');
+
+const UNIDADES = { servicio: 'por servicio', hora: 'por hora', dia: 'por día' };
+
+// Precio de referencia del prestador (precio base o tarifa de referencia)
+function precioReferencia(trabajador) {
+  if (!trabajador) return null;
+  if (typeof trabajador.precioBase === 'number' && trabajador.precioBase > 0) {
+    return { precio: trabajador.precioBase, unidad: UNIDADES[trabajador.unidadPrecio] || 'por servicio' };
+  }
+  if (typeof trabajador.tarifaPrecio === 'number' && trabajador.tarifaPrecio > 0) {
+    return { precio: trabajador.tarifaPrecio, unidad: trabajador.conceptoPrecio ? 'por ' + trabajador.conceptoPrecio.toLowerCase() : 'por servicio' };
+  }
+  return null;
+}
+
+// Valida y limpia los datos editables de un servicio del carrito
+function validarDatosServicio(body) {
+  const fecha = limpiarTexto(body.fecha);
+  const hora = limpiarTexto(body.hora);
+  const ubicacion = limpiarTexto(body.ubicacion);
+  const descripcion = limpiarTexto(body.descripcion);
+  const referenciasUbicacion = limpiarTexto(body.referenciasUbicacion);
+
+  if (!fecha || !hora || !ubicacion || !descripcion) {
+    return { error: 'Completa fecha, hora, ubicación y descripción.' };
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !/^\d{2}:\d{2}$/.test(hora)) {
+    return { error: 'La fecha u hora no tienen un formato válido.' };
+  }
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const f = new Date(`${fecha}T00:00:00`);
+  if (Number.isNaN(f.getTime()) || f < hoy) {
+    return { error: 'Elige una fecha de hoy en adelante.' };
+  }
+  if (ubicacion.length > 150 || descripcion.length > 500 || referenciasUbicacion.length > 250) {
+    return { error: 'Algún campo es demasiado largo.' };
+  }
+
+  return {
+    ok: true,
+    datos: {
+      fecha, hora, ubicacion, descripcion, referenciasUbicacion,
+      urgencia: body.urgencia === 'Urgencia' ? 'Urgencia' : 'Programado',
+      requiereCotizacion: body.requiereCotizacion === true || body.requiereCotizacion === 'on'
+    }
+  };
+}
+
+function quiereJson(req) {
+  return req.xhr || (req.get('accept') || '').includes('application/json');
+}
 
 // ==========================================
 // CONFIGURACIÓN DE MULTER
@@ -48,17 +101,39 @@ router.get('/', async (req, res) => {
     const clienteId = req.session.usuario.id;
     const solicitudes = await SolicitudServicio
       .find({ clienteId })
+      .populate('trabajadorId', 'precioBase unidadPrecio tarifaPrecio conceptoPrecio')
       .sort({ createdAt: -1 })
       .lean();
 
-    const carrito = solicitudes.map((solicitud) => ({
-      ...solicitud,
-      id: solicitud._id.toString()
-    }));
+    // Resumen desglosado (estimado con el precio de referencia de cada prestador)
+    const resumen = { servicios: solicitudes.length, aCotizar: 0, precioPrestador: 0, comision: 0, ivaComision: 0, total: 0 };
+
+    const carrito = solicitudes.map((solicitud) => {
+      const ref = precioReferencia(solicitud.trabajadorId);
+      const estimado = ref ? calcularDesglose(ref.precio) : null;
+
+      if (estimado) {
+        resumen.precioPrestador += estimado.precioPrestador;
+        resumen.comision += estimado.comision;
+        resumen.ivaComision += estimado.ivaComision;
+        resumen.total += estimado.total;
+      } else {
+        resumen.aCotizar += 1;
+      }
+
+      return {
+        ...solicitud,
+        id: solicitud._id.toString(),
+        unidadReferencia: ref ? ref.unidad : null,
+        estimado
+      };
+    });
 
     res.render('carrito', {
       titulo: 'Mis servicios',
-      carrito
+      carrito,
+      resumen,
+      error: req.query.error || null
     });
 
   } catch (error) {
@@ -157,6 +232,38 @@ router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
 });
 
 // ==========================================
+// EDITAR SERVICIO (desde el carrito, sin recargar)
+// POST /carrito/editar/:id   (JSON)
+// ==========================================
+router.post('/editar/:id', async (req, res) => {
+  try {
+    const validacion = validarDatosServicio(req.body || {});
+    if (!validacion.ok) {
+      return res.status(400).json({ mensaje: validacion.error });
+    }
+
+    const actualizado = await SolicitudServicio.findOneAndUpdate(
+      { _id: req.params.id, clienteId: req.session.usuario.id },
+      { $set: validacion.datos },
+      { new: true, runValidators: true }
+    ).lean();
+
+    if (!actualizado) {
+      return res.status(404).json({ mensaje: 'Ese servicio ya no está en tu carrito.' });
+    }
+
+    return res.json({ mensaje: 'Servicio actualizado.', servicio: actualizado });
+
+  } catch (error) {
+    console.error('Error editando servicio:', error);
+    if (error.name === 'CastError') {
+      return res.status(400).json({ mensaje: 'Servicio no válido.' });
+    }
+    return res.status(500).json({ mensaje: 'No se pudo actualizar el servicio.' });
+  }
+});
+
+// ==========================================
 // ELIMINAR SERVICIO
 // POST /carrito/eliminar/:id
 // ==========================================
@@ -167,6 +274,11 @@ router.post('/eliminar/:id', async (req, res) => {
       _id: req.params.id,
       clienteId
     });
+
+    if (quiereJson(req)) {
+      const cantidad = await SolicitudServicio.countDocuments({ clienteId });
+      return res.json({ ok: true, cantidad });
+    }
     return res.redirect('/carrito');
   } catch (error) {
     console.error('Error eliminando servicio:', error);
@@ -212,6 +324,11 @@ router.post('/confirmar', async (req, res) => {
   try {
     console.log("👉 1. Entrando a la ruta de confirmación...");
     const clienteId = req.session.usuario.id;
+
+    // 🔒 El cliente debe aceptar las políticas de compra antes de contratar
+    if (req.body.aceptaPoliticas !== 'on') {
+      return res.redirect('/carrito?error=politicas');
+    }
     
     // 1. Obtener todos los servicios pendientes
     const carrito = await SolicitudServicio.find({ clienteId });

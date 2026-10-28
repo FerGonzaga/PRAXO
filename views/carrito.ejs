@@ -153,83 +153,66 @@
     <% } else { %>
 
       <!-- SERVICIOS DEL CARRITO -->
-      <section>
+      <% const fmt = tarifas.formatoMXN; %>
+      <% if (error === 'politicas') { %>
+        <div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1"></i> Para confirmar debes aceptar las políticas de compra.</div>
+      <% } %>
+      <div id="avisoCarrito"></div>
+
+      <section id="listaServicios">
         <% carrito.forEach((item) => { %>
-          <article class="servicio-card">
+          <article class="servicio-card" id="item-<%= item.id %>"
+                   data-id="<%= item.id %>"
+                   data-fecha="<%= item.fecha %>" data-hora="<%= item.hora %>"
+                   data-ubicacion="<%= item.ubicacion %>" data-referencias="<%= item.referenciasUbicacion || '' %>"
+                   data-descripcion="<%= item.descripcion %>" data-urgencia="<%= item.urgencia %>"
+                   data-cotizacion="<%= item.requiereCotizacion ? '1' : '0' %>"
+                   data-prestador="<%= item.estimado ? item.estimado.precioPrestador : '' %>"
+                   data-comision="<%= item.estimado ? item.estimado.comision : '' %>"
+                   data-iva="<%= item.estimado ? item.estimado.ivaComision : '' %>"
+                   data-total="<%= item.estimado ? item.estimado.total : '' %>">
             <div class="row align-items-start">
-              
+
               <!-- INFORMACION -->
               <div class="col-md-9">
                 <div class="d-flex gap-3">
-                  <!-- ICONO -->
                   <div class="servicio-icono"><i class="bi bi-tools"></i></div>
-                  
+
                   <div class="flex-grow-1">
-                    
-                    <!-- TITULO Y BADGES DE URGENCIA/COTIZACION -->
                     <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
                       <h2 class="servicio-titulo mb-0"><%= item.servicio %></h2>
-                      
-                      <!-- 🟢 BADGE URGENCIA -->
-                      <% if (item.urgencia === 'Urgencia') { %>
-                        <span class="badge-urgencia"><i class="bi bi-exclamation-triangle-fill me-1"></i> Emergencia</span>
-                      <% } %>
-                      
-                      <!-- 🟢 BADGE COTIZACION -->
-                      <% if (item.requiereCotizacion) { %>
-                        <span class="badge-cotizacion"><i class="bi bi-cash-coin me-1"></i> Requiere Cotización</span>
-                      <% } %>
+                      <span class="badge-urgencia js-badge-urgencia <%= item.urgencia === 'Urgencia' ? '' : 'd-none' %>"><i class="bi bi-exclamation-triangle-fill me-1"></i> Emergencia</span>
+                      <span class="badge-cotizacion js-badge-cotizacion <%= item.requiereCotizacion ? '' : 'd-none' %>"><i class="bi bi-cash-coin me-1"></i> Requiere Cotización</span>
                     </div>
 
-                    <!-- PRESTADOR -->
                     <div class="prestador">
                       <i class="bi bi-person-circle me-1"></i> Prestador: <strong><%= item.trabajador %></strong>
                     </div>
 
-                    <!-- DETALLES PRINCIPALES (Fecha, Hora, Ubicación) -->
                     <div class="row">
                       <div class="col-sm-6">
-                        <% if (item.fecha) { %>
-                          <div class="dato-servicio">
-                            <i class="bi bi-calendar-event"></i>
-                            <div>
-                              <strong>Fecha:</strong>
-                              <% const fechaServicio = new Date(item.fecha + 'T00:00:00'); %>
-                              <%= fechaServicio.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' }) %>
-                            </div>
-                          </div>
-                        <% } %>
-                        
-                        <% if (item.hora) { %>
-                          <div class="dato-servicio">
-                            <i class="bi bi-clock"></i>
-                            <div><strong>Hora:</strong> <%= item.hora %></div>
-                          </div>
-                        <% } %>
+                        <div class="dato-servicio">
+                          <i class="bi bi-calendar-event"></i>
+                          <div><strong>Fecha:</strong> <span class="js-fecha"><%= new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' }) %></span></div>
+                        </div>
+                        <div class="dato-servicio">
+                          <i class="bi bi-clock"></i>
+                          <div><strong>Hora:</strong> <span class="js-hora"><%= item.hora %></span></div>
+                        </div>
                       </div>
-                      
                       <div class="col-sm-6">
-                        <% if (item.ubicacion) { %>
-                          <div class="dato-servicio">
-                            <i class="bi bi-geo-alt"></i>
-                            <div><strong>Ubicación:</strong> <%= item.ubicacion %></div>
-                          </div>
-                        <% } %>
-                        
-                        <!-- 🟢 REFERENCIAS DE UBICACION -->
-                        <% if (item.referenciasUbicacion) { %>
-                          <div class="dato-servicio">
-                            <i class="bi bi-signpost-split"></i>
-                            <div><strong>Referencias:</strong> <%= item.referenciasUbicacion %></div>
-                          </div>
-                        <% } %>
+                        <div class="dato-servicio">
+                          <i class="bi bi-geo-alt"></i>
+                          <div><strong>Ubicación:</strong> <span class="js-ubicacion"><%= item.ubicacion %></span></div>
+                        </div>
+                        <div class="dato-servicio js-fila-referencias <%= item.referenciasUbicacion ? '' : 'd-none' %>">
+                          <i class="bi bi-signpost-split"></i>
+                          <div><strong>Referencias:</strong> <span class="js-referencias"><%= item.referenciasUbicacion %></span></div>
+                        </div>
                       </div>
                     </div>
 
-                    <!-- 🟢 ZONA DE EVIDENCIA Y DESCRIPCIÓN -->
                     <div class="d-flex flex-column flex-md-row gap-3 mt-3">
-                      
-                      <!-- FOTO DE EVIDENCIA -->
                       <% if (item.imagenEvidencia) { %>
                         <div>
                           <p class="fw-semibold mb-1 text-muted" style="font-size: 13px;">Evidencia adjunta</p>
@@ -238,30 +221,35 @@
                           </a>
                         </div>
                       <% } %>
-                      
-                      <!-- DESCRIPCION -->
-                      <% if (item.descripcion) { %>
-                        <div class="descripcion-servicio flex-grow-1 mt-0">
-                          <div class="fw-semibold mb-1"><i class="bi bi-chat-left-text me-1"></i> Detalles del problema</div>
-                          <p><%= item.descripcion %></p>
-                        </div>
-                      <% } %>
-                      
+                      <div class="descripcion-servicio flex-grow-1 mt-0">
+                        <div class="fw-semibold mb-1"><i class="bi bi-chat-left-text me-1"></i> Detalles del problema</div>
+                        <p class="js-descripcion"><%= item.descripcion %></p>
+                      </div>
                     </div>
 
-                    <!-- ESTADO -->
-                    <div class="mt-3">
-                      <span class="estado-pendiente">
-                        <i class="bi bi-hourglass-split"></i> <%= item.estado || 'Pendiente' %>
-                      </span>
+                    <!-- PRECIO ESTIMADO DESGLOSADO -->
+                    <div class="mt-3 p-3 rounded-3 border bg-light small">
+                      <% if (item.estimado) { %>
+                        <div class="fw-semibold mb-2"><i class="bi bi-cash-coin me-1"></i> Precio estimado</div>
+                        <div class="d-flex justify-content-between"><span class="text-muted">Prestador (<%= item.unidadReferencia %>)</span><span><%= fmt(item.estimado.precioPrestador) %></span></div>
+                        <div class="d-flex justify-content-between"><span class="text-muted">Comisión PRAXO <%= item.estimado.comisionPorcentaje %>%</span><span><%= fmt(item.estimado.comision) %></span></div>
+                        <div class="d-flex justify-content-between"><span class="text-muted">IVA <%= item.estimado.ivaPorcentaje %>% sobre la comisión</span><span><%= fmt(item.estimado.ivaComision) %></span></div>
+                        <div class="d-flex justify-content-between border-top mt-1 pt-1 fw-bold"><span>Total estimado</span><span><%= fmt(item.estimado.total) %></span></div>
+                        <div class="text-muted mt-1" style="font-size: .75rem;">El precio final lo confirma el prestador en su cotización.</div>
+                      <% } else { %>
+                        <i class="bi bi-chat-left-dots me-1"></i> <strong>Precio a cotizar.</strong>
+                        <span class="text-muted">Este prestador no publicó precio de referencia; te enviará su cotización.</span>
+                      <% } %>
                     </div>
-                    <%- include('partials/precio-solicitud', { item }) %>
                   </div>
                 </div>
               </div>
 
-              <!-- ACCIONES (Eliminar) -->
-              <div class="col-md-3 text-md-end acciones-servicio mt-3 mt-md-0">
+              <!-- ACCIONES -->
+              <div class="col-md-3 text-md-end acciones-servicio mt-3 mt-md-0 d-flex flex-md-column gap-2 align-items-md-end">
+                <button type="button" class="btn btn-outline-dark btn-sm js-editar" style="border-radius: 9px;">
+                  <i class="bi bi-pencil-square me-1"></i> Editar
+                </button>
                 <form action="/carrito/eliminar/<%= item.id %>" method="POST" class="form-eliminar">
                   <button type="submit" class="btn-eliminar">
                     <i class="bi bi-trash3 me-1"></i> Eliminar
@@ -274,34 +262,49 @@
         <% }) %>
       </section>
 
-      <!-- RESUMEN DEL CARRITO -->
+      <!-- RESUMEN DESGLOSADO DEL CARRITO -->
       <section class="resumen-carrito">
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
-          
-          <div class="d-flex align-items-center gap-3">
-            <div class="resumen-numero"><%= carrito.length %></div>
-            <div>
-              <div class="fw-bold">
-                <%= carrito.length %> servicio<%= carrito.length !== 1 ? 's' : '' %> seleccionado<%= carrito.length !== 1 ? 's' : '' %>
-              </div>
-              <small class="text-muted">Revisa los datos antes de continuar.</small>
-            </div>
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <h2 class="h5 fw-bold mb-3"><i class="bi bi-receipt me-2"></i>Resumen</h2>
+            <table class="table table-sm table-borderless mb-1">
+              <tbody>
+                <tr><td class="text-muted ps-0">Servicios seleccionados</td><td class="text-end pe-0" id="resServicios"><%= resumen.servicios %></td></tr>
+                <tr><td class="text-muted ps-0">Precio de los prestadores</td><td class="text-end pe-0" id="resPrestador"><%= fmt(resumen.precioPrestador) %></td></tr>
+                <tr><td class="text-muted ps-0">Comisión PRAXO (<%= tarifas.COMISION_PORCENTAJE %>%)</td><td class="text-end pe-0" id="resComision"><%= fmt(resumen.comision) %></td></tr>
+                <tr><td class="text-muted ps-0">IVA <%= tarifas.IVA_PORCENTAJE %>% sobre la comisión</td><td class="text-end pe-0" id="resIva"><%= fmt(resumen.ivaComision) %></td></tr>
+                <tr class="border-top"><td class="fw-bold ps-0 pt-2 fs-5">Total estimado</td><td class="text-end fw-bold pe-0 pt-2 fs-5 text-success" id="resTotal"><%= fmt(resumen.total) %></td></tr>
+              </tbody>
+            </table>
+            <p class="small text-muted mb-0" id="resACotizar">
+              <% if (resumen.aCotizar > 0) { %>
+                <i class="bi bi-info-circle me-1"></i> <%= resumen.aCotizar %> servicio(s) sin precio de referencia: su costo se sumará cuando el prestador cotice.
+              <% } %>
+            </p>
+            <p class="small text-muted mt-2 mb-0"><i class="bi bi-shield-check me-1"></i> No se realiza ningún cobro al confirmar: solo pagas después de aceptar la cotización.</p>
           </div>
 
-          <div class="d-flex gap-2 resumen-acciones">
-            <form action="/carrito/vaciar" method="POST" id="formVaciar">
-              <button type="submit" class="btn btn-outline-danger">
-                <i class="bi bi-trash me-1"></i> Vaciar selección
+          <div class="col-lg-5">
+            <div class="p-3 rounded-3 bg-light mb-3 small">
+              <div class="fw-semibold mb-2"><i class="bi bi-journal-text me-1"></i> Políticas</div>
+              <ul class="list-unstyled mb-0">
+                <li class="mb-1"><a href="/politicas#precios" target="_blank">Precios y comisión</a></li>
+                <li class="mb-1"><a href="/politicas#cancelaciones" target="_blank">Cancelaciones y reembolsos</a></li>
+                <li class="mb-1"><a href="/politicas#garantia" target="_blank">Garantía PRAXO</a></li>
+                <li class="mb-1"><a href="/terminos" target="_blank">Términos y condiciones</a></li>
+                <li><a href="/aviso-privacidad" target="_blank">Aviso de privacidad</a></li>
+              </ul>
+            </div>
+            <div class="d-flex flex-wrap gap-2 resumen-acciones">
+              <form action="/carrito/vaciar" method="POST" id="formVaciar">
+                <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i> Vaciar</button>
+              </form>
+              <a href="/trabajadores" class="btn btn-outline-dark"><i class="bi bi-plus-lg me-1"></i> Agregar</a>
+              <button type="button" class="btn btn-dark flex-grow-1" id="continuarContratacion">
+                Continuar <i class="bi bi-arrow-right ms-1"></i>
               </button>
-            </form>
-            <a href="/trabajadores" class="btn btn-outline-dark">
-              <i class="bi bi-plus-lg me-1"></i> Agregar otro servicio
-            </a>
-            <button type="button" class="btn btn-dark" id="continuarContratacion">
-              Continuar contratación <i class="bi bi-arrow-right ms-1"></i>
-            </button>
+            </div>
           </div>
-          
         </div>
       </section>
 
@@ -311,31 +314,89 @@
   <!-- FOOTER -->
   <%- include('partials/footer') %>
 
-  <!-- MODAL INFORMATIVO CONTINUAR CONTRATACION -->
   <% if (carrito && carrito.length > 0) { %>
-    <div class="modal fade" id="modalContinuar" tabindex="-1" aria-hidden="true">
+    <!-- MODAL: EDITAR SERVICIO -->
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <form class="modal-content" id="formEditar" novalidate>
           <div class="modal-header">
-            <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i> Servicios preparados</h5>
+            <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i> Editar servicio</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <p>Tienes <strong><%= carrito.length %> servicio<%= carrito.length !== 1 ? 's' : '' %></strong> seleccionado<%= carrito.length !== 1 ? 's' : '' %>.</p>
-            <p class="text-muted mb-0">El siguiente paso será confirmar los datos de contratación y posteriormente integrar el proceso de pago.</p>
+            <input type="hidden" id="editId">
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold" for="editFecha">Fecha</label>
+                <input type="date" class="form-control" id="editFecha" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold" for="editHora">Hora</label>
+                <input type="time" class="form-control" id="editHora" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold" for="editUbicacion">Ubicación</label>
+                <input type="text" class="form-control" id="editUbicacion" maxlength="150" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold" for="editReferencias">Referencias (opcional)</label>
+                <input type="text" class="form-control" id="editReferencias" maxlength="250">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold" for="editDescripcion">Descripción del problema</label>
+                <textarea class="form-control" id="editDescripcion" rows="3" maxlength="500" required></textarea>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold" for="editUrgencia">Urgencia</label>
+                <select class="form-select" id="editUrgencia">
+                  <option value="Programado">Programado</option>
+                  <option value="Urgencia">Emergencia</option>
+                </select>
+              </div>
+              <div class="col-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="editCotizacion">
+                  <label class="form-check-label small" for="editCotizacion">Requiere cotización previa</label>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-danger mt-3 mb-0 d-none" id="errorEditar"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-dark" id="btnGuardarEdicion"><i class="bi bi-check-lg me-1"></i> Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: CONFIRMAR CONTRATACIÓN -->
+    <div class="modal fade" id="modalContinuar" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <form action="/carrito/confirmar" method="POST" class="modal-content" id="formConfirmar">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i> Confirmar contratación</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-1">Enviarás <strong id="modalServicios"><%= resumen.servicios %></strong> solicitud(es) a los prestadores.</p>
+            <p class="mb-3">Total estimado: <strong id="modalTotal"><%= tarifas.formatoMXN(resumen.total) %> MXN</strong></p>
+            <p class="small text-muted">Cada prestador te enviará su cotización. No se cobra nada hasta que aceptes y pagues.</p>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="aceptaPoliticas" id="aceptaPoliticas" required>
+              <label class="form-check-label small" for="aceptaPoliticas">
+                He leído y acepto las <a href="/politicas" target="_blank">Políticas de compra</a>
+                (precios, comisión, cancelaciones y reembolsos). <span class="text-danger">*</span>
+              </label>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Regresar</button>
-            
-            <!-- 🟢 NUEVO FORMULARIO PARA DISPARAR LA CONFIRMACIÓN -->
-            <form action="/carrito/confirmar" method="POST" class="m-0 p-0">
-              <button type="submit" class="btn btn-dark">
-                <i class="bi bi-send-check me-1"></i> Confirmar contratación
-              </button>
-            </form>
-            
+            <button type="submit" class="btn btn-dark" id="btnConfirmar" disabled>
+              <i class="bi bi-send-check me-1"></i> Confirmar contratación
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   <% } %>
@@ -345,37 +406,157 @@
   <!-- JS GENERAL DE PRAXO -->
   <script src="/js/main.js"></script>
 
-  <!-- JS DEL CARRITO -->
+  <!-- JS DEL CARRITO: edición y eliminación sin recargar + resumen en vivo -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      
-      const formulariosEliminar = document.querySelectorAll('.form-eliminar');
-      formulariosEliminar.forEach(function (formulario) {
-        formulario.addEventListener('submit', function (evento) {
-          const confirmar = confirm('¿Deseas eliminar este servicio de tu selección?');
-          if (!confirmar) { evento.preventDefault(); }
+      const fmt = (n) => Number(n).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+      const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+      const aviso = document.getElementById('avisoCarrito');
+
+      function mostrarAviso(texto, tipo) {
+        if (!aviso) return;
+        aviso.innerHTML = '<div class="alert alert-' + tipo + ' alert-dismissible fade show">' + texto +
+          '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+      }
+
+      // ---------- Resumen en vivo ----------
+      function recalcular() {
+        const items = document.querySelectorAll('#listaServicios .servicio-card');
+        let p = 0, c = 0, i = 0, t = 0, aCotizar = 0;
+        items.forEach((el) => {
+          if (el.dataset.total) {
+            p += Number(el.dataset.prestador); c += Number(el.dataset.comision);
+            i += Number(el.dataset.iva); t += Number(el.dataset.total);
+          } else { aCotizar++; }
+        });
+        const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        set('resServicios', items.length);
+        set('resPrestador', fmt(r2(p)));
+        set('resComision', fmt(r2(c)));
+        set('resIva', fmt(r2(i)));
+        set('resTotal', fmt(r2(t)));
+        set('modalServicios', items.length);
+        set('modalTotal', fmt(r2(t)) + ' MXN');
+        const nota = document.getElementById('resACotizar');
+        if (nota) nota.innerHTML = aCotizar > 0
+          ? '<i class="bi bi-info-circle me-1"></i> ' + aCotizar + ' servicio(s) sin precio de referencia: su costo se sumará cuando el prestador cotice.'
+          : '';
+        document.querySelectorAll('.js-contador-carrito').forEach((b) => {
+          b.textContent = items.length;
+          b.classList.toggle('d-none', items.length === 0);
+        });
+        if (items.length === 0) window.location.reload(); // muestra el estado "carrito vacío"
+      }
+
+      // ---------- Eliminar sin recargar ----------
+      document.querySelectorAll('.form-eliminar').forEach((formulario) => {
+        formulario.addEventListener('submit', async (evento) => {
+          evento.preventDefault();
+          if (!confirm('¿Deseas eliminar este servicio de tu selección?')) return;
+          try {
+            const r = await fetch(formulario.action, { method: 'POST', headers: { 'Accept': 'application/json' } });
+            if (!r.ok) throw new Error();
+            const tarjeta = formulario.closest('.servicio-card');
+            tarjeta.style.transition = 'opacity .25s'; tarjeta.style.opacity = '0';
+            setTimeout(() => { tarjeta.remove(); recalcular(); }, 250);
+            mostrarAviso('Servicio eliminado.', 'secondary');
+          } catch (e) {
+            mostrarAviso('No se pudo eliminar el servicio. Intenta de nuevo.', 'danger');
+          }
         });
       });
 
       const formVaciar = document.getElementById('formVaciar');
       if (formVaciar) {
-        formVaciar.addEventListener('submit', function (evento) {
-          const confirmar = confirm('¿Deseas eliminar todos los servicios seleccionados?');
-          if (!confirmar) { evento.preventDefault(); }
+        formVaciar.addEventListener('submit', (evento) => {
+          if (!confirm('¿Deseas eliminar todos los servicios seleccionados?')) evento.preventDefault();
         });
       }
 
-      const botonContinuar = document.getElementById('continuarContratacion');
-      if (botonContinuar) {
-        botonContinuar.addEventListener('click', function () {
-          const modalElemento = document.getElementById('modalContinuar');
-          if (modalElemento) {
-            const modal = new bootstrap.Modal(modalElemento);
-            modal.show();
+      // ---------- Editar sin recargar ----------
+      const modalEditarEl = document.getElementById('modalEditar');
+      const modalEditar = modalEditarEl ? new bootstrap.Modal(modalEditarEl) : null;
+      const $ = (id) => document.getElementById(id);
+      const hoy = new Date(); hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+      if ($('editFecha')) $('editFecha').min = hoy.toISOString().slice(0, 10);
+
+      document.querySelectorAll('.js-editar').forEach((boton) => {
+        boton.addEventListener('click', () => {
+          const d = boton.closest('.servicio-card').dataset;
+          $('editId').value = d.id;
+          $('editFecha').value = d.fecha;
+          $('editHora').value = d.hora;
+          $('editUbicacion').value = d.ubicacion;
+          $('editReferencias').value = d.referencias;
+          $('editDescripcion').value = d.descripcion;
+          $('editUrgencia').value = d.urgencia === 'Urgencia' ? 'Urgencia' : 'Programado';
+          $('editCotizacion').checked = d.cotizacion === '1';
+          $('errorEditar').classList.add('d-none');
+          modalEditar.show();
+        });
+      });
+
+      const formEditar = $('formEditar');
+      if (formEditar) {
+        formEditar.addEventListener('submit', async (evento) => {
+          evento.preventDefault();
+          const id = $('editId').value;
+          const datos = {
+            fecha: $('editFecha').value, hora: $('editHora').value,
+            ubicacion: $('editUbicacion').value.trim(), referenciasUbicacion: $('editReferencias').value.trim(),
+            descripcion: $('editDescripcion').value.trim(), urgencia: $('editUrgencia').value,
+            requiereCotizacion: $('editCotizacion').checked
+          };
+          const btn = $('btnGuardarEdicion');
+          btn.disabled = true;
+          try {
+            const r = await fetch('/carrito/editar/' + id, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(datos)
+            });
+            const res = await r.json();
+            if (!r.ok) throw new Error(res.mensaje || 'No se pudo guardar.');
+
+            // Actualizar la tarjeta con lo que confirmó el servidor
+            const s = res.servicio;
+            const card = document.getElementById('item-' + id);
+            Object.assign(card.dataset, {
+              fecha: s.fecha, hora: s.hora, ubicacion: s.ubicacion, referencias: s.referenciasUbicacion || '',
+              descripcion: s.descripcion, urgencia: s.urgencia, cotizacion: s.requiereCotizacion ? '1' : '0'
+            });
+            card.querySelector('.js-fecha').textContent = new Date(s.fecha + 'T00:00:00')
+              .toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+            card.querySelector('.js-hora').textContent = s.hora;
+            card.querySelector('.js-ubicacion').textContent = s.ubicacion;
+            card.querySelector('.js-referencias').textContent = s.referenciasUbicacion || '';
+            card.querySelector('.js-fila-referencias').classList.toggle('d-none', !s.referenciasUbicacion);
+            card.querySelector('.js-descripcion').textContent = s.descripcion;
+            card.querySelector('.js-badge-urgencia').classList.toggle('d-none', s.urgencia !== 'Urgencia');
+            card.querySelector('.js-badge-cotizacion').classList.toggle('d-none', !s.requiereCotizacion);
+
+            modalEditar.hide();
+            card.classList.add('border', 'border-success');
+            setTimeout(() => card.classList.remove('border', 'border-success'), 1500);
+            mostrarAviso('Servicio actualizado.', 'success');
+          } catch (e) {
+            $('errorEditar').textContent = e.message;
+            $('errorEditar').classList.remove('d-none');
+          } finally {
+            btn.disabled = false;
           }
         });
       }
 
+      // ---------- Confirmar: requiere aceptar políticas ----------
+      const botonContinuar = $('continuarContratacion');
+      if (botonContinuar) {
+        botonContinuar.addEventListener('click', () => new bootstrap.Modal($('modalContinuar')).show());
+      }
+      const checkPoliticas = $('aceptaPoliticas');
+      if (checkPoliticas) {
+        checkPoliticas.addEventListener('change', () => { $('btnConfirmar').disabled = !checkPoliticas.checked; });
+      }
     });
   </script>
 </body>

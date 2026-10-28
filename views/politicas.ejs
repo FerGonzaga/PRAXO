@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Políticas de compra - PRAXO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    .politicas h2 { font-size: 1.1rem; font-weight: 700; margin-top: 2rem; color: #212529; scroll-margin-top: 90px; }
+    .politicas { color: #495057; line-height: 1.75; }
+  </style>
+</head>
+<body class="bg-light">
+
+  <%- include('partials/navbar') %>
+
+  <main class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 politicas">
+
+          <h1 class="fw-bold mb-2 text-center"><i class="bi bi-bag-check text-primary me-2"></i>Políticas de compra</h1>
+          <p class="text-muted text-center mb-4">Precios, pagos, cancelaciones y garantía en PRAXO.</p>
+
+          <nav class="small mb-2">
+            <strong>Contenido:</strong>
+            <a href="#precios">1. Precios y comisión</a> ·
+            <a href="#pagos">2. Pagos</a> ·
+            <a href="#cancelaciones">3. Cancelaciones y reembolsos</a> ·
+            <a href="#garantia">4. Garantía y aclaraciones</a> ·
+            <a href="#resenas">5. Reseñas</a>
+          </nav>
+
+          <h2 id="precios">1. Precios y comisión</h2>
+          <ul>
+            <li>Cada prestador publica un <strong>precio de referencia</strong>. En el catálogo y en tu carrito verás siempre el <strong>precio final estimado</strong>, que ya incluye todos los cargos.</li>
+            <li>El precio definitivo se fija con la <strong>cotización</strong> que te envía el prestador después de revisar tu solicitud. Nada se cobra hasta que tú la aceptas.</li>
+            <li>El total se compone de:
+              <ul>
+                <li>El precio del prestador (lo recibe íntegro).</li>
+                <li>La comisión de PRAXO del <strong><%= tarifas.COMISION_PORCENTAJE %>%</strong> sobre ese precio.</li>
+                <li>El IVA del <strong><%= tarifas.IVA_PORCENTAJE %>%</strong> sobre la comisión.</li>
+              </ul>
+            </li>
+            <li>Ejemplo: cotización de <%= tarifas.formatoMXN(1000) %> + comisión <%= tarifas.formatoMXN(tarifas.calcularDesglose(1000).comision) %> + IVA <%= tarifas.formatoMXN(tarifas.calcularDesglose(1000).ivaComision) %> = <strong><%= tarifas.formatoMXN(tarifas.calcularDesglose(1000).total) %> MXN</strong>.</li>
+          </ul>
+
+          <h2 id="pagos">2. Pagos</h2>
+          <ul>
+            <li>El pago se realiza dentro de PRAXO, después de aceptar la cotización.</li>
+            <li>No almacenamos el número completo de tu tarjeta ni su código de seguridad (CVV).</li>
+            <li>Al pagar recibes al instante un <strong>comprobante en PDF</strong> con referencia única y desglose.</li>
+            <li>En esta versión académica el procesamiento de pago es <strong>simulado</strong>: no se realizan cargos reales.</li>
+          </ul>
+
+          <h2 id="cancelaciones">3. Cancelaciones y reembolsos</h2>
+          <ul>
+            <li><strong>Antes de confirmar:</strong> puedes editar o eliminar servicios de tu carrito libremente.</li>
+            <li><strong>Antes de pagar:</strong> puedes rechazar la cotización sin ningún costo.</li>
+            <li><strong>Después de pagar y antes de que se realice el servicio:</strong> solicita la cancelación por el chat del servicio y a PRAXO con tu referencia de pago. Si el prestador no ha incurrido en gastos (traslado o materiales acordados), se reembolsa el total pagado. Si los hubo, se descuentan únicamente los gastos comprobados, conforme a la Ley Federal de Protección al Consumidor.</li>
+            <li><strong>Si el prestador no se presenta</strong> o no realiza el servicio, tienes derecho al reembolso total.</li>
+          </ul>
+
+          <h2 id="garantia">4. Garantía PRAXO y aclaraciones</h2>
+          <ul>
+            <li>Tu comprobante de pago es tu respaldo ante cualquier aclaración.</li>
+            <li>Si el trabajo no corresponde a lo acordado en la cotización, repórtalo por el chat y a PRAXO dentro de los <strong>7 días naturales</strong> posteriores a que el servicio se marque como completado.</li>
+            <li>PRAXO media entre las partes. De no llegar a un acuerdo, puedes acudir a la <strong>PROFECO</strong>.</li>
+          </ul>
+
+          <h2 id="resenas">5. Reseñas</h2>
+          <p>Solo los clientes que contrataron y pagaron un servicio completado pueden calificarlo, una sola vez por servicio. Así las reseñas reflejan experiencias reales.</p>
+
+          <hr class="my-4">
+          <p class="small text-muted mb-0">
+            Consulta también los <a href="/terminos">Términos y Condiciones</a> y el <a href="/aviso-privacidad">Aviso de Privacidad</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
