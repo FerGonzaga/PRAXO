@@ -26,7 +26,10 @@ module.exports = async function webhookStripe(req, res) {
   }
 
   try {
-    if (evento.type === 'checkout.session.completed') {
+    // completed: pago con tarjeta inmediato
+    // async_payment_succeeded: métodos diferidos (p. ej. OXXO) que se pagan después
+    if (evento.type === 'checkout.session.completed' ||
+        evento.type === 'checkout.session.async_payment_succeeded') {
       // Volvemos a pedir la sesión a Stripe para obtener los datos del cargo
       const sesion = await stripe.obtenerSesion(evento.data.object.id);
       const resultado = await confirmarSesionStripe(sesion);

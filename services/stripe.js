@@ -10,6 +10,7 @@
 //   STRIPE_WEBHOOK_SECRET  whsec_...    (opcional, confirma pagos vía webhook)
 
 const crypto = require('crypto');
+const https = require('https');
 
 const API = 'https://api.stripe.com/v1';
 
@@ -38,27 +39,46 @@ function aplanar(obj, prefijo = '', salida = []) {
   return salida;
 }
 
-async function llamar(metodo, ruta, params) {
-  const opciones = {
-    method: metodo,
-    headers: { Authorization: `Bearer ${clave()}` }
-  };
+// Usa el módulo https de Node (funciona en cualquier versión, no depende de fetch)
+function llamar(metodo, ruta, params) {
   let url = API + ruta;
+  let cuerpo = null;
+  const headers = { Authorization: `Bearer ${clave()}` };
+
   if (params && metodo === 'POST') {
-    opciones.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-    opciones.body = new URLSearchParams(aplanar(params)).toString();
+    cuerpo = new URLSearchParams(aplanar(params)).toString();
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    headers['Content-Length'] = Buffer.byteLength(cuerpo);
   } else if (params) {
     url += '?' + new URLSearchParams(aplanar(params)).toString();
   }
 
-  const respuesta = await fetch(url, opciones);
-  const datos = await respuesta.json();
-  if (!respuesta.ok) {
-    const err = new Error(datos.error && datos.error.message ? datos.error.message : 'Error de Stripe');
-    err.stripe = datos.error;
-    throw err;
-  }
-  return datos;
+  return new Promise((resolve, reject) => {
+    const peticion = https.request(url, { method: metodo, headers, timeout: 20000 }, (respuesta) => {
+      let texto = '';
+      respuesta.setEncoding('utf8');
+      respuesta.on('data', (trozo) => { texto += trozo; });
+      respuesta.on('end', () => {
+        let datos;
+        try {
+          datos = JSON.parse(texto);
+        } catch (e) {
+          return reject(new Error(`Respuesta no válida de Stripe (HTTP ${respuesta.statusCode})`));
+        }
+        if (respuesta.statusCode >= 400) {
+          const err = new Error(datos.error && datos.error.message ? datos.error.message : `Error de Stripe (HTTP ${respuesta.statusCode})`);
+          err.stripe = datos.error;
+          return reject(err);
+        }
+        resolve(datos);
+      });
+    });
+
+    peticion.on('timeout', () => peticion.destroy(new Error('Stripe tardó demasiado en responder.')));
+    peticion.on('error', (e) => reject(new Error(`No hay conexión con Stripe (${e.code || e.message})`)));
+    if (cuerpo) peticion.write(cuerpo);
+    peticion.end();
+  });
 }
 
 // Crea la sesión de pago alojada por Stripe
@@ -67,7 +87,8 @@ function crearSesionCheckout({ solicitudId, clienteId, totalCentavos, nombre, de
     mode: 'payment',
     locale: 'es-419',
     client_reference_id: solicitudId,
-    payment_method_types: ['card'],
+    // Los métodos de pago (tarjeta, OXXO, etc.) se eligen en el Dashboard de Stripe:
+    // Settings → Payment methods. Stripe ya no acepta payment_method_types aquí.
     line_items: [{
       quantity: 1,
       price_data: {

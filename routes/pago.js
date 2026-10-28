@@ -18,6 +18,7 @@ const requiereSesion = require('../middlewares/requiereSesion');
 const { desgloseDeSolicitud, formatoMXN } = require('../config/tarifas');
 const { generarTicketPdf } = require('../services/ticketPdf');
 const stripe = require('../services/stripe');
+const ES_PRODUCCION = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
 const { registrarPago, confirmarSesionStripe, centavos } = require('../services/pagos');
 
 router.use(requiereSesion);
@@ -199,7 +200,8 @@ router.get('/:id', async (req, res) => {
       error: null,
       datos: {},
       stripeActivo: stripe.activo(),
-      aviso: req.query.aviso || null
+      aviso: req.query.aviso || null,
+      detalle: req.query.detalle ? String(req.query.detalle).slice(0, 300) : null
     });
 
   } catch (error) {
@@ -312,8 +314,9 @@ router.post('/:id/stripe', async (req, res) => {
     return res.redirect(303, sesion.url);
 
   } catch (error) {
-    console.error('Error creando sesión de Stripe:', error.message);
-    return res.redirect(`/pago/${req.params.id}?aviso=stripe-error`);
+    console.error('Error creando sesión de Stripe:', error.message, error.stripe || '');
+    const detalle = ES_PRODUCCION ? '' : `&detalle=${encodeURIComponent(error.message)}`;
+    return res.redirect(`/pago/${req.params.id}?aviso=stripe-error${detalle}`);
   }
 });
 
@@ -343,8 +346,9 @@ router.get('/:id/stripe/exito', async (req, res) => {
     return res.redirect(`/pago/${solicitud._id}?aviso=${resultado.estado}`);
 
   } catch (error) {
-    console.error('Error confirmando pago de Stripe:', error.message);
-    return res.redirect(`/pago/${req.params.id}?aviso=stripe-error`);
+    console.error('Error confirmando pago de Stripe:', error.message, error.stripe || '');
+    const detalle = ES_PRODUCCION ? '' : `&detalle=${encodeURIComponent(error.message)}`;
+    return res.redirect(`/pago/${req.params.id}?aviso=stripe-error${detalle}`);
   }
 });
 

@@ -36,7 +36,12 @@
         <% if (aviso === 'cancelado') { %>
           <div class="alert alert-secondary">Cancelaste el pago en Stripe. No se realizó ningún cargo; puedes intentarlo de nuevo.</div>
         <% } else if (aviso === 'stripe-error') { %>
-          <div class="alert alert-danger">No pudimos comunicarnos con Stripe. Intenta de nuevo en unos minutos.</div>
+          <div class="alert alert-danger">
+            No pudimos comunicarnos con Stripe. Intenta de nuevo en unos minutos.
+            <% if (typeof detalle !== 'undefined' && detalle) { %>
+              <div class="small mt-1"><strong>Detalle técnico:</strong> <code><%= detalle %></code></div>
+            <% } %>
+          </div>
         <% } else if (aviso === 'no-pagada') { %>
           <div class="alert alert-warning">Stripe aún no confirma tu pago. Si ya pagaste, recarga esta página en unos segundos.</div>
         <% } else if (aviso === 'monto-invalido' || aviso === 'invalida') { %>
