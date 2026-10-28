@@ -46,13 +46,13 @@
             <!-- Si el prestador ya cotizó, le avisamos al cliente aquí mismo -->
             <% if (solicitud.estado === 'Cotizada') { %>
               <div class="alert alert-success py-2 px-3 small mb-3">
-                <i class="bi bi-cash-coin me-1"></i> <strong>¡Cotización lista!</strong> Precio: $<%= solicitud.precioAcordado %> MXN
+                <i class="bi bi-cash-coin me-1"></i> <strong>¡Cotización lista!</strong> Total: <%= tarifas.formatoMXN(tarifas.desgloseDeSolicitud(solicitud).total) %> MXN <span class="text-muted">(incluye comisión e IVA)</span>
               </div>
             <% } %>
 
             <% if (solicitud.estado === 'Aceptada') { %>
               <div class="alert alert-info py-2 px-3 small mb-2">
-                <i class="bi bi-hourglass-split me-1"></i> <strong>Pago pendiente:</strong> $<%= solicitud.precioAcordado %> MXN
+                <i class="bi bi-hourglass-split me-1"></i> <strong>Pago pendiente:</strong> <%= tarifas.formatoMXN(tarifas.desgloseDeSolicitud(solicitud).total) %> MXN
               </div>
               <a href="/pago/<%= solicitud._id %>" class="btn btn-success w-100 mb-2 fw-bold"><i class="bi bi-credit-card me-1"></i> Pagar ahora</a>
             <% } %>
@@ -60,6 +60,11 @@
               <div class="alert alert-primary py-2 px-3 small mb-3">
                 <i class="bi bi-check-circle-fill me-1"></i> <strong>Pagado.</strong> Ref: <%= solicitud.pago && solicitud.pago.referencia %>
               </div>
+            <% } %>
+            <% if ((solicitud.estado === 'Pagada' || solicitud.estado === 'Completada') && solicitud.pago && solicitud.pago.referencia) { %>
+              <a href="/pago/<%= solicitud._id %>/comprobante" target="_blank" class="btn btn-outline-primary w-100 mb-2">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Ver comprobante de pago
+              </a>
             <% } %>
 
             <% if (solicitud.estado === 'Completada') { %>

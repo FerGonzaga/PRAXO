@@ -57,10 +57,11 @@
                 <p class="small text-muted fst-italic mb-3">"<%= solicitud.mensajeCotizacion %>"</p>
               <% } %>
               <hr>
-              <div class="d-flex justify-content-between align-items-end">
-                <span class="text-muted">Total</span>
-                <span class="total fw-bold text-success">$<%= Number(solicitud.precioAcordado).toLocaleString('es-MX', { minimumFractionDigits: 2 }) %> <small class="fs-6">MXN</small></span>
-              </div>
+              <% const d = tarifas.desgloseDeSolicitud(solicitud); %>
+              <%- include('partials/desglose', { d, rol: 'cliente' }) %>
+              <p class="small text-muted mt-3 mb-0">
+                <i class="bi bi-receipt me-1"></i> Al pagar recibirás un comprobante en PDF como garantía de tu compra.
+              </p>
             </div>
           </div>
 
@@ -108,7 +109,7 @@
                 <div id="errorCliente" class="alert alert-danger d-none"></div>
 
                 <button type="submit" class="btn btn-success btn-lg w-100 fw-bold" id="btnPagar">
-                  <i class="bi bi-lock-fill me-1"></i> Pagar $<%= Number(solicitud.precioAcordado).toLocaleString('es-MX', { minimumFractionDigits: 2 }) %> MXN
+                  <i class="bi bi-lock-fill me-1"></i> Pagar <%= tarifas.formatoMXN(tarifas.desgloseDeSolicitud(solicitud).total) %> MXN
                 </button>
                 <p class="text-center text-muted small mt-3 mb-0"><i class="bi bi-shield-check me-1"></i> Pago protegido por PRAXO</p>
               </form>

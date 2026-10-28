@@ -134,10 +134,13 @@
 
                       <div class="mb-3 p-3 bg-light rounded border">
                         <label class="form-label fw-bold text-success"><i class="bi bi-cash me-1"></i> Tu Cotización (MXN)</label>
-                        <p class="small text-muted mb-2">Ingresa el precio total estimado por el trabajo.</p>
+                        <p class="small text-muted mb-2">Ingresa lo que cobrarás por el trabajo. <strong>Recibes el 100%</strong> de esta cantidad.</p>
                         <div class="input-group">
                           <span class="input-group-text">$</span>
-                          <input type="number" class="form-control" name="precioAcordado" placeholder="Ej. 850" min="0" required>
+                          <input type="number" class="form-control input-cotizacion" name="precioAcordado" placeholder="Ej. 850" min="1" step="0.01" required>
+                        </div>
+                        <div class="small mt-2 text-muted vista-total">
+                          El cliente pagará tu precio + comisión PRAXO <%= tarifas.COMISION_PORCENTAJE %>% + IVA <%= tarifas.IVA_PORCENTAJE %>% sobre la comisión.
                         </div>
                       </div>
 
@@ -169,5 +172,24 @@
 
   <%- include('partials/footer') %>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Vista previa del total que pagará el cliente al escribir la cotización
+    (function () {
+      const COMISION = <%= tarifas.COMISION_PORCENTAJE %>, IVA = <%= tarifas.IVA_PORCENTAJE %>;
+      const r = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+      const f = (n) => n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+      document.querySelectorAll('.input-cotizacion').forEach((input) => {
+        const caja = input.closest('.mb-3').querySelector('.vista-total');
+        const original = caja.innerHTML;
+        input.addEventListener('input', () => {
+          const p = r(Number(input.value));
+          if (!p || p <= 0) { caja.innerHTML = original; return; }
+          const c = r(p * COMISION / 100), i = r(c * IVA / 100);
+          caja.innerHTML = 'Tú recibes <strong class="text-success">' + f(p) + '</strong> · Comisión ' + f(c) +
+            ' · IVA ' + f(i) + '<br>El cliente pagará <strong class="text-dark">' + f(r(p + c + i)) + ' MXN</strong>';
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

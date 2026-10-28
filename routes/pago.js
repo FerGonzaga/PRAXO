@@ -15,8 +15,75 @@ const router = express.Router();
 const Solicitud = require('../models/Solicitud');
 const Mensaje = require('../models/Mensaje');
 const requiereSesion = require('../middlewares/requiereSesion');
+const { desgloseDeSolicitud, formatoMXN } = require('../config/tarifas');
+const { generarTicketPdf } = require('../services/ticketPdf');
 
 router.use(requiereSesion);
+
+// ===========================================================
+// GET /pago/:id/comprobante  -> ticket PDF del pago
+// Lo pueden descargar el cliente y el prestador de la solicitud.
+// Agrega ?descargar=1 para forzar la descarga.
+// ===========================================================
+router.get('/:id/comprobante', async (req, res) => {
+  try {
+    const solicitud = await Solicitud.findById(req.params.id)
+      .populate('clienteId', 'nombre')
+      .populate('trabajadorId', 'nombre oficio usuarioId');
+
+    if (!solicitud || !solicitud.pago || !solicitud.pago.referencia) {
+      return res.status(404).send('Este servicio aún no tiene un pago registrado.');
+    }
+
+    const u = req.session.usuario;
+    const esCliente = u.tipoUsuario === 'cliente' &&
+      solicitud.clienteId && String(solicitud.clienteId._id) === String(u.id);
+    const esPrestador = u.tipoUsuario === 'prestador' &&
+      solicitud.trabajadorId && String(solicitud.trabajadorId.usuarioId) === String(u.id);
+
+    if (!esCliente && !esPrestador) {
+      return res.status(403).send('No tienes permiso para ver este comprobante.');
+    }
+
+    const p = solicitud.pago;
+    // Pagos hechos antes de existir la comisión: se muestran tal cual se cobraron
+    const desglose = typeof p.precioPrestador === 'number'
+      ? {
+          precioPrestador: p.precioPrestador, comisionPorcentaje: p.comisionPorcentaje,
+          comision: p.comision, ivaPorcentaje: p.ivaPorcentaje, ivaComision: p.ivaComision, total: p.monto
+        }
+      : { precioPrestador: p.monto, comisionPorcentaje: 0, comision: 0, ivaPorcentaje: 16, ivaComision: 0, total: p.monto };
+
+    const fechaMx = (f) => new Date(f).toLocaleString('es-MX', {
+      timeZone: 'America/Mexico_City', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    const pdf = generarTicketPdf({
+      referencia: p.referencia,
+      fechaPago: fechaMx(p.fecha),
+      estado: solicitud.estado === 'Completada' ? 'PAGADO / COMPLETADO' : 'PAGADO',
+      cliente: solicitud.clienteId ? solicitud.clienteId.nombre : 'Cliente PRAXO',
+      prestador: solicitud.trabajadorId ? solicitud.trabajadorId.nombre : 'Profesional PRAXO',
+      oficio: solicitud.trabajadorId ? solicitud.trabajadorId.oficio : '',
+      servicio: solicitud.servicio,
+      fechaServicio: [solicitud.fecha, solicitud.hora].filter(Boolean).join(' '),
+      ubicacion: solicitud.ubicacion,
+      desglose,
+      metodo: `${p.marca || 'Tarjeta'} **** ${p.ultimos4 || '----'} (simulado)`
+    });
+
+    const nombre = `Comprobante-${p.referencia}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Length', pdf.length);
+    res.setHeader('Content-Disposition', `${req.query.descargar ? 'attachment' : 'inline'}; filename="${nombre}"`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.send(pdf);
+
+  } catch (error) {
+    console.error('Error al generar el comprobante:', error);
+    res.status(500).send('No se pudo generar el comprobante.');
+  }
+});
 
 // Solo clientes pueden pagar
 router.use((req, res, next) => {
@@ -173,6 +240,8 @@ router.post('/:id', async (req, res) => {
       });
     }
 
+    const desglose = desgloseDeSolicitud(solicitud);
+
     const referencia =
       'PRX-' + Date.now().toString(36).toUpperCase() + '-' +
       crypto.randomBytes(3).toString('hex').toUpperCase();
@@ -185,12 +254,18 @@ router.post('/:id', async (req, res) => {
       {
         $set: {
           estado: 'Pagada',
+          desglose,
           pago: {
             referencia,
             metodo: 'Tarjeta (simulado)',
             marca: tarjeta.marca,
             ultimos4: tarjeta.ultimos4,
-            monto: solicitud.precioAcordado,
+            monto: desglose.total, // total = prestador + comisión + IVA
+            precioPrestador: desglose.precioPrestador,
+            comisionPorcentaje: desglose.comisionPorcentaje,
+            comision: desglose.comision,
+            ivaPorcentaje: desglose.ivaPorcentaje,
+            ivaComision: desglose.ivaComision,
             moneda: 'MXN',
             fecha: new Date()
           }
@@ -206,7 +281,7 @@ router.post('/:id', async (req, res) => {
     await Mensaje.create({
       solicitudId: pagada._id,
       emisorId: req.session.usuario.id,
-      texto: `💳 Pago realizado por $${pagada.pago.monto} MXN (${tarjeta.marca} •••• ${tarjeta.ultimos4}). Referencia: ${referencia}`
+      texto: `💳 Pago realizado por ${formatoMXN(pagada.pago.monto)} MXN (${tarjeta.marca} •••• ${tarjeta.ultimos4}). Referencia: ${referencia}`
     });
 
     res.redirect(`/chat/${pagada._id}?aviso=pagada`);

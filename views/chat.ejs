@@ -42,14 +42,17 @@
           <% } %>
         </div>
 
+        <% const d = tarifas.desgloseDeSolicitud(solicitud); %>
+        <% const rolVista = usuarioLogueado.tipoUsuario === 'prestador' ? 'prestador' : 'cliente'; %>
+
         <!-- ZONA DE COTIZACIÓN -->
         <% if (solicitud.estado === 'Cotizada') { %>
           <div class="cotizacion-box p-4 mb-4 shadow-sm">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <h5 class="fw-bold text-success mb-1"><i class="bi bi-file-earmark-check-fill me-1"></i> Cotización Oficial del Prestador</h5>
-                <p class="mb-1 text-dark"><strong>Mensaje:</strong> <%= solicitud.mensajeCotizacion %></p>
-                <p class="mb-0 text-dark fs-5"><strong>Precio acordado:</strong> $<%= solicitud.precioAcordado %> MXN</p>
+                <p class="mb-2 text-dark"><strong>Mensaje:</strong> <%= solicitud.mensajeCotizacion %></p>
+                <%- include('partials/desglose', { d, rol: rolVista }) %>
               </div>
               
               <!-- Si el que mira es el cliente, mostramos los botones de ACEPTAR / RECHAZAR -->
@@ -57,7 +60,7 @@
                 <div class="text-end">
                   <span class="badge bg-warning text-dark mb-2">Esperando tu confirmación</span>
                   <form action="/chat/<%= solicitud._id %>/aceptar" method="POST" class="mt-1"
-                        onsubmit="this.querySelector('button').disabled = true; return confirm('¿Aceptar la cotización por $<%= solicitud.precioAcordado %> MXN?');">
+                        onsubmit="this.querySelector('button').disabled = true; return confirm('¿Aceptar la cotización? Total a pagar: <%= tarifas.formatoMXN(d.total) %> MXN');">
                     <button type="submit" class="btn btn-success fw-bold px-4"><i class="bi bi-credit-card me-1"></i> Aceptar y Pagar</button>
                   </form>
                   <form action="/chat/<%= solicitud._id %>/rechazar" method="POST" class="mt-2"
@@ -79,8 +82,8 @@
           <div class="cotizacion-box p-4 mb-4 shadow-sm">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
               <div>
-                <h5 class="fw-bold text-success mb-1"><i class="bi bi-check-circle-fill me-1"></i> Cotización aceptada</h5>
-                <p class="mb-0 text-dark fs-5"><strong>Total a pagar:</strong> $<%= solicitud.precioAcordado %> MXN</p>
+                <h5 class="fw-bold text-success mb-2"><i class="bi bi-check-circle-fill me-1"></i> Cotización aceptada</h5>
+                <%- include('partials/desglose', { d, rol: rolVista }) %>
               </div>
               <div class="text-end">
                 <% if (usuarioLogueado.tipoUsuario === 'cliente') { %>
@@ -99,7 +102,10 @@
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
               <div>
                 <h5 class="fw-bold text-primary mb-2"><i class="bi bi-receipt-cutoff me-1"></i> Comprobante de pago</h5>
-                <p class="mb-1"><strong>Monto:</strong> $<%= solicitud.pago.monto %> <%= solicitud.pago.moneda %></p>
+                <p class="mb-1"><strong>Total pagado:</strong> <%= tarifas.formatoMXN(solicitud.pago.monto) %> <%= solicitud.pago.moneda %></p>
+                <% if (rolVista === 'prestador' && typeof solicitud.pago.precioPrestador === 'number') { %>
+                  <p class="mb-1"><strong>Tú recibes:</strong> <%= tarifas.formatoMXN(solicitud.pago.precioPrestador) %> MXN</p>
+                <% } %>
                 <p class="mb-1"><strong>Método:</strong> <%= solicitud.pago.marca %> •••• <%= solicitud.pago.ultimos4 %> <span class="badge bg-light text-muted border">simulado</span></p>
                 <p class="mb-1"><strong>Referencia:</strong> <code><%= solicitud.pago.referencia %></code></p>
                 <p class="mb-0 small text-muted"><%= new Date(solicitud.pago.fecha).toLocaleString('es-MX') %></p>
@@ -110,6 +116,14 @@
                 <% } else { %>
                   <span class="badge bg-primary">Pagado. El prestador ya fue notificado.</span>
                 <% } %>
+                <div class="mt-3 d-flex flex-column gap-2">
+                  <a href="/pago/<%= solicitud._id %>/comprobante" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Ver comprobante (PDF)
+                  </a>
+                  <a href="/pago/<%= solicitud._id %>/comprobante?descargar=1" class="btn btn-primary btn-sm">
+                    <i class="bi bi-download me-1"></i> Descargar ticket
+                  </a>
+                </div>
               </div>
             </div>
           </div>

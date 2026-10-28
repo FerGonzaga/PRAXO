@@ -4,6 +4,7 @@ const Solicitud = require('../models/Solicitud');
 const Mensaje = require('../models/Mensaje');
 const Trabajador = require('../models/Trabajador');
 const Resena = require('../models/Resena');
+const { desgloseDeSolicitud, formatoMXN } = require('../config/tarifas');
 const { recalcularCalificacion } = require('../services/calificaciones');
 const requiereSesion = require('../middlewares/requiereSesion');
  
@@ -142,7 +143,7 @@ router.post('/:id/aceptar', async (req, res) => {
     await Mensaje.create({
       solicitudId: solicitud._id,
       emisorId: usuario.id,
-      texto: `✅ Acepté la cotización por $${solicitud.precioAcordado} MXN.`
+      texto: `✅ Acepté la cotización. Total a pagar: ${formatoMXN(desgloseDeSolicitud(solicitud).total)} MXN.`
     });
  
     // Siguiente paso: pasarela de pagos (Aceptada -> Pagada)

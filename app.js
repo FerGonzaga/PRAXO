@@ -16,6 +16,9 @@ const conectarDB = require('./config/db');
 
 const app = express();
 
+// Reglas de cobro (comisión + IVA) disponibles en todas las vistas EJS
+app.locals.tarifas = require('./config/tarifas');
+
 const PORT =
   process.env.PORT || 3000;
 

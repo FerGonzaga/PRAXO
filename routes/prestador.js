@@ -9,6 +9,7 @@ const Trabajador = require('../models/Trabajador');
 const SolicitudServicio = require('../models/SolicitudServicio');
 const Solicitud = require('../models/Solicitud'); // 🟢 IMPORTAMOS LA NUEVA MÁQUINA DE ESTADOS
 const Usuario = require('../models/Usuarios_Praxo');
+const { calcularDesglose } = require('../config/tarifas');
 
 const UNIDADES = ['servicio', 'hora', 'dia'];
 const PRECIO_MAXIMO = 1000000;
@@ -223,8 +224,8 @@ router.post('/responder-solicitud/:id', async (req, res) => {
     const { mensajeCotizacion, precioAcordado } = req.body;
     
     // Validar precio
-    const precio = Number(precioAcordado);
-    if (!precio || precio <= 0) {
+    const precio = Math.round(Number(precioAcordado) * 100) / 100;
+    if (!Number.isFinite(precio) || precio <= 0 || precio > PRECIO_MAXIMO) {
       return res.status(400).send('Debes ingresar un precio válido.');
     }
 
@@ -246,7 +247,8 @@ router.post('/responder-solicitud/:id', async (req, res) => {
 
     // Actualizamos la máquina de estados
     solicitud.estado = 'Cotizada';
-    solicitud.precioAcordado = precio;
+    solicitud.precioAcordado = precio;           // lo que recibe el prestador
+    solicitud.desglose = calcularDesglose(precio); // + comisión PRAXO + IVA
     solicitud.mensajeCotizacion = mensajeCotizacion;
 
     await solicitud.save();

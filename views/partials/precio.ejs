@@ -21,10 +21,13 @@
   <span>
     <span class="text-muted small">Desde</span>
     <strong class="text-dark">
-      <%= new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(_precio) %>
+      <%= tarifas.formatoMXN(tarifas.calcularDesglose(_precio).total) %>
     </strong>
     <span class="text-muted small">
       <%= _etiquetasUnidad[trabajador.unidadPrecio] || 'por servicio' %>
+    </span>
+    <span class="d-block text-muted" style="font-size: .72rem;">
+      Precio final: incluye comisión PRAXO e IVA
     </span>
   </span>
 

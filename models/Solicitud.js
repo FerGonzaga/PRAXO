@@ -31,7 +31,17 @@ const SolicitudSchema = new mongoose.Schema({
   },
   
   // 🟢 DATOS DE LA COTIZACIÓN (Lo llenará el prestador después)
-  precioAcordado: { type: Number, default: null }, 
+  precioAcordado: { type: Number, default: null }, // lo que recibe el prestador
+
+  // 🟢 DESGLOSE DEL COBRO (se fija al cotizar; ver config/tarifas.js)
+  desglose: {
+    precioPrestador: { type: Number, default: null },
+    comisionPorcentaje: { type: Number, default: null },
+    comision: { type: Number, default: null },
+    ivaPorcentaje: { type: Number, default: null },
+    ivaComision: { type: Number, default: null },
+    total: { type: Number, default: null } // lo que paga el cliente
+  },
   mensajeCotizacion: { type: String, default: '' }, 
   
   // Momento en que el cliente aceptó la cotización
@@ -46,7 +56,12 @@ const SolicitudSchema = new mongoose.Schema({
     metodo: { type: String, default: null },
     marca: { type: String, default: null },
     ultimos4: { type: String, default: null },
-    monto: { type: Number, default: null },
+    monto: { type: Number, default: null }, // total cobrado al cliente
+    precioPrestador: { type: Number, default: null },
+    comisionPorcentaje: { type: Number, default: null },
+    comision: { type: Number, default: null },
+    ivaPorcentaje: { type: Number, default: null },
+    ivaComision: { type: Number, default: null },
     moneda: { type: String, default: 'MXN' },
     fecha: { type: Date, default: null }
   },

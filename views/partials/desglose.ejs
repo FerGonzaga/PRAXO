@@ -1,0 +1,37 @@
+<%# views/partials/desglose.ejs
+     Tabla con el desglose del precio de un servicio.
+     USO: include('partials/desglose', { d, rol })   (rol: 'cliente' | 'prestador')
+     d = tarifas.desgloseDeSolicitud(solicitud) %>
+<%
+  const _f = tarifas.formatoMXN;
+  const _rol = typeof rol !== 'undefined' ? rol : 'cliente';
+%>
+<table class="table table-sm table-borderless mb-0 small" style="max-width: 360px;">
+  <tbody>
+    <tr>
+      <td class="text-muted ps-0">Servicio del prestador</td>
+      <td class="text-end pe-0"><%= _f(d.precioPrestador) %></td>
+    </tr>
+    <tr>
+      <td class="text-muted ps-0">Comisión PRAXO (<%= d.comisionPorcentaje %>%)</td>
+      <td class="text-end pe-0"><%= _f(d.comision) %></td>
+    </tr>
+    <tr>
+      <td class="text-muted ps-0">IVA <%= d.ivaPorcentaje %>% sobre la comisión</td>
+      <td class="text-end pe-0"><%= _f(d.ivaComision) %></td>
+    </tr>
+    <tr class="border-top">
+      <td class="fw-bold ps-0 pt-2 fs-6">Total<%= _rol === 'cliente' ? ' a pagar' : ' que paga el cliente' %></td>
+      <td class="text-end fw-bold pe-0 pt-2 fs-6 text-success"><%= _f(d.total) %> MXN</td>
+    </tr>
+    <% if (_rol === 'prestador') { %>
+      <tr>
+        <td colspan="2" class="ps-0 pt-2">
+          <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+            <i class="bi bi-wallet2 me-1"></i> Tú recibes <%= _f(d.precioPrestador) %> (100% de tu cotización)
+          </span>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>
