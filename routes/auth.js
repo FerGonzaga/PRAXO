@@ -10,6 +10,7 @@ const Trabajador = require('../models/Trabajador');
 const TokenVerificacion = require('../models/TokenVerificacion');
 
 const { enviarCorreoVerificacion } = require('../services/brevo');
+const { VERSION_AVISO } = require('../config/privacidad');
 const router = express.Router();
 const HORAS_EXPIRACION_TOKEN = 24;
 
@@ -31,6 +32,8 @@ router.post('/registro', async (req, res) => {
       descripcion,
       // 🟢 NUEVOS CAMPOS A ATRAPAR
       aceptaTerminos,
+      aceptaPrivacidad,   // consentimiento expreso (obligatorio)
+      aceptaPromociones,  // finalidades secundarias (opcional)
       conceptoPrecio,
       tarifaPrecio
     } = req.body;
@@ -38,9 +41,16 @@ router.post('/registro', async (req, res) => {
     // --------------------------------------------------
     // 🟢 VALIDACIÓN DE TÉRMINOS Y CONDICIONES (NIVEL BACKEND)
     // --------------------------------------------------
-    if (!aceptaTerminos) {
+    if (aceptaTerminos !== true) {
       return res.status(400).json({
         mensaje: 'Debes aceptar los Términos y Condiciones para registrarte.'
+      });
+    }
+
+    // 🔒 CONSENTIMIENTO EXPRESO DEL AVISO DE PRIVACIDAD (LFPDPPP)
+    if (aceptaPrivacidad !== true) {
+      return res.status(400).json({
+        mensaje: 'Debes leer y aceptar el Aviso de Privacidad para registrarte.'
       });
     }
 
@@ -92,7 +102,15 @@ router.post('/registro', async (req, res) => {
       correo: correoNormalizado,
       passwordHash,
       tipoUsuario,
-      emailVerificado: false
+      emailVerificado: false,
+      consentimiento: {
+        terminos: { aceptado: true, fecha: new Date() },
+        privacidad: { aceptado: true, fecha: new Date(), version: VERSION_AVISO },
+        promociones: {
+          aceptado: aceptaPromociones === true,
+          fecha: aceptaPromociones === true ? new Date() : null
+        }
+      }
     });
 
     await nuevoUsuario.save();

@@ -353,6 +353,11 @@ app.use('/chat', require('./routes/chat'));
 // ------------------------------------------
 app.use('/pago', require('./routes/pago'));
 
+// ------------------------------------------
+// Historial de servicios (cliente y prestador)
+// ------------------------------------------
+app.use('/historial', require('./routes/historial'));
+
 
 // ==========================================
 // RUTA NO ENCONTRADA

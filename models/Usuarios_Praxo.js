@@ -44,6 +44,24 @@ const usuarioSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Registro del consentimiento (evidencia de cuándo y qué aceptó)
+    consentimiento: {
+      terminos: {
+        aceptado: { type: Boolean, default: false },
+        fecha: { type: Date, default: null },
+      },
+      privacidad: {
+        aceptado: { type: Boolean, default: false },
+        fecha: { type: Date, default: null },
+        version: { type: String, default: null },
+      },
+      // Finalidades secundarias (promociones, encuestas): opt-in, apagado por defecto
+      promociones: {
+        aceptado: { type: Boolean, default: false },
+        fecha: { type: Date, default: null },
+      },
+    },
   },
   {
     timestamps: true,

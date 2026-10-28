@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aviso de Privacidad - PRAXO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    .aviso h2 { font-size: 1.1rem; font-weight: 700; margin-top: 2rem; color: #212529; }
+    .aviso { color: #495057; line-height: 1.75; }
+    .aviso li { margin-bottom: .35rem; }
+    .indice a { text-decoration: none; }
+  </style>
+</head>
+<body class="bg-light">
+
+  <%- include('partials/navbar') %>
+
+  <main class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 aviso">
+
+          <h1 class="fw-bold mb-2 text-center"><i class="bi bi-shield-lock text-primary me-2"></i>Aviso de Privacidad Integral</h1>
+          <p class="text-muted text-center mb-4">
+            Última actualización: <%= privacidad.FECHA_ACTUALIZACION %> · Versión <%= privacidad.VERSION_AVISO %>
+          </p>
+
+          <div class="alert alert-light border small mb-4">
+            En cumplimiento de la <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares</strong>
+            (LFPDPPP, publicada en el DOF el 20 de marzo de 2025) te informamos qué datos recabamos, para qué los usamos
+            y cómo puedes ejercer tus derechos.
+            <% if (usuarioAutenticado) { %>
+              Puedes administrar tu consentimiento en tu <a href="/perfil/privacidad">Centro de privacidad</a>.
+            <% } %>
+          </div>
+
+          <nav class="indice small mb-2">
+            <strong>Contenido:</strong>
+            <a href="#responsable">1. Responsable</a> ·
+            <a href="#datos">2. Datos que recabamos</a> ·
+            <a href="#finalidades">3. Finalidades</a> ·
+            <a href="#negativa">4. Negativa a finalidades secundarias</a> ·
+            <a href="#transferencias">5. Transferencias y encargados</a> ·
+            <a href="#arco">6. Derechos ARCO</a> ·
+            <a href="#revocacion">7. Revocación y limitación</a> ·
+            <a href="#cookies">8. Cookies</a> ·
+            <a href="#seguridad">9. Seguridad</a> ·
+            <a href="#cambios">10. Cambios al aviso</a>
+          </nav>
+
+          <h2 id="responsable">1. Identidad y domicilio del responsable</h2>
+          <p>
+            <strong>PRAXO</strong> ("Find. Connect. Solve."), plataforma de intermediación de servicios desarrollada como
+            proyecto académico por estudiantes de Ingeniería en Tecnologías de la Información y Comunicaciones del
+            Instituto Tecnológico Superior del Occidente del Estado de Hidalgo, es responsable del tratamiento de tus
+            datos personales. Para efectos de este aviso señala como domicilio: <%= privacidad.DOMICILIO %>.
+          </p>
+          <p>Contacto en materia de privacidad: <strong><%= privacidad.CORREO_PRIVACIDAD %></strong>.</p>
+
+          <h2 id="datos">2. Datos personales que recabamos</h2>
+          <ul>
+            <li><strong>Identificación y contacto:</strong> nombre y correo electrónico.</li>
+            <li><strong>Autenticación:</strong> contraseña, que se guarda únicamente cifrada (hash bcrypt); nadie en PRAXO puede verla.</li>
+            <li><strong>Perfil de prestador:</strong> teléfono, ciudad, oficio, descripción, fotografía y tarifas.</li>
+            <li><strong>Datos del servicio:</strong> domicilio o ubicación donde se realizará, referencias, descripción del problema, fecha, hora y fotografías de evidencia.</li>
+            <li><strong>Comunicaciones:</strong> mensajes del chat entre cliente y prestador.</li>
+            <li><strong>Pago:</strong> marca y últimos 4 dígitos de la tarjeta, referencia, monto y fecha. <strong>No almacenamos</strong> el número completo de la tarjeta ni el código de seguridad (CVV).</li>
+            <li><strong>Reputación:</strong> calificaciones y reseñas.</li>
+            <li><strong>Datos técnicos:</strong> cookie de sesión y, en su caso, datos estadísticos de navegación (ver sección 8).</li>
+          </ul>
+          <p>
+            <strong>Datos sensibles:</strong> PRAXO no solicita datos personales sensibles (salud, origen étnico, creencias,
+            preferencias, etc.). Te pedimos no incluirlos en fotografías, descripciones o mensajes.
+          </p>
+
+          <h2 id="finalidades">3. Finalidades del tratamiento</h2>
+          <p><strong>Finalidades primarias</strong> (necesarias para darte el servicio):</p>
+          <ol>
+            <li>Crear, verificar y administrar tu cuenta.</li>
+            <li>Publicar el perfil de los prestadores para que los clientes los encuentren.</li>
+            <li>Gestionar solicitudes de servicio, cotizaciones y el chat entre las partes.</li>
+            <li>Procesar pagos y emitir comprobantes.</li>
+            <li>Publicar calificaciones y reseñas.</li>
+            <li>Atender aclaraciones, cancelaciones y reclamos.</li>
+            <li>Mantener la seguridad de la plataforma y prevenir fraudes.</li>
+            <li>Cumplir obligaciones legales.</li>
+          </ol>
+          <p><strong>Finalidades secundarias</strong> (no son necesarias para el servicio y <strong>solo se realizan si nos das tu consentimiento</strong>):</p>
+          <ol type="a">
+            <li>Enviarte promociones, novedades y encuestas de satisfacción.</li>
+            <li>Elaborar estadísticas de uso de la plataforma para mejorarla.</li>
+          </ol>
+
+          <h2 id="negativa">4. ¿Cómo negarte a las finalidades secundarias?</h2>
+          <p>
+            La casilla de promociones aparece <strong>desmarcada</strong> al registrarte: solo si tú la marcas usaremos tus datos
+            para esos fines. Puedes cambiar tu decisión en cualquier momento desde tu
+            <a href="/perfil/privacidad">Centro de privacidad</a> o escribiendo a <%= privacidad.CORREO_PRIVACIDAD %>.
+            Negarte no afecta el uso de la plataforma.
+          </p>
+
+          <h2 id="transferencias">5. Transferencias y encargados</h2>
+          <p>
+            <strong>Entre usuarios:</strong> para que el servicio pueda realizarse, el prestador que elijas verá tu nombre y los
+            datos del servicio (descripción, ubicación, fecha y fotografías), y tú verás el perfil público del prestador.
+            Esta comunicación es necesaria para cumplir la relación entre las partes.
+          </p>
+          <p>
+            <strong>Encargados:</strong> para operar, PRAXO utiliza proveedores que tratan datos únicamente por nuestra cuenta y
+            conforme a nuestras instrucciones, y que pueden estar ubicados fuera de México:
+          </p>
+          <ul>
+            <li><strong>MongoDB Atlas</strong> — almacenamiento de la base de datos.</li>
+            <li><strong>Render</strong> — servidor donde se ejecuta la aplicación.</li>
+            <li><strong>Brevo</strong> — envío de correos de verificación.</li>
+            <li><strong>EmailJS</strong> — envío del formulario de contacto.</li>
+            <li><strong>Google Analytics</strong> — estadísticas de uso, solo si se habilita (ver sección 8).</li>
+          </ul>
+          <p>PRAXO <strong>no vende ni renta</strong> tus datos personales.</p>
+
+          <h2 id="arco">6. Derechos ARCO</h2>
+          <p>
+            Tienes derecho a <strong>Acceder</strong> a tus datos, <strong>Rectificarlos</strong> si son inexactos,
+            <strong>Cancelarlos</strong> cuando consideres que no se requieren para las finalidades señaladas, y
+            <strong>Oponerte</strong> a su tratamiento para fines específicos.
+          </p>
+          <ul>
+            <li><strong>En línea:</strong> en tu <a href="/perfil/privacidad">Centro de privacidad</a> puedes descargar una copia de todos tus datos (acceso).</li>
+            <li><strong>Por correo:</strong> envía tu solicitud a <%= privacidad.CORREO_PRIVACIDAD %> indicando tu nombre, el correo de tu cuenta, el derecho que deseas ejercer, una descripción clara de los datos y, en su caso, documentos que acrediten tu identidad.</li>
+          </ul>
+          <p>Responderemos en los plazos que establece la LFPDPPP. Si consideras que tu derecho no fue atendido, puedes acudir ante la <strong>Secretaría Anticorrupción y Buen Gobierno</strong>, autoridad en materia de protección de datos personales.</p>
+
+          <h2 id="revocacion">7. Revocación del consentimiento y limitación del uso</h2>
+          <p>
+            Puedes revocar el consentimiento que nos diste, por los mismos medios de la sección 6. Ten en cuenta que, si revocas
+            el consentimiento para finalidades primarias, no podremos seguir prestándote el servicio y tu cuenta podrá ser
+            cancelada. Para dejar de recibir promociones basta con desactivarlas en tu Centro de privacidad.
+          </p>
+
+          <h2 id="cookies">8. Uso de cookies y tecnologías de rastreo</h2>
+          <p>
+            Usamos una <strong>cookie de sesión</strong> estrictamente necesaria para mantener tu sesión iniciada (protegida
+            con <code>httpOnly</code>, dura 2 horas). Si se habilita Google Analytics, se usarán cookies para obtener
+            estadísticas agregadas de navegación (páginas visitadas, tipo de navegador y dispositivo). Puedes bloquear las
+            cookies desde la configuración de tu navegador, aunque algunas funciones podrían dejar de operar.
+          </p>
+
+          <h2 id="seguridad">9. Medidas de seguridad</h2>
+          <ul>
+            <li>Contraseñas cifradas con bcrypt.</li>
+            <li>Verificación de correo electrónico al registrarse.</li>
+            <li>Control de acceso: cada usuario solo puede ver sus propias solicitudes, chats y comprobantes.</li>
+            <li>No se almacenan datos completos de tarjetas.</li>
+            <li>Credenciales del sistema guardadas en variables de entorno, fuera del código fuente.</li>
+          </ul>
+
+          <h2 id="cambios">10. Cambios al aviso de privacidad</h2>
+          <p>
+            Cualquier modificación se publicará en esta página con su nueva fecha y versión. Si el cambio implica nuevas
+            finalidades que requieran tu consentimiento, te lo solicitaremos nuevamente.
+          </p>
+
+          <hr class="my-4">
+          <p class="small text-muted mb-0">
+            Consulta también nuestros <a href="/terminos">Términos y Condiciones</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

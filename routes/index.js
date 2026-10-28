@@ -139,6 +139,16 @@ router.get('/revisa-correo', (req, res) => {
 });
 
 // ==========================================
+// AVISO DE PRIVACIDAD INTEGRAL
+// ==========================================
+router.get('/aviso-privacidad', (req, res) => {
+  res.render('aviso-privacidad', {
+    titulo: 'Aviso de Privacidad',
+    privacidad: require('../config/privacidad')
+  });
+});
+
+// ==========================================
 // TÉRMINOS Y CONDICIONES (NUEVA RUTA)
 // ==========================================
 router.get('/terminos', (req, res) => {

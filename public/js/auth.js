@@ -18,6 +18,12 @@ if (formRegistro) {
     const checkboxTerminos = document.getElementById('aceptaTerminos');
     const aceptaTerminos = checkboxTerminos ? checkboxTerminos.checked : false;
 
+    // 🔒 Consentimiento expreso del Aviso de Privacidad + opt-in de promociones
+    const checkboxPrivacidad = document.getElementById('aceptaPrivacidad');
+    const aceptaPrivacidad = checkboxPrivacidad ? checkboxPrivacidad.checked : false;
+    const checkboxPromociones = document.getElementById('aceptaPromociones');
+    const aceptaPromociones = checkboxPromociones ? checkboxPromociones.checked : false;
+
     if (!nombre || !correo || !password || !confirmPassword) {
       mostrarMensaje('Completa todos los campos.', 'danger');
       return;
@@ -39,12 +45,19 @@ if (formRegistro) {
       return;
     }
 
+    if (!aceptaPrivacidad) {
+      mostrarMensaje('Debes leer y aceptar el Aviso de Privacidad.', 'danger');
+      return;
+    }
+
     const datosRegistro = { 
       nombre, 
       correo, 
       password, 
       tipoUsuario, 
-      aceptaTerminos // 🟢 LO AGREGAMOS AL PAQUETE JSON
+      aceptaTerminos, // 🟢 LO AGREGAMOS AL PAQUETE JSON
+      aceptaPrivacidad,
+      aceptaPromociones
     };
 
     if (tipoUsuario === 'prestador') {
