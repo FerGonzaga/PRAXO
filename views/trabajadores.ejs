@@ -189,6 +189,10 @@
                           <%= trabajador.oficio %>
                         </div>
 
+                        <% if (trabajador.disponibleAhora) { %>
+                          <span class="badge bg-success rounded-pill align-self-start mb-2"><i class="bi bi-circle-fill small me-1"></i> Disponible ahora</span>
+                        <% } %>
+
                         <p class="card-text">
                           <%= trabajador.descripcion || 'Profesional disponible en PRAXO.' %>
                         </p>
@@ -205,7 +209,7 @@
                           <div class="mb-4">
                             <span class="calificacion">
                               <i class="bi bi-star-fill"></i>
-                              <%= trabajador.calificacionPromedio %>
+                              <%= trabajador.totalResenas > 0 ? Number(trabajador.calificacionPromedio).toFixed(1) + ' (' + trabajador.totalResenas + ')' : 'Nuevo' %>
                             </span>
                           </div>
                           <% } %>

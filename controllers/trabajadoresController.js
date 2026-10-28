@@ -2,6 +2,7 @@
 // Contiene la logica de que hacer cuando llega una peticion a /trabajadores.
 
 const Trabajador = require('../models/Trabajador');
+const Resena = require('../models/Resena');
 
 // Lista trabajadores, opcionalmente filtrados por oficio y/o ciudad
 // (estos vienen del buscador tipo Uber Eats en la pagina de inicio)
@@ -40,9 +41,17 @@ exports.verPerfil = async (req, res) => {
       return res.status(404).send('Trabajador no encontrado.');
     }
 
+    // Últimas reseñas con el nombre de quien la escribió
+    const resenas = await Resena.find({ trabajadorId: trabajador._id })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate('clienteId', 'nombre')
+      .lean();
+
     res.render('perfil-trabajador', {
       titulo: trabajador.nombre,
       trabajador,
+      resenas,
     });
   } catch (error) {
     console.error('Error al obtener el perfil:', error.message);

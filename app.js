@@ -345,6 +345,11 @@ app.use(
 // ------------------------------------------
 app.use('/chat', require('./routes/chat'));
 
+// ------------------------------------------
+// Pago simulado de servicios (Aceptada -> Pagada)
+// ------------------------------------------
+app.use('/pago', require('./routes/pago'));
+
 
 // ==========================================
 // RUTA NO ENCONTRADA

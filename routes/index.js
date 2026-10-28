@@ -111,10 +111,21 @@ router.get('/inicio-cliente', requireTipo('cliente'), async (req, res) => {
 });
 
 // GET /inicio-prestador -> panel de opciones para prestadores (requiere sesion de prestador)
-router.get('/inicio-prestador', requireTipo('prestador'), (req, res) => {
+router.get('/inicio-prestador', requireTipo('prestador'), async (req, res) => {
+  let disponible = false;
+  try {
+    const trabajador = await Trabajador.findOne({ usuarioId: req.session.usuario.id })
+      .select('disponibleAhora')
+      .lean();
+    disponible = Boolean(trabajador && trabajador.disponibleAhora);
+  } catch (error) {
+    console.error('Error al leer disponibilidad:', error.message);
+  }
+
   res.render('inicio-prestador', {
     titulo: 'Inicio',
     usuario: req.session.usuario,
+    disponible,
   });
 });
 

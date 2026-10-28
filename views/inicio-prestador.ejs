@@ -51,10 +51,18 @@
 
       <div class="col-md-6 col-lg-3">
         <div class="card h-100 border-0 shadow-sm text-center p-4">
-          <i class="bi bi-toggle-on display-5 text-primary mb-3"></i>
+          <i id="iconoDisponible" class="bi <%= disponible ? 'bi-toggle-on text-success' : 'bi-toggle-off text-secondary' %> display-5 mb-3"></i>
           <h2 class="h5">Disponibilidad</h2>
           <p class="text-muted small">Marca si estás disponible ahora.</p>
-          <a href="#" class="btn btn-outline-dark mt-auto">Próximamente</a>
+          <div class="mt-auto">
+            <div class="form-check form-switch d-inline-flex align-items-center gap-2 fs-5 mb-1">
+              <input class="form-check-input" type="checkbox" role="switch" id="switchDisponible" <%= disponible ? 'checked' : '' %>>
+              <label class="form-check-label fw-semibold small" for="switchDisponible" id="textoDisponible">
+                <%= disponible ? 'Disponible ahora' : 'No disponible' %>
+              </label>
+            </div>
+            <small id="mensajeDisponible" class="d-block text-muted" style="min-height: 1.2em;"></small>
+          </div>
         </div>
       </div>
 
@@ -65,5 +73,45 @@
   <%- include('partials/footer') %>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Interruptor de disponibilidad: guarda en el servidor sin recargar la página
+    (function () {
+      const sw = document.getElementById('switchDisponible');
+      const texto = document.getElementById('textoDisponible');
+      const icono = document.getElementById('iconoDisponible');
+      const msg = document.getElementById('mensajeDisponible');
+
+      function pintar(on) {
+        sw.checked = on;
+        texto.textContent = on ? 'Disponible ahora' : 'No disponible';
+        icono.className = 'bi display-5 mb-3 ' + (on ? 'bi-toggle-on text-success' : 'bi-toggle-off text-secondary');
+      }
+
+      sw.addEventListener('change', async () => {
+        const deseado = sw.checked;
+        sw.disabled = true;
+        msg.className = 'd-block text-muted';
+        msg.textContent = 'Guardando...';
+        try {
+          const r = await fetch('/prestador/disponibilidad', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ disponible: deseado })
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.mensaje || 'No se pudo guardar.');
+          pintar(data.disponible);
+          msg.className = 'd-block text-success';
+          msg.textContent = data.mensaje;
+        } catch (e) {
+          pintar(!deseado); // revertimos
+          msg.className = 'd-block text-danger';
+          msg.textContent = e.message || 'Error de conexión.';
+        } finally {
+          sw.disabled = false;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

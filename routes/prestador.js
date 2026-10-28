@@ -238,6 +238,12 @@ router.post('/responder-solicitud/:id', async (req, res) => {
       return res.status(404).send('La solicitud no existe.');
     }
 
+    // 🔒 Solo se puede cotizar una solicitud Pendiente
+    // (evita cambiar el precio después de que el cliente aceptó o pagó)
+    if (solicitud.estado !== 'Pendiente') {
+      return res.status(409).send('Esta solicitud ya fue cotizada y no puede modificarse.');
+    }
+
     // Actualizamos la máquina de estados
     solicitud.estado = 'Cotizada';
     solicitud.precioAcordado = precio;
@@ -251,6 +257,42 @@ router.post('/responder-solicitud/:id', async (req, res) => {
   } catch (error) {
     console.error('Error al cotizar solicitud:', error);
     return res.status(500).send('Error interno del servidor.');
+  }
+});
+
+
+// ===========================================================
+// DISPONIBILIDAD ("Disponible ahora")
+// POST /prestador/disponibilidad   body: { disponible: true|false }
+// ===========================================================
+router.post('/disponibilidad', async (req, res) => {
+  try {
+    const { disponible } = req.body;
+
+    if (typeof disponible !== 'boolean') {
+      return res.status(400).json({ mensaje: 'Valor de disponibilidad inválido.' });
+    }
+
+    const trabajador = await Trabajador.findOneAndUpdate(
+      { usuarioId: obtenerUsuarioId(req) },
+      { $set: { disponibleAhora: disponible } },
+      { new: true }
+    );
+
+    if (!trabajador) {
+      return res.status(404).json({ mensaje: 'No se encontró tu perfil de prestador.' });
+    }
+
+    return res.json({
+      disponible: trabajador.disponibleAhora,
+      mensaje: trabajador.disponibleAhora
+        ? 'Ahora apareces como disponible para los clientes.'
+        : 'Ya no apareces como disponible.'
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar disponibilidad:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor.' });
   }
 });
 

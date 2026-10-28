@@ -50,6 +50,11 @@ const trabajadorSchema = new mongoose.Schema(
       default: 0,
     },
 
+    totalResenas: {
+      type: Number,
+      default: 0,
+    },
+
     disponibleAhora: {
       type: Boolean,
       default: false,

@@ -34,6 +34,23 @@ const SolicitudSchema = new mongoose.Schema({
   precioAcordado: { type: Number, default: null }, 
   mensajeCotizacion: { type: String, default: '' }, 
   
+  // Momento en que el cliente aceptó la cotización
+  fechaAceptacion: { type: Date, default: null },
+
+  // Momento en que el prestador marcó el trabajo como terminado
+  fechaCompletado: { type: Date, default: null },
+
+  // Datos del pago (simulado). Nunca guardamos el número completo ni el CVV.
+  pago: {
+    referencia: { type: String, default: null },
+    metodo: { type: String, default: null },
+    marca: { type: String, default: null },
+    ultimos4: { type: String, default: null },
+    monto: { type: Number, default: null },
+    moneda: { type: String, default: 'MXN' },
+    fecha: { type: Date, default: null }
+  },
+
   fechaCreacion: { type: Date, default: Date.now }
 });
 
