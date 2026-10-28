@@ -57,6 +57,9 @@ const SolicitudSchema = new mongoose.Schema({
     marca: { type: String, default: null },
     ultimos4: { type: String, default: null },
     monto: { type: Number, default: null }, // total cobrado al cliente
+    proveedor: { type: String, enum: ['simulado', 'stripe', null], default: null },
+    idExterno: { type: String, default: null },     // PaymentIntent de Stripe (cifrado AES-256-GCM)
+    sesionExterna: { type: String, default: null }, // Checkout Session de Stripe (cifrado AES-256-GCM)
     precioPrestador: { type: Number, default: null },
     comisionPorcentaje: { type: Number, default: null },
     comision: { type: Number, default: null },

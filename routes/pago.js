@@ -17,6 +17,8 @@ const Mensaje = require('../models/Mensaje');
 const requiereSesion = require('../middlewares/requiereSesion');
 const { desgloseDeSolicitud, formatoMXN } = require('../config/tarifas');
 const { generarTicketPdf } = require('../services/ticketPdf');
+const stripe = require('../services/stripe');
+const { registrarPago, confirmarSesionStripe, centavos } = require('../services/pagos');
 
 router.use(requiereSesion);
 
@@ -69,7 +71,7 @@ router.get('/:id/comprobante', async (req, res) => {
       fechaServicio: [solicitud.fecha, solicitud.hora].filter(Boolean).join(' '),
       ubicacion: solicitud.ubicacion,
       desglose,
-      metodo: `${p.marca || 'Tarjeta'} **** ${p.ultimos4 || '----'} (simulado)`
+      metodo: `${p.marca || 'Tarjeta'} **** ${p.ultimos4 || '----'} (${p.proveedor === 'stripe' ? 'Stripe test' : 'simulado'})`
     });
 
     const nombre = `Comprobante-${p.referencia}.pdf`;
@@ -195,7 +197,9 @@ router.get('/:id', async (req, res) => {
       titulo: 'Pago seguro',
       solicitud,
       error: null,
-      datos: {}
+      datos: {},
+      stripeActivo: stripe.activo(),
+      aviso: req.query.aviso || null
     });
 
   } catch (error) {
@@ -219,6 +223,11 @@ router.post('/:id', async (req, res) => {
       return res.redirect(`/chat/${solicitud._id}?aviso=no-pagable`);
     }
 
+    // Con Stripe activo, los datos de tarjeta NO deben llegar a nuestro servidor
+    if (stripe.activo()) {
+      return res.redirect(`/pago/${solicitud._id}`);
+    }
+
     const { numero, titular, vencimiento } = req.body;
     // Para volver a llenar el formulario si hay error (NUNCA regresamos el CVV)
     const datos = { titular, vencimiento, numero };
@@ -226,7 +235,7 @@ router.post('/:id', async (req, res) => {
     const tarjeta = validarTarjeta(req.body);
     if (!tarjeta.ok) {
       return res.status(400).render('pago', {
-        titulo: 'Pago seguro', solicitud, error: tarjeta.error, datos
+        titulo: 'Pago seguro', solicitud, error: tarjeta.error, datos, stripeActivo: false, aviso: null
       });
     }
 
@@ -236,59 +245,106 @@ router.post('/:id', async (req, res) => {
         titulo: 'Pago seguro',
         solicitud,
         error: 'Pago rechazado por el banco: fondos insuficientes. Intenta con otra tarjeta.',
-        datos
+        datos,
+        stripeActivo: false,
+        aviso: null
       });
     }
 
-    const desglose = desgloseDeSolicitud(solicitud);
-
-    const referencia =
-      'PRX-' + Date.now().toString(36).toUpperCase() + '-' +
-      crypto.randomBytes(3).toString('hex').toUpperCase();
-
-    // Actualización atómica: solo pasa a Pagada si sigue Aceptada
-    // (evita cobrar dos veces por doble clic). El monto sale de la BD,
-    // nunca del formulario.
-    const pagada = await Solicitud.findOneAndUpdate(
-      { _id: solicitud._id, clienteId: req.session.usuario.id, estado: 'Aceptada' },
-      {
-        $set: {
-          estado: 'Pagada',
-          desglose,
-          pago: {
-            referencia,
-            metodo: 'Tarjeta (simulado)',
-            marca: tarjeta.marca,
-            ultimos4: tarjeta.ultimos4,
-            monto: desglose.total, // total = prestador + comisión + IVA
-            precioPrestador: desglose.precioPrestador,
-            comisionPorcentaje: desglose.comisionPorcentaje,
-            comision: desglose.comision,
-            ivaPorcentaje: desglose.ivaPorcentaje,
-            ivaComision: desglose.ivaComision,
-            moneda: 'MXN',
-            fecha: new Date()
-          }
-        }
-      },
-      { new: true }
-    );
+    const pagada = await registrarPago({
+      solicitud,
+      desglose: desgloseDeSolicitud(solicitud), // el monto sale de la BD, nunca del formulario
+      datosPago: {
+        proveedor: 'simulado',
+        metodo: 'Tarjeta (simulado)',
+        marca: tarjeta.marca,
+        ultimos4: tarjeta.ultimos4
+      }
+    });
 
     if (!pagada) {
       return res.redirect(`/chat/${solicitud._id}?aviso=ya-pagada`);
     }
-
-    await Mensaje.create({
-      solicitudId: pagada._id,
-      emisorId: req.session.usuario.id,
-      texto: `💳 Pago realizado por ${formatoMXN(pagada.pago.monto)} MXN (${tarjeta.marca} •••• ${tarjeta.ultimos4}). Referencia: ${referencia}`
-    });
 
     res.redirect(`/chat/${pagada._id}?aviso=pagada`);
 
   } catch (error) {
     console.error('Error al procesar el pago:', error);
     res.status(500).send('No se pudo procesar el pago.');
+  }
+});
+
+// ===========================================================
+// STRIPE CHECKOUT (modo prueba)
+// ===========================================================
+
+// POST /pago/:id/stripe  -> crea la sesión y redirige a la página segura de Stripe
+router.post('/:id/stripe', async (req, res) => {
+  try {
+    if (!stripe.activo()) {
+      return res.redirect(`/pago/${req.params.id}`);
+    }
+
+    const solicitud = await buscarSolicitudDelCliente(req);
+    if (!solicitud) {
+      return res.status(404).send('Solicitud no encontrada.');
+    }
+    if (solicitud.estado !== 'Aceptada') {
+      return res.redirect(`/chat/${solicitud._id}?aviso=no-pagable`);
+    }
+
+    const d = desgloseDeSolicitud(solicitud);
+    if (d.total < 10) {
+      return res.redirect(`/pago/${solicitud._id}?aviso=monto-minimo`); // mínimo de Stripe: $10 MXN
+    }
+
+    const base = `${req.protocol}://${req.get('host')}`;
+    const sesion = await stripe.crearSesionCheckout({
+      solicitudId: String(solicitud._id),
+      clienteId: String(req.session.usuario.id),
+      totalCentavos: centavos(d.total),
+      nombre: `${solicitud.servicio} · PRAXO`,
+      descripcion: `Prestador ${formatoMXN(d.precioPrestador)} + comisión ${formatoMXN(d.comision)} + IVA ${formatoMXN(d.ivaComision)}`,
+      urlExito: `${base}/pago/${solicitud._id}/stripe/exito?session_id={CHECKOUT_SESSION_ID}`,
+      urlCancelar: `${base}/pago/${solicitud._id}?aviso=cancelado`
+    });
+
+    return res.redirect(303, sesion.url);
+
+  } catch (error) {
+    console.error('Error creando sesión de Stripe:', error.message);
+    return res.redirect(`/pago/${req.params.id}?aviso=stripe-error`);
+  }
+});
+
+// GET /pago/:id/stripe/exito?session_id=...  -> Stripe regresa aquí tras pagar
+router.get('/:id/stripe/exito', async (req, res) => {
+  try {
+    const solicitud = await buscarSolicitudDelCliente(req);
+    if (!solicitud || !stripe.activo() || !req.query.session_id) {
+      return res.status(404).send('Pago no encontrado.');
+    }
+
+    // Consultamos a Stripe directamente: no confiamos en la URL
+    const sesion = await stripe.obtenerSesion(String(req.query.session_id));
+
+    if (!sesion.metadata || sesion.metadata.solicitudId !== String(solicitud._id)) {
+      return res.status(400).send('La sesión de pago no corresponde a este servicio.');
+    }
+
+    const resultado = await confirmarSesionStripe(sesion);
+
+    if (resultado.estado === 'pagada') {
+      return res.redirect(`/chat/${solicitud._id}?aviso=pagada`);
+    }
+    if (resultado.estado === 'ya-pagada') {
+      return res.redirect(`/chat/${solicitud._id}?aviso=pagada`); // el webhook pudo llegar primero
+    }
+    return res.redirect(`/pago/${solicitud._id}?aviso=${resultado.estado}`);
+
+  } catch (error) {
+    console.error('Error confirmando pago de Stripe:', error.message);
+    return res.redirect(`/pago/${req.params.id}?aviso=stripe-error`);
   }
 });
 

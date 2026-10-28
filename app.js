@@ -19,6 +19,28 @@ const app = express();
 // Reglas de cobro (comisión + IVA) disponibles en todas las vistas EJS
 app.locals.tarifas = require('./config/tarifas');
 
+// ==========================================
+// CIFRADO EN TRÁNSITO (HTTPS / TLS)
+// ==========================================
+// Render atiende HTTPS y reenvía la petición a Node: "trust proxy" permite
+// saber si la conexión original era segura (encabezado X-Forwarded-Proto).
+const ES_PRODUCCION =
+  process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
+
+app.set('trust proxy', 1);
+
+if (ES_PRODUCCION) {
+  app.use((req, res, next) => {
+    // Redirige cualquier petición HTTP a HTTPS
+    if (!req.secure) {
+      return res.redirect(301, `https://${req.get('host')}${req.originalUrl}`);
+    }
+    // HSTS: el navegador solo usará HTTPS con este sitio durante 1 año
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+  });
+}
+
 const PORT =
   process.env.PORT || 3000;
 
@@ -101,6 +123,16 @@ app.use(
 
 
 // ==========================================
+// WEBHOOK DE STRIPE
+// ==========================================
+// Va ANTES de express.json(): la firma se verifica con el cuerpo crudo.
+app.post(
+  '/pago/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  require('./routes/stripeWebhook')
+);
+
+// ==========================================
 // LEER FORMULARIOS Y JSON
 // ==========================================
 
@@ -148,9 +180,10 @@ app.use(
       httpOnly:
         true,
 
-      // Adecuado para localhost.
+      // En producción (Render, HTTPS) la cookie solo viaja cifrada.
+      // En localhost (HTTP) debe ser false o la sesión no funcionaría.
       secure:
-        false,
+        ES_PRODUCCION,
 
       sameSite:
         'lax'

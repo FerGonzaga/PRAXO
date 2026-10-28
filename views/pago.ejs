@@ -33,13 +33,36 @@
           <a href="/chat/<%= solicitud._id %>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Volver al chat</a>
         </div>
 
-        <div class="alert alert-warning small d-flex align-items-start gap-2">
-          <i class="bi bi-cone-striped fs-5"></i>
-          <div>
-            <strong>Modo simulación:</strong> no se realiza ningún cargo real ni se guardan datos de tu tarjeta.
-            Usa <code>4242 4242 4242 4242</code> (aprobada) o <code>4000 0000 0000 0002</code> (rechazada), cualquier fecha futura y cualquier CVV.
+        <% if (aviso === 'cancelado') { %>
+          <div class="alert alert-secondary">Cancelaste el pago en Stripe. No se realizó ningún cargo; puedes intentarlo de nuevo.</div>
+        <% } else if (aviso === 'stripe-error') { %>
+          <div class="alert alert-danger">No pudimos comunicarnos con Stripe. Intenta de nuevo en unos minutos.</div>
+        <% } else if (aviso === 'no-pagada') { %>
+          <div class="alert alert-warning">Stripe aún no confirma tu pago. Si ya pagaste, recarga esta página en unos segundos.</div>
+        <% } else if (aviso === 'monto-invalido' || aviso === 'invalida') { %>
+          <div class="alert alert-danger">El pago no coincide con este servicio y no fue aplicado. Contacta a PRAXO.</div>
+        <% } else if (aviso === 'monto-minimo') { %>
+          <div class="alert alert-warning">El monto mínimo para pagar con tarjeta es de $10.00 MXN.</div>
+        <% } %>
+
+        <% if (stripeActivo) { %>
+          <div class="alert alert-info small d-flex align-items-start gap-2">
+            <i class="bi bi-info-circle fs-5"></i>
+            <div>
+              <strong>Stripe en modo de prueba:</strong> no se realizan cargos reales. En la página de Stripe usa
+              la tarjeta <code>4242 4242 4242 4242</code>, cualquier fecha futura y cualquier CVC
+              (<code>4000 0000 0000 0002</code> simula un rechazo).
+            </div>
           </div>
-        </div>
+        <% } else { %>
+          <div class="alert alert-warning small d-flex align-items-start gap-2">
+            <i class="bi bi-cone-striped fs-5"></i>
+            <div>
+              <strong>Modo simulación:</strong> no se realiza ningún cargo real ni se guardan datos de tu tarjeta.
+              Usa <code>4242 4242 4242 4242</code> (aprobada) o <code>4000 0000 0000 0002</code> (rechazada), cualquier fecha futura y cualquier CVV.
+            </div>
+          </div>
+        <% } %>
 
         <div class="row g-4">
 
@@ -65,6 +88,30 @@
             </div>
           </div>
 
+          <% if (stripeActivo) { %>
+          <!-- PAGO CON STRIPE CHECKOUT -->
+          <div class="col-md-7 order-md-1">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="fw-bold fs-4" style="color:#635bff;letter-spacing:-.5px;">stripe</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-patch-check-fill text-primary me-1"></i>PCI DSS Nivel 1</span>
+              </div>
+              <ul class="list-unstyled small mb-4">
+                <li class="mb-2"><i class="bi bi-lock-fill text-success me-2"></i>Escribirás tu tarjeta en la <strong>página segura de Stripe</strong>, no en PRAXO.</li>
+                <li class="mb-2"><i class="bi bi-eye-slash-fill text-success me-2"></i>PRAXO <strong>nunca recibe ni almacena</strong> el número de tu tarjeta ni el CVC.</li>
+                <li class="mb-2"><i class="bi bi-shield-lock-fill text-success me-2"></i>Toda la comunicación viaja <strong>cifrada con HTTPS (TLS)</strong>.</li>
+                <li><i class="bi bi-lightning-charge-fill text-success me-2"></i><strong>Confirmación inmediata</strong> al volver, con tu comprobante PDF.</li>
+              </ul>
+              <form action="/pago/<%= solicitud._id %>/stripe" method="POST" class="mt-auto"
+                    onsubmit="const b=this.querySelector('button'); b.disabled=true; b.innerHTML='<span class=&quot;spinner-border spinner-border-sm me-2&quot;></span> Conectando con Stripe...';">
+                <button type="submit" class="btn btn-lg w-100 fw-bold text-white" style="background-color:#635bff;">
+                  <i class="bi bi-credit-card-2-front me-1"></i> Pagar <%= tarifas.formatoMXN(tarifas.desgloseDeSolicitud(solicitud).total) %> MXN con Stripe
+                </button>
+              </form>
+              <p class="text-center text-muted small mt-3 mb-0"><i class="bi bi-shield-check me-1"></i> Pago protegido por PRAXO y Stripe</p>
+            </div>
+          </div>
+          <% } else { %>
           <!-- FORMULARIO DE TARJETA -->
           <div class="col-md-7 order-md-1">
             <div class="card border-0 shadow-sm rounded-4 p-4">
@@ -115,6 +162,7 @@
               </form>
             </div>
           </div>
+          <% } %>
 
         </div>
       </div>
@@ -124,6 +172,7 @@
   <%- include('partials/footer') %>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <% if (!stripeActivo) { %>
   <script>
     (function () {
       const $ = (id) => document.getElementById(id);
@@ -183,5 +232,6 @@
       });
     })();
   </script>
+  <% } %>
 </body>
 </html>

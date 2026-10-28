@@ -127,7 +127,7 @@ function generarTicketPdf(datos) {
   items.push({ tipo: 'barras', alto: 44 });
   texto(datos.referencia, { size: 7, align: 'center' });
   espacio(4);
-  parrafo('Comprobante simulado con fines académicos. No es un CFDI ni tiene validez fiscal.', { size: 6, align: 'center' });
+  parrafo('Comprobante con fines académicos. No es un CFDI ni tiene validez fiscal.', { size: 6, align: 'center' });
   espacio(4);
   texto('¡Gracias por usar PRAXO!', { size: 8, bold: true, align: 'center' });
 

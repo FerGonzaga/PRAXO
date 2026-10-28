@@ -106,7 +106,7 @@
                 <% if (rolVista === 'prestador' && typeof solicitud.pago.precioPrestador === 'number') { %>
                   <p class="mb-1"><strong>Tú recibes:</strong> <%= tarifas.formatoMXN(solicitud.pago.precioPrestador) %> MXN</p>
                 <% } %>
-                <p class="mb-1"><strong>Método:</strong> <%= solicitud.pago.marca %> •••• <%= solicitud.pago.ultimos4 %> <span class="badge bg-light text-muted border">simulado</span></p>
+                <p class="mb-1"><strong>Método:</strong> <%= solicitud.pago.marca %> •••• <%= solicitud.pago.ultimos4 %> <span class="badge bg-light text-muted border"><%= solicitud.pago.proveedor === 'stripe' ? 'Stripe · modo prueba' : 'simulado' %></span></p>
                 <p class="mb-1"><strong>Referencia:</strong> <code><%= solicitud.pago.referencia %></code></p>
                 <p class="mb-0 small text-muted"><%= new Date(solicitud.pago.fecha).toLocaleString('es-MX') %></p>
               </div>
