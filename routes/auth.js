@@ -11,6 +11,7 @@ const TokenVerificacion = require('../models/TokenVerificacion');
 
 const { enviarCorreoVerificacion } = require('../services/brevo');
 const { VERSION_AVISO } = require('../config/privacidad');
+const { limitadores } = require('../middlewares/seguridad');
 const router = express.Router();
 const HORAS_EXPIRACION_TOKEN = 24;
 
@@ -57,8 +58,18 @@ router.post('/registro', async (req, res) => {
     // --------------------------------------------------
     // VALIDACIONES GENERALES
     // --------------------------------------------------
-    if (!nombre || !correo || !password || !tipoUsuario) {
+    if (!nombre || !correo || !password || !tipoUsuario ||
+        typeof nombre !== 'string' || typeof correo !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ mensaje: 'Completa todos los campos obligatorios.' });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim()) || nombre.trim().length > 80) {
+      return res.status(400).json({ mensaje: 'Revisa tu nombre y correo.' });
+    }
+
+    // bcrypt solo usa los primeros 72 bytes de la contraseña
+    if (Buffer.byteLength(password) > 72) {
+      return res.status(400).json({ mensaje: 'La contraseña es demasiado larga (máximo 72 caracteres).' });
     }
 
     if (!['cliente', 'prestador'].includes(tipoUsuario)) {
@@ -220,7 +231,8 @@ router.post('/login', async (req, res) => {
   try {
     const { correo, password } = req.body;
 
-    if (!correo || !password) {
+    // 🔒 Solo texto: evita objetos como { "$ne": null }
+    if (typeof correo !== 'string' || typeof password !== 'string' || !correo || !password) {
       return res.status(400).json({ mensaje: 'Completa correo y contraseña.' });
     }
 
@@ -243,26 +255,32 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // Inicio correcto: se limpia el contador de intentos de esta cuenta
+    limitadores.loginPorCuenta.reiniciar(req);
+
     // --------------------------------------------------
     // CREAR SESION
+    // 🔒 Se regenera el ID de sesión al iniciar sesión (evita "session fixation")
     // --------------------------------------------------
-    req.session.usuario = {
-      id: usuario._id.toString(),
-      nombre: usuario.nombre,
-      correo: usuario.correo,
-      tipoUsuario: usuario.tipoUsuario
-    };
+    const redireccionGuardada = req.session.redirectDespuesLogin;
 
-    req.session.save((errorSesion) => {
-      if (errorSesion) {
-        console.error('Error al guardar la sesión:', errorSesion);
+    req.session.regenerate((errorRegenerar) => {
+      if (errorRegenerar) {
+        console.error('Error al regenerar la sesión:', errorRegenerar);
         return res.status(500).json({ mensaje: 'No se pudo iniciar la sesión.' });
       }
 
-      const redireccion = req.session.redirectDespuesLogin ||
-        (usuario.tipoUsuario === 'prestador' ? '/inicio-prestador' : '/inicio-cliente');
+      req.session.usuario = {
+        id: usuario._id.toString(),
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        tipoUsuario: usuario.tipoUsuario
+      };
 
-      delete req.session.redirectDespuesLogin;
+      // Solo rutas internas (evita redirecciones a otros sitios)
+      const redireccion = (typeof redireccionGuardada === 'string' && /^\/(?!\/)/.test(redireccionGuardada))
+        ? redireccionGuardada
+        : (usuario.tipoUsuario === 'prestador' ? '/inicio-prestador' : '/inicio-cliente');
 
       req.session.save(() => {
         return res.json({

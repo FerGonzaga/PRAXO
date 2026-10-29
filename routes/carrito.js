@@ -67,15 +67,67 @@ function quiereJson(req) {
 const multer = require('multer');
 const path = require('path');
 
+const crypto = require('crypto');
+
+// 🔒 Solo imágenes, máximo 5 MB. La extensión se decide por el tipo
+// detectado, NUNCA por el nombre que manda el usuario (evita subir .html o .js).
+const TIPOS_PERMITIDOS = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/solicitudes'); 
+    cb(null, 'public/uploads/solicitudes');
   },
   filename: function (req, file, cb) {
-    cb(null, 'praxo_foto_' + Date.now() + path.extname(file.originalname));
+    cb(null, 'praxo_foto_' + Date.now() + '_' + crypto.randomBytes(6).toString('hex') + TIPOS_PERMITIDOS[file.mimetype]);
   }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 20 },
+  fileFilter: function (req, file, cb) {
+    if (!TIPOS_PERMITIDOS[file.mimetype]) {
+      const err = new Error('Solo se permiten imágenes JPG, PNG o WEBP.');
+      err.code = 'TIPO_NO_PERMITIDO';
+      return cb(err);
+    }
+    cb(null, true);
+  }
+});
+
+// Revisa la "firma" real del archivo (primeros bytes) para confirmar que es imagen
+const fs = require('fs');
+function esImagenReal(rutaArchivo) {
+  try {
+    const fd = fs.openSync(rutaArchivo, 'r');
+    const b = Buffer.alloc(12);
+    fs.readSync(fd, b, 0, 12, 0);
+    fs.closeSync(fd);
+    const jpg = b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF;
+    const png = b.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]));
+    const webp = b.slice(0, 4).toString() === 'RIFF' && b.slice(8, 12).toString() === 'WEBP';
+    return jpg || png || webp;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Envoltura para responder con un mensaje claro si el archivo no es válido
+function subirEvidencia(req, res, next) {
+  upload.single('imagenEvidencia')(req, res, (err) => {
+    if (err) {
+      const mensaje = err.code === 'LIMIT_FILE_SIZE'
+        ? 'La imagen pesa más de 5 MB.'
+        : (err.code === 'TIPO_NO_PERMITIDO' ? err.message : 'No se pudo subir la imagen.');
+      return res.status(400).send(mensaje);
+    }
+    if (req.file && !esImagenReal(req.file.path)) {
+      fs.unlink(req.file.path, () => {});
+      return res.status(400).send('El archivo no es una imagen válida.');
+    }
+    next();
+  });
+}
 
 // ==========================================
 // PROTEGER TODO EL CARRITO
@@ -146,7 +198,7 @@ router.get('/', async (req, res) => {
 // AGREGAR SERVICIO
 // POST /carrito/agregar
 // ==========================================
-router.post('/agregar', upload.single('imagenEvidencia'), async (req, res) => {
+router.post('/agregar', subirEvidencia, async (req, res) => {
   try {
     const {
       trabajadorId,
@@ -373,7 +425,7 @@ router.post('/confirmar', async (req, res) => {
 
   } catch (error) {
     console.error('❌ ERROR GRAVE al procesar la contratación:', error);
-    return res.status(500).send(`Error en el servidor: ${error.message}`);
+    return res.status(500).send('No se pudo procesar la contratación. Intenta de nuevo.');
   }
 });
 

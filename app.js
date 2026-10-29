@@ -8,6 +8,12 @@ const path = require('path');
 const session = require('express-session');
 
 const conectarDB = require('./config/db');
+const {
+  cabecerasSeguridad,
+  sanitizarEntradas,
+  verificarOrigen,
+  limitadores
+} = require('./middlewares/seguridad');
 
 
 // ==========================================
@@ -28,6 +34,17 @@ const ES_PRODUCCION =
   process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
 
 app.set('trust proxy', 1);
+
+// No anunciar que el servidor usa Express
+app.disable('x-powered-by');
+
+// Cabeceras HTTP de seguridad (clickjacking, sniffing, etc.)
+app.use(cabecerasSeguridad({ produccion: ES_PRODUCCION }));
+
+// En producción la sesión DEBE firmarse con un secreto propio
+if (ES_PRODUCCION && !process.env.SESSION_SECRET) {
+  console.error('⚠️  Falta SESSION_SECRET en producción: las sesiones usarían una clave pública.');
+}
 
 if (ES_PRODUCCION) {
   app.use((req, res, next) => {
@@ -301,6 +318,26 @@ app.use(
 
 
 // ==========================================
+// SEGURIDAD DE LAS PETICIONES
+// ==========================================
+
+// Quita operadores de MongoDB ($ne, $gt...) del cuerpo: evita inyección NoSQL
+app.use(sanitizarEntradas);
+
+// CSRF: los POST deben venir de nuestro propio sitio
+app.use(verificarOrigen);
+
+// Límite de intentos contra fuerza bruta y spam
+app.use('/api/auth/login', limitadores.loginPorIp, limitadores.loginPorCuenta);
+app.use('/api/auth/registro', limitadores.registro);
+app.use('/verificacion', limitadores.verificacion);
+app.use('/pago', limitadores.pagos);
+app.use('/chat', (req, res, next) =>
+  req.path.endsWith('/mensaje') ? limitadores.mensajes(req, res, next) : next()
+);
+
+
+// ==========================================
 // REGISTRAR RUTAS
 // ==========================================
 
@@ -407,6 +444,18 @@ app.use(
 
   }
 );
+
+
+// ==========================================
+// MANEJO GLOBAL DE ERRORES
+// ==========================================
+// Nunca mostramos detalles internos (rutas, consultas, stack) al usuario.
+
+app.use((error, req, res, next) => {
+  console.error('Error no controlado:', error);
+  if (res.headersSent) return next(error);
+  res.status(error.status || 500).send('Ocurrió un error. Intenta de nuevo más tarde.');
+});
 
 
 

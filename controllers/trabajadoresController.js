@@ -10,14 +10,17 @@ exports.listarTrabajadores = async (req, res) => {
   try {
     const filtro = {};
 
-    if (req.query.oficio) {
-      filtro.oficio = req.query.oficio;
+    if (typeof req.query.oficio === 'string' && req.query.oficio) {
+      filtro.oficio = req.query.oficio.slice(0, 60);
     }
 
     if (req.query.ciudad) {
       // "regex" con "i" para que no distinga mayusculas/minusculas
       // y encuentre coincidencias parciales (ej: "Pachuca" encuentra "Pachuca de Soto")
-      filtro.ciudad = { $regex: req.query.ciudad, $options: 'i' };
+      // 🔒 Se escapan los caracteres especiales: el texto del usuario se busca
+      // literal y no puede usarse como expresión regular maliciosa (ReDoS)
+      const ciudad = String(req.query.ciudad).slice(0, 60).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filtro.ciudad = { $regex: ciudad, $options: 'i' };
     }
 
     const trabajadores = await Trabajador.find(filtro);
