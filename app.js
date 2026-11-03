@@ -25,6 +25,11 @@ const app = express();
 // Reglas de cobro (comisión + IVA) disponibles en todas las vistas EJS
 app.locals.tarifas = require('./config/tarifas');
 
+// ID de medición de Google Analytics 4 (G-XXXXXXXXXX). Si no existe, no se carga.
+app.locals.gaId = /^G-[A-Z0-9]+$/.test(process.env.GA_MEASUREMENT_ID || '')
+  ? process.env.GA_MEASUREMENT_ID
+  : null;
+
 // ==========================================
 // CIFRADO EN TRÁNSITO (HTTPS / TLS)
 // ==========================================

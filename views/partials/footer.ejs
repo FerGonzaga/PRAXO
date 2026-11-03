@@ -63,6 +63,9 @@
           <li class="mb-2"><a href="/politicas">Políticas de compra</a></li>
           <li class="mb-2"><a href="/aviso-privacidad">Aviso de privacidad</a></li>
           <li class="mb-2"><a href="/terminos">Términos y condiciones</a></li>
+          <% if (typeof gaId !== 'undefined' && gaId) { %>
+            <li class="mb-2"><a href="#" onclick="window.praxoPreferenciasCookies && praxoPreferenciasCookies(); return false;">Preferencias de cookies</a></li>
+          <% } %>
         </ul>
 
       </div>

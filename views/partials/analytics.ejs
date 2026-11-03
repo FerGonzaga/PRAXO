@@ -1,0 +1,115 @@
+<%# views/partials/analytics.ejs
+     Google Analytics 4 con consentimiento previo (aviso de cookies).
+     Se incluye desde navbar.ejs, así aparece en todas las páginas.
+     Solo se activa si existe GA_MEASUREMENT_ID en el .env / Render.
+
+     Eventos que se envían para monitorear el funcionamiento del negocio:
+       search, add_to_cart, begin_checkout, purchase, sign_up, login,
+       cotizacion_aceptada, cotizacion_rechazada, servicio_completado, resena_enviada %>
+<% if (typeof gaId !== 'undefined' && gaId) { %>
+
+<!-- AVISO DE COOKIES -->
+<div id="avisoCookies" class="position-fixed bottom-0 start-0 end-0 p-3 d-none" style="z-index: 1080;">
+  <div class="container">
+    <div class="bg-dark text-white rounded-4 shadow-lg p-3 p-md-4 d-flex flex-column flex-md-row align-items-md-center gap-3">
+      <div class="small flex-grow-1">
+        <strong><i class="bi bi-cookie me-1"></i> Usamos cookies de analítica</strong><br>
+        Con tu permiso, usamos Google Analytics para obtener estadísticas de uso y mejorar PRAXO.
+        Las cookies necesarias para tu sesión siempre están activas.
+        <a href="/aviso-privacidad#cookies" class="link-light">Más información</a>.
+      </div>
+      <div class="d-flex gap-2 flex-shrink-0">
+        <button type="button" class="btn btn-outline-light btn-sm" id="cookiesRechazar">Rechazar</button>
+        <button type="button" class="btn btn-primary btn-sm" id="cookiesAceptar">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var GA_ID = <%- JSON.stringify(gaId) %>;
+    var COOKIE = 'praxo_cookies';
+
+    function leer() {
+      var m = document.cookie.match(new RegExp('(?:^|; )' + COOKIE + '=([^;]*)'));
+      return m ? m[1] : null;
+    }
+    function guardar(valor) {
+      document.cookie = COOKIE + '=' + valor + '; Max-Age=' + (60 * 60 * 24 * 365) +
+        '; Path=/; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+    }
+
+    // Cola de eventos: si el usuario aún no decide, se guardan y se envían al aceptar
+    var pendientes = [];
+    window.praxoEvento = function (nombre, parametros) {
+      if (typeof window.gtag === 'function') window.gtag('event', nombre, parametros || {});
+      else if (leer() !== 'no') pendientes.push([nombre, parametros || {}]);
+    };
+
+    function cargarAnalytics() {
+      if (window.__praxoGA) return;
+      window.__praxoGA = true;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', GA_ID, { allow_google_signals: false, allow_ad_personalization_signals: false });
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
+      document.head.appendChild(s);
+      pendientes.forEach(function (e) { window.gtag('event', e[0], e[1]); });
+      pendientes = [];
+    }
+
+    var aviso = document.getElementById('avisoCookies');
+    window.praxoPreferenciasCookies = function () { aviso.classList.remove('d-none'); };
+
+    document.getElementById('cookiesAceptar').addEventListener('click', function () {
+      guardar('si'); aviso.classList.add('d-none'); cargarAnalytics();
+    });
+    document.getElementById('cookiesRechazar').addEventListener('click', function () {
+      guardar('no'); aviso.classList.add('d-none'); pendientes = [];
+    });
+
+    var decision = leer();
+    if (decision === 'si') cargarAnalytics();
+    else if (decision !== 'no') aviso.classList.remove('d-none');
+
+    // ---------- Eventos automáticos según la página ----------
+    document.addEventListener('DOMContentLoaded', function () {
+      var ruta = location.pathname;
+      var q = new URLSearchParams(location.search);
+      var aviso = q.get('aviso');
+
+      if (ruta === '/trabajadores' && (q.get('oficio') || q.get('ciudad'))) {
+        praxoEvento('search', { search_term: [q.get('oficio'), q.get('ciudad')].filter(Boolean).join(' / ') });
+      }
+      if (ruta === '/carrito' && q.get('agregado') === '1') {
+        praxoEvento('add_to_cart', { currency: 'MXN' });
+      }
+      if (ruta === '/revisa-correo') {
+        praxoEvento('sign_up', { method: 'correo', tipo_usuario: q.get('tipoUsuario') || '' });
+      }
+      if (/^\/pago\/[^/]+$/.test(ruta)) {
+        var t = document.querySelector('[data-ga-total]');
+        praxoEvento('begin_checkout', { currency: 'MXN', value: t ? Number(t.dataset.gaTotal) : undefined });
+      }
+      var compra = document.getElementById('ga-compra');
+      if (compra && aviso === 'pagada') {
+        praxoEvento('purchase', {
+          transaction_id: compra.dataset.ref,
+          value: Number(compra.dataset.total),
+          currency: 'MXN',
+          items: [{ item_name: compra.dataset.servicio, price: Number(compra.dataset.total), quantity: 1 }]
+        });
+      }
+      var personalizados = {
+        aceptada: 'cotizacion_aceptada', rechazada: 'cotizacion_rechazada',
+        completada: 'servicio_completado', calificada: 'resena_enviada'
+      };
+      if (/^\/chat\//.test(ruta) && personalizados[aviso]) praxoEvento(personalizados[aviso]);
+    });
+  })();
+</script>
+<% } %>

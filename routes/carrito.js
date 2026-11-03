@@ -272,7 +272,7 @@ router.post('/agregar', subirEvidencia, async (req, res) => {
       imagenEvidencia: rutaImagen
     });
 
-    return res.redirect('/carrito');
+    return res.redirect('/carrito?agregado=1');
 
   } catch (error) {
     console.error('Error al agregar servicio:', error);

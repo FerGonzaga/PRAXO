@@ -143,6 +143,11 @@ if (formLogin) {
         return;
       }
 
+      // Analytics: inicio de sesión correcto
+      if (typeof window.praxoEvento === 'function') {
+        window.praxoEvento('login', { method: 'correo' });
+      }
+
       // Cada tipo de usuario cae en su propia pantalla de opciones
       if (datos.tipoUsuario === 'prestador') {
         window.location.href = '/inicio-prestador';

@@ -96,6 +96,10 @@
           </div>
         <% } %>
 
+        <% if (solicitud.pago && solicitud.pago.referencia) { %>
+          <span id="ga-compra" hidden data-ref="<%= solicitud.pago.referencia %>" data-total="<%= solicitud.pago.monto %>" data-servicio="<%= solicitud.servicio %>"></span>
+        <% } %>
+
         <!-- SERVICIO PAGADO: comprobante -->
         <% if ((solicitud.estado === 'Pagada' || solicitud.estado === 'Completada') && solicitud.pago && solicitud.pago.referencia) { %>
           <div class="p-4 mb-4 shadow-sm rounded-3 bg-white border-start border-5 border-primary">

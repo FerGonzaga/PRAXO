@@ -240,6 +240,136 @@
     </section>
 
     <!-- =====================================
+         LO QUE DICEN NUESTROS CLIENTES
+         Carrusel con las mejores reseñas reales (4 y 5 estrellas).
+         Escritorio: 3 reseñas por diapositiva. Celular: 1 por diapositiva.
+    ====================================== -->
+    <section class="py-5 seccion-resenas">
+      <div class="container">
+
+        <div class="seccion-titulo text-center mb-4">
+          <span class="seccion-etiqueta">Opiniones reales</span>
+          <h2 class="h3 fw-bold mt-1">Lo que dicen nuestros clientes</h2>
+          <p class="text-muted mb-0">Reseñas de clientes que contrataron y pagaron su servicio en PRAXO.</p>
+        </div>
+
+        <% const _resenas = (typeof mejoresResenas !== 'undefined' && mejoresResenas) ? mejoresResenas : []; %>
+
+        <% if (_resenas.length === 0) { %>
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-chat-square-heart fs-1 d-block mb-2"></i>
+            Aún no hay reseñas. ¡Contrata un servicio y sé el primero en opinar!
+          </div>
+        <% } else { %>
+
+          <%
+            // Agrupa las reseñas en diapositivas de "n" tarjetas
+            const _grupos = (n) => {
+              const g = [];
+              for (let i = 0; i < _resenas.length; i += n) g.push(_resenas.slice(i, i + n));
+              return g;
+            };
+            const _fecha = (f) => new Date(f).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+          %>
+
+          <% [{ id: 'carruselResenasLg', porDiapositiva: 3, clase: 'd-none d-md-block' },
+              { id: 'carruselResenasSm', porDiapositiva: 1, clase: 'd-md-none' }].forEach((c) => { %>
+            <% const diapositivas = _grupos(c.porDiapositiva); %>
+            <div id="<%= c.id %>" class="carousel slide <%= c.clase %>" data-bs-ride="carousel" data-bs-interval="6000" data-bs-pause="hover">
+
+              <div class="carousel-inner pb-5">
+                <% diapositivas.forEach((grupo, i) => { %>
+                  <div class="carousel-item <%= i === 0 ? 'active' : '' %>">
+                    <div class="row g-4 justify-content-center px-md-5">
+                      <% grupo.forEach((r) => { %>
+                        <div class="<%= c.porDiapositiva === 3 ? 'col-md-4' : 'col-11' %>">
+                          <article class="tarjeta-resena h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                              <div class="estrellas-resena" aria-label="<%= r.calificacion %> de 5 estrellas">
+                                <% for (let s = 1; s <= 5; s++) { %><i class="bi <%= s <= r.calificacion ? 'bi-star-fill' : 'bi-star' %>"></i><% } %>
+                              </div>
+                              <i class="bi bi-quote fs-2 text-primary opacity-25 lh-1"></i>
+                            </div>
+
+                            <p class="texto-resena">“<%= r.comentario %>”</p>
+
+                            <div class="d-flex align-items-center gap-2 small text-muted mb-3">
+                              <i class="bi bi-person-check-fill text-success"></i>
+                              <span><strong class="text-dark"><%= r.cliente %></strong> · <%= _fecha(r.fecha) %></span>
+                            </div>
+
+                            <a href="/trabajadores/<%= r.trabajador.id %>" class="prestador-resena text-decoration-none">
+                              <img
+                                src="<%= r.trabajador.fotoUrl ? r.trabajador.fotoUrl.replace(/\\/g, '/') : '/assets/img/trabajadores/' + String(r.trabajador.nombre).toLowerCase().split(' ')[0] + '.jpg' %>"
+                                onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(r.trabajador.nombre) %>&background=random&size=96';"
+                                alt="<%= r.trabajador.nombre %>" width="44" height="44">
+                              <div class="lh-sm">
+                                <div class="fw-semibold text-dark"><%= r.trabajador.nombre %></div>
+                                <small class="text-muted"><%= r.trabajador.oficio %> · Ver perfil <i class="bi bi-arrow-right-short"></i></small>
+                              </div>
+                            </a>
+                          </article>
+                        </div>
+                      <% }) %>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+
+              <% if (diapositivas.length > 1) { %>
+                <div class="carousel-indicators mb-0">
+                  <% diapositivas.forEach((_, i) => { %>
+                    <button type="button" data-bs-target="#<%= c.id %>" data-bs-slide-to="<%= i %>"
+                            class="<%= i === 0 ? 'active' : '' %>" <%= i === 0 ? 'aria-current=true' : '' %>
+                            aria-label="Reseñas <%= i + 1 %>"></button>
+                  <% }) %>
+                </div>
+                <button class="carousel-control-prev control-resenas" type="button" data-bs-target="#<%= c.id %>" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next control-resenas" type="button" data-bs-target="#<%= c.id %>" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Siguiente</span>
+                </button>
+              <% } %>
+            </div>
+          <% }) %>
+
+        <% } %>
+      </div>
+
+      <style>
+        .seccion-resenas { background: linear-gradient(180deg, #ffffff 0%, #f3f6fb 100%); }
+        .tarjeta-resena {
+          background: #fff; border-radius: 18px; padding: 24px;
+          box-shadow: 0 6px 22px rgba(15, 30, 60, .08);
+          display: flex; flex-direction: column;
+        }
+        .estrellas-resena { color: #ffc107; font-size: 1.05rem; letter-spacing: 2px; }
+        .texto-resena { color: #343a40; font-size: .98rem; line-height: 1.6; flex-grow: 1; }
+        .prestador-resena {
+          display: flex; align-items: center; gap: 10px;
+          border-top: 1px solid #eef0f3; padding-top: 14px; margin-top: auto;
+        }
+        .prestador-resena img { border-radius: 50%; object-fit: cover; }
+        .prestador-resena:hover .text-muted { color: #0d6efd !important; }
+        .seccion-resenas .carousel-indicators [data-bs-target] {
+          background-color: #0d1b3e; width: 10px; height: 10px; border-radius: 50%; border: 0; opacity: .25;
+        }
+        .seccion-resenas .carousel-indicators .active { opacity: .9; }
+        .control-resenas { width: 3rem; }
+        .control-resenas .carousel-control-prev-icon,
+        .control-resenas .carousel-control-next-icon {
+          filter: invert(1) grayscale(1); background-color: rgba(255,255,255,.9);
+          border-radius: 50%; background-size: 50%; width: 2.2rem; height: 2.2rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+        @media (max-width: 767px) { .control-resenas { display: none; } }
+      </style>
+    </section>
+
+    <!-- =====================================
          POR QUÉ PRAXO: lo que ya se puede hacer en la plataforma
     ====================================== -->
     <section class="bg-light py-5">
