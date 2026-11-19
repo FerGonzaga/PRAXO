@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "PRAXO",
+    "slug": "praxo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "praxo",
+    "backgroundColor": "#0b1f3a",
+    "android": {
+      "package": "mx.edu.itsoeh.praxo"
+    },
+    "ios": {
+      "bundleIdentifier": "mx.edu.itsoeh.praxo",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "PRAXO usa tus fotos para que adjuntes evidencia del problema al solicitar un servicio.",
+        "NSCameraUsageDescription": "PRAXO usa la cámara para que tomes una foto del problema al solicitar un servicio."
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PRAXO usa tus fotos para que adjuntes evidencia del problema al solicitar un servicio.",
+          "cameraPermission": "PRAXO usa la cámara para que tomes una foto del problema al solicitar un servicio."
+        }
+      ]
+    ]
+  }
+}

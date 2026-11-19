@@ -12,6 +12,7 @@ const TokenVerificacion = require('../models/TokenVerificacion');
 const { enviarCorreoVerificacion } = require('../services/brevo');
 const { VERSION_AVISO } = require('../config/privacidad');
 const { limitadores } = require('../middlewares/seguridad');
+const { verificarCredenciales } = require('../services/auth');
 const router = express.Router();
 const HORAS_EXPIRACION_TOKEN = 24;
 
@@ -231,29 +232,12 @@ router.post('/login', async (req, res) => {
   try {
     const { correo, password } = req.body;
 
-    // 🔒 Solo texto: evita objetos como { "$ne": null }
-    if (typeof correo !== 'string' || typeof password !== 'string' || !correo || !password) {
-      return res.status(400).json({ mensaje: 'Completa correo y contraseña.' });
+    // 🔒 Misma verificación que la app móvil (services/auth.js)
+    const resultado = await verificarCredenciales(correo, password);
+    if (resultado.error) {
+      return res.status(resultado.status).json({ mensaje: resultado.error });
     }
-
-    const correoNormalizado = correo.trim().toLowerCase();
-    const usuario = await Usuario.findOne({ correo: correoNormalizado });
-
-    if (!usuario) {
-      return res.status(401).json({ mensaje: 'Correo o contraseña incorrectos.' });
-    }
-
-    const passwordCorrecta = await bcrypt.compare(password, usuario.passwordHash);
-
-    if (!passwordCorrecta) {
-      return res.status(401).json({ mensaje: 'Correo o contraseña incorrectos.' });
-    }
-
-    if (!usuario.emailVerificado) {
-      return res.status(403).json({
-        mensaje: 'Verifica tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.'
-      });
-    }
+    const usuario = resultado.usuario;
 
     // Inicio correcto: se limpia el contador de intentos de esta cuenta
     limitadores.loginPorCuenta.reiniciar(req);

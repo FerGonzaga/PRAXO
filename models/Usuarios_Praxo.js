@@ -45,6 +45,12 @@ const usuarioSchema = new mongoose.Schema(
       default: null,
     },
 
+    // App móvil: al incrementarlo se invalidan todos los tokens JWT emitidos
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+
     // Registro del consentimiento (evidencia de cuándo y qué aceptó)
     consentimiento: {
       terminos: {

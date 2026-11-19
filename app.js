@@ -433,6 +433,11 @@ app.use('/pago', require('./routes/pago'));
 // ------------------------------------------
 app.use('/historial', require('./routes/historial'));
 
+// ------------------------------------------
+// API JSON para la app móvil (solo clientes por ahora)
+// ------------------------------------------
+app.use('/api/v1', require('./routes/api/v1'));
+
 
 // ==========================================
 // RUTA NO ENCONTRADA
