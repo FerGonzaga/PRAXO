@@ -20,10 +20,11 @@ if (!process.env.JWT_SECRET && (process.env.NODE_ENV === 'production' || process
 const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
 const firmar = (datos) => crypto.createHmac('sha256', SECRETO).update(datos).digest('base64url');
 
-function crearToken(datos) {
+// duracionSeg: 30 días para la sesión de la app; minutos para enlaces temporales
+function crearToken(datos, duracionSeg = DURACION_SEG) {
   const ahora = Math.floor(Date.now() / 1000);
   const cabecera = b64({ alg: 'HS256', typ: 'JWT' });
-  const cuerpo = b64({ ...datos, iat: ahora, exp: ahora + DURACION_SEG });
+  const cuerpo = b64({ ...datos, iat: ahora, exp: ahora + duracionSeg });
   return `${cabecera}.${cuerpo}.${firmar(`${cabecera}.${cuerpo}`)}`;
 }
 

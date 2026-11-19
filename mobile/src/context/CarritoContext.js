@@ -9,7 +9,9 @@ const CarritoContext = createContext(null);
 export function CarritoProvider({ children }) {
   const [cantidad, setCantidad] = useState(0);
 
-  const refrescarCantidad = useCallback(async () => {
+  // Solo los clientes tienen carrito; para prestadores no se consulta
+  const refrescarCantidad = useCallback(async (tipoUsuario) => {
+    if (tipoUsuario && tipoUsuario !== 'cliente') return;
     try {
       const { items } = await api('/carrito');
       setCantidad(items.length);

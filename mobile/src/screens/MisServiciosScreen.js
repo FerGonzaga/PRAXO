@@ -1,26 +1,25 @@
 // src/screens/MisServiciosScreen.js
-// Solicitudes del cliente con su estado. Se actualiza al entrar a la pestaña:
-// si el prestador cotiza desde la web, aquí aparece la cotización.
-// (Fase 1: chat, pago y reseña se abren en la web; en la fase 2 serán nativos.)
+// Servicios del CLIENTE. Al tocar uno se abre su detalle con chat, cotización, pago y reseña.
+// Se actualiza al entrar a la pestaña: lo que haga el prestador (en la app o en la web) aparece aquí.
 
 import React, { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/cliente';
 import { Aviso, Avatar, Boton, Cargando, EstadoVacio, Insignia, Tarjeta } from '../components/ui';
 import { colores, coloresEstado } from '../theme';
 import { fechaLarga, formatoMXN } from '../utils/formato';
-import { abrirWeb } from '../utils/web';
 
-const ACCIONES = {
-  Pendiente: { texto: 'Esperando la cotización del prestador', boton: 'Abrir chat' },
-  Cotizada: { texto: '¡Ya tienes cotización! Revísala y acéptala.', boton: 'Ver cotización y chat' },
-  Aceptada: { texto: 'Cotización aceptada. Falta el pago.', boton: 'Pagar' },
-  Rechazada: { texto: 'Rechazaste la cotización.', boton: 'Ver chat' },
-  Pagada: { texto: 'Pagado. El prestador realizará el trabajo.', boton: 'Ver chat y comprobante' },
-  Completada: { texto: 'Servicio terminado. ¡Califícalo!', boton: 'Calificar servicio' }
+const SIGUIENTE_PASO = {
+  Pendiente: 'Esperando la cotización del prestador',
+  Cotizada: '¡Ya tienes cotización! Revísala y acéptala.',
+  Aceptada: 'Cotización aceptada. Falta el pago.',
+  Rechazada: 'Rechazaste la cotización.',
+  Pagada: 'Pagado. El prestador realizará el trabajo.',
+  Completada: 'Servicio terminado.'
 };
+const DESTACADOS = ['Cotizada', 'Aceptada'];
 
 export default function MisServiciosScreen({ navigation }) {
   const [lista, setLista] = useState(null);
@@ -54,16 +53,7 @@ export default function MisServiciosScreen({ navigation }) {
       keyExtractor={(s) => s.id}
       contentContainerStyle={{ padding: 16, flexGrow: 1 }}
       refreshControl={<RefreshControl refreshing={refrescando} onRefresh={refrescar} />}
-      ListHeaderComponent={
-        <>
-          <Aviso texto={error} />
-          {lista.length > 0 ? (
-            <Text style={st.nota}>
-              <Ionicons name="information-circle-outline" /> Por ahora el chat, el pago y las reseñas se abren en la página web de PRAXO.
-            </Text>
-          ) : null}
-        </>
-      }
+      ListHeaderComponent={<Aviso texto={error} />}
       ListEmptyComponent={error ? null : (
         <EstadoVacio icono="receipt-outline" titulo="Aún no tienes servicios"
           texto="Cuando confirmes tu carrito, tus solicitudes aparecerán aquí."
@@ -71,36 +61,29 @@ export default function MisServiciosScreen({ navigation }) {
       )}
       renderItem={({ item: s }) => {
         const c = coloresEstado[s.estado] || coloresEstado.Pendiente;
-        const a = ACCIONES[s.estado] || ACCIONES.Pendiente;
+        const destacado = DESTACADOS.includes(s.estado);
         return (
-          <Tarjeta estilo={{ marginBottom: 12 }}>
-            <View style={st.filaEntre}>
-              <Insignia texto={s.estado} fondo={c.fondo} color={c.texto} />
-              <Text style={st.gris}>{new Date(s.fechaCreacion).toLocaleDateString('es-MX')}</Text>
-            </View>
-            <View style={[st.filaEntre, { marginTop: 12, justifyContent: 'flex-start' }]}>
-              {s.prestador ? <Avatar nombre={s.prestador.nombre} url={s.prestador.fotoUrl} tamano={42} /> : null}
-              <View style={{ marginLeft: 10, flex: 1 }}>
-                <Text style={st.servicio}>{s.servicio}</Text>
-                <Text style={st.gris}>{s.prestador ? s.prestador.nombre : 'Profesional PRAXO'}</Text>
+          <Pressable onPress={() => navigation.navigate('Servicio', { id: s.id })}>
+            <Tarjeta estilo={[{ marginBottom: 12 }, destacado && { borderWidth: 2, borderColor: colores.naranja }]}>
+              <View style={st.filaEntre}>
+                <Insignia texto={s.estado} fondo={c.fondo} color={c.texto} />
+                <Text style={st.gris}>{new Date(s.fechaCreacion).toLocaleDateString('es-MX')}</Text>
               </View>
-            </View>
-            {s.fecha ? <Text style={st.dato}><Ionicons name="calendar-outline" /> {fechaLarga(s.fecha)} · {s.hora}</Text> : null}
-
-            {s.cotizacion ? (
-              <View style={st.cotizacion}>
-                <Text style={{ color: colores.verde, fontWeight: '800' }}>
-                  {s.pago ? 'Total pagado' : 'Total de la cotización'}: {formatoMXN(s.pago ? s.pago.monto : s.cotizacion.desglose.total)}
-                </Text>
-                {s.cotizacion.mensaje ? <Text style={[st.gris, { marginTop: 4 }]} numberOfLines={2}>“{s.cotizacion.mensaje}”</Text> : null}
-                {s.pago ? <Text style={[st.gris, { marginTop: 4 }]}>Referencia: {s.pago.referencia}</Text> : null}
+              <View style={[st.fila, { marginTop: 12 }]}>
+                {s.prestador ? <Avatar nombre={s.prestador.nombre} url={s.prestador.fotoUrl} tamano={42} /> : null}
+                <View style={{ marginLeft: 10, flex: 1 }}>
+                  <Text style={st.servicio}>{s.servicio}</Text>
+                  <Text style={st.gris}>{s.prestador ? s.prestador.nombre : 'Profesional PRAXO'}</Text>
+                </View>
+                {s.total ? <Text style={st.total}>{formatoMXN(s.total)}</Text> : null}
               </View>
-            ) : null}
-
-            <Text style={[st.dato, { color: colores.texto }]}>{a.texto}</Text>
-            <Boton titulo={a.boton} variante={['Cotizada', 'Aceptada', 'Completada'].includes(s.estado) ? 'primario' : 'contorno'}
-              icono="open-outline" onPress={() => abrirWeb(s.urlWeb)} estilo={{ marginTop: 12, height: 44 }} />
-          </Tarjeta>
+              {s.fecha ? <Text style={st.dato}><Ionicons name="calendar-outline" /> {fechaLarga(s.fecha)} · {s.hora}</Text> : null}
+              <View style={[st.filaEntre, { marginTop: 10 }]}>
+                <Text style={[st.paso, destacado && { color: colores.naranjaOscuro, fontWeight: '700' }]}>{SIGUIENTE_PASO[s.estado]}</Text>
+                <Ionicons name="chevron-forward" size={18} color={colores.gris} />
+              </View>
+            </Tarjeta>
+          </Pressable>
         );
       }}
     />
@@ -108,10 +91,11 @@ export default function MisServiciosScreen({ navigation }) {
 }
 
 const st = StyleSheet.create({
+  fila: { flexDirection: 'row', alignItems: 'center' },
   filaEntre: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   servicio: { fontSize: 16, fontWeight: '800', color: colores.texto },
   gris: { color: colores.gris },
+  total: { fontWeight: '800', color: colores.verde },
   dato: { color: colores.gris, marginTop: 8 },
-  cotizacion: { backgroundColor: colores.verdeSuave, borderRadius: 10, padding: 10, marginTop: 10 },
-  nota: { color: colores.gris, fontSize: 12, marginBottom: 12 }
+  paso: { color: colores.texto, flex: 1 }
 });

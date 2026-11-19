@@ -97,4 +97,75 @@ async function confirmarSesionStripe(sesion) {
   return pagada ? { estado: 'pagada', solicitud: pagada } : { estado: 'ya-pagada', solicitud };
 }
 
-module.exports = { registrarPago, confirmarSesionStripe, centavos, generarReferencia };
+// -----------------------------------------------------------
+// PAGO SIMULADO: validación de tarjeta (sin guardar el número)
+// 4242 4242 4242 4242 aprobada · 4000 0000 0000 0002 rechazada
+// -----------------------------------------------------------
+const TARJETA_RECHAZADA = '4000000000000002';
+
+// -----------------------------------------------------------
+// VALIDACIONES DE TARJETA
+// -----------------------------------------------------------
+function soloDigitos(v) {
+  return String(v || '').replace(/\D/g, '');
+}
+
+// Algoritmo de Luhn (el que usan los bancos para validar el número)
+function luhnValido(numero) {
+  let suma = 0;
+  let doble = false;
+  for (let i = numero.length - 1; i >= 0; i--) {
+    let d = Number(numero[i]);
+    if (doble) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    suma += d;
+    doble = !doble;
+  }
+  return suma % 10 === 0;
+}
+
+function detectarMarca(numero) {
+  if (/^4/.test(numero)) return 'Visa';
+  if (/^(5[1-5]|2[2-7])/.test(numero)) return 'Mastercard';
+  if (/^3[47]/.test(numero)) return 'American Express';
+  return 'Tarjeta';
+}
+
+function validarTarjeta({ numero, titular, vencimiento, cvv }) {
+  const num = soloDigitos(numero);
+  const codigo = soloDigitos(cvv);
+  const nombre = String(titular || '').trim();
+
+  if (num.length < 13 || num.length > 19 || !luhnValido(num)) {
+    return { error: 'El número de tarjeta no es válido.' };
+  }
+  if (nombre.length < 3) {
+    return { error: 'Escribe el nombre como aparece en la tarjeta.' };
+  }
+
+  const m = String(vencimiento || '').match(/^\s*(\d{2})\s*\/\s*(\d{2})\s*$/);
+  if (!m) {
+    return { error: 'La fecha de vencimiento debe tener el formato MM/AA.' };
+  }
+  const mes = Number(m[1]);
+  const anio = 2000 + Number(m[2]);
+  if (mes < 1 || mes > 12) {
+    return { error: 'El mes de vencimiento no es válido.' };
+  }
+  // La tarjeta vale hasta el último día del mes de vencimiento
+  if (new Date(anio, mes, 1) <= new Date()) {
+    return { error: 'La tarjeta está vencida.' };
+  }
+
+  const marca = detectarMarca(num);
+  const largoCvv = marca === 'American Express' ? 4 : 3;
+  if (codigo.length !== largoCvv) {
+    return { error: `El CVV debe tener ${largoCvv} dígitos.` };
+  }
+
+  return { ok: true, numero: num, marca, ultimos4: num.slice(-4) };
+}
+
+module.exports = { registrarPago, confirmarSesionStripe, centavos, generarReferencia, TARJETA_RECHAZADA, validarTarjeta };

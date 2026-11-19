@@ -9,7 +9,8 @@ const Trabajador = require('../models/Trabajador');
 const SolicitudServicio = require('../models/SolicitudServicio');
 const Solicitud = require('../models/Solicitud'); // 🟢 IMPORTAMOS LA NUEVA MÁQUINA DE ESTADOS
 const Usuario = require('../models/Usuarios_Praxo');
-const { calcularDesglose } = require('../config/tarifas');
+const { cotizarSolicitud } = require('../services/solicitudes');
+const { actualizarPrecio, cambiarDisponibilidad } = require('../services/prestador');
 
 const UNIDADES = ['servicio', 'hora', 'dia'];
 const PRECIO_MAXIMO = 1000000;
@@ -107,71 +108,9 @@ router.get('/precio', async (req, res) => {
 // POST /prestador/precio
 router.post('/precio', async (req, res) => {
   try {
-    const { precio, unidad, nota, motivo, sinPrecio } = req.body;
-
-    if (!UNIDADES.includes(unidad)) {
-      return res.status(400).json({ mensaje: 'Elige una unidad de cobro válida.' });
-    }
-
-    let nuevoPrecio = null;
-
-    if (sinPrecio !== true) {
-      const lectura = leerPrecio(precio);
-      if (!lectura.ok) {
-        return res.status(400).json({
-          mensaje: 'Ingresa un precio mayor a 0 (máximo $1,000,000).'
-        });
-      }
-      nuevoPrecio = lectura.valor;
-    }
-
-    const notaLimpia = String(nota || '').trim().slice(0, MAX_TEXTO);
-    const motivoLimpio = String(motivo || '').trim().slice(0, MAX_TEXTO);
-
-    const trabajador = await buscarPerfil(req);
-
-    if (!trabajador) {
-      return res.status(404).json({ mensaje: 'No se encontró tu perfil de prestador.' });
-    }
-
-    if (!Array.isArray(trabajador.historialPrecios)) {
-      return res.status(500).json({
-        mensaje: 'Falta actualizar el modelo Trabajador (campos de precio).'
-      });
-    }
-
-    const eraPrimerPrecio = trabajador.precioBase === null || trabajador.precioBase === undefined;
-    const cambioElPrecio = trabajador.precioBase !== nuevoPrecio || trabajador.unidadPrecio !== unidad;
-
-    trabajador.precioBase = nuevoPrecio;
-    trabajador.unidadPrecio = unidad;
-    trabajador.precioNota = notaLimpia;
-
-    if (cambioElPrecio) {
-      const fecha = new Date();
-      trabajador.precioActualizadoEn = fecha;
-      trabajador.historialPrecios.push({
-        precio: nuevoPrecio,
-        unidad,
-        motivo: motivoLimpio || (eraPrimerPrecio ? 'Precio inicial' : 'Actualización de precio'),
-        fecha
-      });
-
-      if (trabajador.historialPrecios.length > MAX_HISTORIAL) {
-        trabajador.historialPrecios = trabajador.historialPrecios.slice(-MAX_HISTORIAL);
-      }
-    }
-
-    await trabajador.save();
-
-    return res.json({
-      mensaje: cambioElPrecio
-        ? 'Precio actualizado. Tus clientes ya lo ven en tu perfil.'
-        : 'Se guardaron tus cambios.',
-      precio: trabajador.precioBase,
-      unidad: trabajador.unidadPrecio
-    });
-
+    const r = await actualizarPrecio(obtenerUsuarioId(req), req.body); // services/prestador.js
+    if (!r.ok) return res.status(r.status).json({ mensaje: r.error });
+    return res.json({ mensaje: r.mensaje, precio: r.precio, unidad: r.unidad });
   } catch (error) {
     console.error('Error al guardar el precio:', error);
     return res.status(500).json({ mensaje: 'Error interno del servidor.' });
@@ -215,43 +154,22 @@ router.get('/solicitudes', async (req, res) => {
 // POST /prestador/responder-solicitud/:id
 router.post('/responder-solicitud/:id', async (req, res) => {
   try {
-    const trabajador = await buscarPerfil(req);
-    
-    if (!trabajador) {
-      return res.status(404).send('No se encontró tu perfil de prestador.');
-    }
-
-    const { mensajeCotizacion, precioAcordado } = req.body;
-    
-    // Validar precio
-    const precio = Math.round(Number(precioAcordado) * 100) / 100;
-    if (!Number.isFinite(precio) || precio <= 0 || precio > PRECIO_MAXIMO) {
-      return res.status(400).send('Debes ingresar un precio válido.');
-    }
-
-    // Buscamos la solicitud y verificamos que pertenezca a este trabajador
-    const solicitud = await Solicitud.findOne({ 
-      _id: req.params.id,
-      trabajadorId: trabajador._id
+    // services/solicitudes.js: mismas reglas que la app (solo Pendiente, precio válido)
+    const r = await cotizarSolicitud(req.params.id, req.session.usuario, {
+      precio: req.body.precioAcordado,
+      mensaje: req.body.mensajeCotizacion
     });
 
-    if (!solicitud) {
-      return res.status(404).send('La solicitud no existe.');
+    if (!r.ok) {
+      const estados = { 'precio-invalido': 400, 'no-encontrada': 404, 'sin-perfil': 404, 'ya-cotizada': 409 };
+      const textos = {
+        'precio-invalido': 'Debes ingresar un precio válido.',
+        'no-encontrada': 'La solicitud no existe.',
+        'sin-perfil': 'No se encontró tu perfil de prestador.',
+        'ya-cotizada': 'Esta solicitud ya fue cotizada y no puede modificarse.'
+      };
+      return res.status(estados[r.error] || 400).send(textos[r.error] || 'No se pudo cotizar.');
     }
-
-    // 🔒 Solo se puede cotizar una solicitud Pendiente
-    // (evita cambiar el precio después de que el cliente aceptó o pagó)
-    if (solicitud.estado !== 'Pendiente') {
-      return res.status(409).send('Esta solicitud ya fue cotizada y no puede modificarse.');
-    }
-
-    // Actualizamos la máquina de estados
-    solicitud.estado = 'Cotizada';
-    solicitud.precioAcordado = precio;           // lo que recibe el prestador
-    solicitud.desglose = calcularDesglose(precio); // + comisión PRAXO + IVA
-    solicitud.mensajeCotizacion = mensajeCotizacion;
-
-    await solicitud.save();
 
     // Regresamos a la bandeja
     return res.redirect('/prestador/solicitudes');
@@ -269,29 +187,9 @@ router.post('/responder-solicitud/:id', async (req, res) => {
 // ===========================================================
 router.post('/disponibilidad', async (req, res) => {
   try {
-    const { disponible } = req.body;
-
-    if (typeof disponible !== 'boolean') {
-      return res.status(400).json({ mensaje: 'Valor de disponibilidad inválido.' });
-    }
-
-    const trabajador = await Trabajador.findOneAndUpdate(
-      { usuarioId: obtenerUsuarioId(req) },
-      { $set: { disponibleAhora: disponible } },
-      { new: true }
-    );
-
-    if (!trabajador) {
-      return res.status(404).json({ mensaje: 'No se encontró tu perfil de prestador.' });
-    }
-
-    return res.json({
-      disponible: trabajador.disponibleAhora,
-      mensaje: trabajador.disponibleAhora
-        ? 'Ahora apareces como disponible para los clientes.'
-        : 'Ya no apareces como disponible.'
-    });
-
+    const r = await cambiarDisponibilidad(obtenerUsuarioId(req), req.body.disponible); // services/prestador.js
+    if (!r.ok) return res.status(r.status).json({ mensaje: r.error });
+    return res.json({ disponible: r.disponible, mensaje: r.mensaje });
   } catch (error) {
     console.error('Error al actualizar disponibilidad:', error);
     return res.status(500).json({ mensaje: 'Error interno del servidor.' });

@@ -16,7 +16,7 @@ const Solicitud = require('../models/Solicitud');
 const Mensaje = require('../models/Mensaje');
 const requiereSesion = require('../middlewares/requiereSesion');
 const { desgloseDeSolicitud, formatoMXN } = require('../config/tarifas');
-const { generarTicketPdf } = require('../services/ticketPdf');
+const { puedeVerComprobante, generarComprobante } = require('../services/comprobante');
 const stripe = require('../services/stripe');
 const ES_PRODUCCION = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
 const { registrarPago, confirmarSesionStripe, centavos } = require('../services/pagos');
@@ -38,44 +38,11 @@ router.get('/:id/comprobante', async (req, res) => {
       return res.status(404).send('Este servicio aún no tiene un pago registrado.');
     }
 
-    const u = req.session.usuario;
-    const esCliente = u.tipoUsuario === 'cliente' &&
-      solicitud.clienteId && String(solicitud.clienteId._id) === String(u.id);
-    const esPrestador = u.tipoUsuario === 'prestador' &&
-      solicitud.trabajadorId && String(solicitud.trabajadorId.usuarioId) === String(u.id);
-
-    if (!esCliente && !esPrestador) {
+    if (!puedeVerComprobante(solicitud, req.session.usuario)) {
       return res.status(403).send('No tienes permiso para ver este comprobante.');
     }
 
-    const p = solicitud.pago;
-    // Pagos hechos antes de existir la comisión: se muestran tal cual se cobraron
-    const desglose = typeof p.precioPrestador === 'number'
-      ? {
-          precioPrestador: p.precioPrestador, comisionPorcentaje: p.comisionPorcentaje,
-          comision: p.comision, ivaPorcentaje: p.ivaPorcentaje, ivaComision: p.ivaComision, total: p.monto
-        }
-      : { precioPrestador: p.monto, comisionPorcentaje: 0, comision: 0, ivaPorcentaje: 16, ivaComision: 0, total: p.monto };
-
-    const fechaMx = (f) => new Date(f).toLocaleString('es-MX', {
-      timeZone: 'America/Mexico_City', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-
-    const pdf = generarTicketPdf({
-      referencia: p.referencia,
-      fechaPago: fechaMx(p.fecha),
-      estado: solicitud.estado === 'Completada' ? 'PAGADO / COMPLETADO' : 'PAGADO',
-      cliente: solicitud.clienteId ? solicitud.clienteId.nombre : 'Cliente PRAXO',
-      prestador: solicitud.trabajadorId ? solicitud.trabajadorId.nombre : 'Profesional PRAXO',
-      oficio: solicitud.trabajadorId ? solicitud.trabajadorId.oficio : '',
-      servicio: solicitud.servicio,
-      fechaServicio: [solicitud.fecha, solicitud.hora].filter(Boolean).join(' '),
-      ubicacion: solicitud.ubicacion,
-      desglose,
-      metodo: `${p.marca || 'Tarjeta'} **** ${p.ultimos4 || '----'} (${p.proveedor === 'stripe' ? 'Stripe test' : 'simulado'})`
-    });
-
-    const nombre = `Comprobante-${p.referencia}.pdf`;
+    const { pdf, nombre } = generarComprobante(solicitud);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Length', pdf.length);
     res.setHeader('Content-Disposition', `${req.query.descargar ? 'attachment' : 'inline'}; filename="${nombre}"`);
@@ -96,72 +63,7 @@ router.use((req, res, next) => {
   next();
 });
 
-const TARJETA_RECHAZADA = '4000000000000002';
-
-// -----------------------------------------------------------
-// VALIDACIONES DE TARJETA
-// -----------------------------------------------------------
-function soloDigitos(v) {
-  return String(v || '').replace(/\D/g, '');
-}
-
-// Algoritmo de Luhn (el que usan los bancos para validar el número)
-function luhnValido(numero) {
-  let suma = 0;
-  let doble = false;
-  for (let i = numero.length - 1; i >= 0; i--) {
-    let d = Number(numero[i]);
-    if (doble) {
-      d *= 2;
-      if (d > 9) d -= 9;
-    }
-    suma += d;
-    doble = !doble;
-  }
-  return suma % 10 === 0;
-}
-
-function detectarMarca(numero) {
-  if (/^4/.test(numero)) return 'Visa';
-  if (/^(5[1-5]|2[2-7])/.test(numero)) return 'Mastercard';
-  if (/^3[47]/.test(numero)) return 'American Express';
-  return 'Tarjeta';
-}
-
-function validarTarjeta({ numero, titular, vencimiento, cvv }) {
-  const num = soloDigitos(numero);
-  const codigo = soloDigitos(cvv);
-  const nombre = String(titular || '').trim();
-
-  if (num.length < 13 || num.length > 19 || !luhnValido(num)) {
-    return { error: 'El número de tarjeta no es válido.' };
-  }
-  if (nombre.length < 3) {
-    return { error: 'Escribe el nombre como aparece en la tarjeta.' };
-  }
-
-  const m = String(vencimiento || '').match(/^\s*(\d{2})\s*\/\s*(\d{2})\s*$/);
-  if (!m) {
-    return { error: 'La fecha de vencimiento debe tener el formato MM/AA.' };
-  }
-  const mes = Number(m[1]);
-  const anio = 2000 + Number(m[2]);
-  if (mes < 1 || mes > 12) {
-    return { error: 'El mes de vencimiento no es válido.' };
-  }
-  // La tarjeta vale hasta el último día del mes de vencimiento
-  if (new Date(anio, mes, 1) <= new Date()) {
-    return { error: 'La tarjeta está vencida.' };
-  }
-
-  const marca = detectarMarca(num);
-  const largoCvv = marca === 'American Express' ? 4 : 3;
-  if (codigo.length !== largoCvv) {
-    return { error: `El CVV debe tener ${largoCvv} dígitos.` };
-  }
-
-  return { ok: true, numero: num, marca, ultimos4: num.slice(-4) };
-}
+const { TARJETA_RECHAZADA, validarTarjeta } = require('../services/pagos');
 
 // Busca una solicitud del cliente en sesión
 function buscarSolicitudDelCliente(req) {

@@ -41,7 +41,7 @@ export default function LoginScreen({ navigation }) {
 
           <View style={st.caja}>
             <Text style={st.titulo}>Inicia sesión</Text>
-            <Text style={st.subtitulo}>Encuentra y contrata profesionales cerca de ti.</Text>
+            <Text style={st.subtitulo}>Encuentra profesionales o recibe solicitudes de clientes.</Text>
 
             <Aviso texto={error} />
 
@@ -57,7 +57,7 @@ export default function LoginScreen({ navigation }) {
             </Pressable>
           </View>
 
-          <Text style={st.nota}>¿Ofreces servicios? Por ahora los prestadores usan la página web de PRAXO.</Text>
+          <Text style={st.nota}>Clientes y prestadores de servicios usan la misma cuenta que en la página web.</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

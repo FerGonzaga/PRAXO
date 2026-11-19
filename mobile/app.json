@@ -25,7 +25,10 @@
           "photosPermission": "PRAXO usa tus fotos para que adjuntes evidencia del problema al solicitar un servicio.",
           "cameraPermission": "PRAXO usa la cámara para que tomes una foto del problema al solicitar un servicio."
         }
-      ]
+      ],
+      "expo-status-bar",
+      "expo-web-browser",
+      "@react-native-community/datetimepicker"
     ]
   }
 }

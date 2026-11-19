@@ -6,12 +6,15 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/cliente';
+import { useAuth } from '../context/AuthContext';
 import { Aviso, Avatar, Boton, Cargando, Estrellas, Tarjeta } from '../components/ui';
 import { colores } from '../theme';
 import { formatoMXN, mesAnio } from '../utils/formato';
 
 export default function TrabajadorScreen({ route, navigation }) {
   const { id } = route.params;
+  const { usuario } = useAuth();
+  const esCliente = usuario && usuario.tipoUsuario === 'cliente';
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState('');
 
@@ -31,7 +34,7 @@ export default function TrabajadorScreen({ route, navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: esCliente ? 110 : 30 }}>
         <Tarjeta estilo={{ alignItems: 'center' }}>
           <Avatar nombre={t.nombre} url={t.fotoUrl} tamano={96} />
           <Text style={st.nombre}>{t.nombre}</Text>
@@ -96,10 +99,12 @@ export default function TrabajadorScreen({ route, navigation }) {
         ))}
       </ScrollView>
 
+      {esCliente ? (
       <SafeAreaView edges={['bottom']} style={st.barra}>
-        <Boton titulo="Solicitar servicio" icono="calendar-outline"
-          onPress={() => navigation.navigate('Solicitar', { trabajador: { id: t.id, nombre: t.nombre, oficio: t.oficio } })} />
-      </SafeAreaView>
+          <Boton titulo="Solicitar servicio" icono="calendar-outline"
+            onPress={() => navigation.navigate('Solicitar', { trabajador: { id: t.id, nombre: t.nombre, oficio: t.oficio } })} />
+        </SafeAreaView>
+      ) : null}
     </View>
   );
 }

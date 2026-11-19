@@ -2,36 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Solicitud = require('../models/Solicitud');
 const Mensaje = require('../models/Mensaje');
-const Trabajador = require('../models/Trabajador');
 const Resena = require('../models/Resena');
-const { desgloseDeSolicitud, formatoMXN } = require('../config/tarifas');
-const { recalcularCalificacion } = require('../services/calificaciones');
 const requiereSesion = require('../middlewares/requiereSesion');
+// Lógica compartida con la app móvil (services/solicitudes.js)
+const {
+  rolEnSolicitud,
+  enviarMensaje,
+  aceptarCotizacion,
+  rechazarCotizacion,
+  completarServicio,
+  dejarResena
+} = require('../services/solicitudes');
  
 router.use(requiereSesion);
- 
-// ==========================================
-// HELPER: ¿El usuario de la sesión participa en esta solicitud?
-// Devuelve 'cliente', 'prestador' o null.
-// ==========================================
-async function rolEnSolicitud(solicitud, usuarioSesion) {
-  const usuarioId = usuarioSesion.id.toString();
-  const clienteId = (solicitud.clienteId._id || solicitud.clienteId).toString();
-  const trabajadorId = (solicitud.trabajadorId._id || solicitud.trabajadorId).toString();
- 
-  if (usuarioSesion.tipoUsuario === 'cliente' && clienteId === usuarioId) {
-    return 'cliente';
-  }
- 
-  if (usuarioSesion.tipoUsuario === 'prestador') {
-    const trabajador = await Trabajador.findOne({ usuarioId }).select('_id');
-    if (trabajador && trabajador._id.toString() === trabajadorId) {
-      return 'prestador';
-    }
-  }
- 
-  return null;
-}
  
 // ==========================================
 // VER EL CHAT Y LA COTIZACIÓN
@@ -79,220 +62,58 @@ router.get('/:id', async (req, res) => {
 });
  
 // ==========================================
-// ENVIAR UN MENSAJE
-// POST /chat/:id/mensaje
+// ACCIONES DEL CHAT
+// Usan services/solicitudes.js (las mismas reglas que la app móvil).
+// Cada error regresa al chat con un ?aviso= que la vista ya sabe mostrar.
 // ==========================================
-router.post('/:id/mensaje', async (req, res) => {
-  try {
-    const { texto } = req.body;
- 
-    if (!texto || texto.trim() === '') {
-      return res.redirect(`/chat/${req.params.id}`);
-    }
- 
-    // 🔒 Solo el cliente o el prestador de esta solicitud pueden escribir
-    const solicitud = await Solicitud.findById(req.params.id).select('clienteId trabajadorId');
-    if (!solicitud) {
-      return res.status(404).send('Solicitud no encontrada');
-    }
-    const rol = await rolEnSolicitud(solicitud, req.session.usuario);
-    if (!rol) {
-      return res.status(403).send('No tienes permiso para escribir en este chat.');
-    }
- 
-    await Mensaje.create({
-      solicitudId: solicitud._id,
-      emisorId: req.session.usuario.id,
-      texto: texto.trim().slice(0, 1000)
-    });
- 
-    res.redirect(`/chat/${req.params.id}`);
- 
-  } catch (error) {
-    console.error('Error al enviar mensaje:', error);
-    res.status(500).send('No se pudo enviar el mensaje.');
+
+// Convierte el resultado del servicio en la respuesta de la web
+function responder(res, req, resultado, avisoExito) {
+  const id = req.params.id;
+  if (resultado.ok) {
+    return res.redirect(`/chat/${resultado.solicitud ? resultado.solicitud._id : id}${avisoExito ? `?aviso=${avisoExito}` : ''}`);
   }
-});
- 
-// ==========================================
-// ACEPTAR LA COTIZACIÓN (solo el cliente)
-// POST /chat/:id/aceptar
-// Cotizada -> Aceptada
-// ==========================================
-router.post('/:id/aceptar', async (req, res) => {
-  try {
-    const usuario = req.session.usuario;
- 
-    if (usuario.tipoUsuario !== 'cliente') {
-      return res.status(403).send('Solo el cliente puede aceptar una cotización.');
-    }
- 
-    // Actualización atómica: solo cambia si la solicitud es de este cliente
-    // y sigue en estado 'Cotizada' (evita dobles clics o aceptar algo ya pagado).
-    const solicitud = await Solicitud.findOneAndUpdate(
-      { _id: req.params.id, clienteId: usuario.id, estado: 'Cotizada' },
-      { $set: { estado: 'Aceptada', fechaAceptacion: new Date() } },
-      { new: true }
-    );
- 
-    if (!solicitud) {
-      return res.redirect(`/chat/${req.params.id}?aviso=no-aceptable`);
-    }
- 
-    // Dejamos constancia en el chat para ambas partes
-    await Mensaje.create({
-      solicitudId: solicitud._id,
-      emisorId: usuario.id,
-      texto: `✅ Acepté la cotización. Total a pagar: ${formatoMXN(desgloseDeSolicitud(solicitud).total)} MXN.`
-    });
- 
-    // Siguiente paso: pasarela de pagos (Aceptada -> Pagada)
-    res.redirect(`/chat/${solicitud._id}?aviso=aceptada`);
- 
-  } catch (error) {
-    console.error('Error al aceptar la cotización:', error);
-    res.status(500).send('No se pudo aceptar la cotización.');
+  switch (resultado.error) {
+    case 'no-encontrada': return res.status(404).send('Solicitud no encontrada');
+    case 'sin-permiso': return res.status(403).send('No tienes permiso para este chat.');
+    case 'solo-cliente': return res.status(403).send('Solo el cliente puede hacer esto.');
+    case 'solo-prestador': return res.status(403).send('Solo el prestador puede hacer esto.');
+    case 'sin-perfil': return res.status(404).send('No se encontró tu perfil de prestador.');
+    case 'mensaje-vacio': return res.redirect(`/chat/${id}`);
+    default: return res.redirect(`/chat/${id}?aviso=${resultado.error}`);
   }
-});
- 
-// ==========================================
-// RECHAZAR LA COTIZACIÓN (solo el cliente)
-// POST /chat/:id/rechazar
-// Cotizada -> Rechazada
-// ==========================================
-router.post('/:id/rechazar', async (req, res) => {
-  try {
-    const usuario = req.session.usuario;
- 
-    if (usuario.tipoUsuario !== 'cliente') {
-      return res.status(403).send('Solo el cliente puede rechazar una cotización.');
-    }
- 
-    const solicitud = await Solicitud.findOneAndUpdate(
-      { _id: req.params.id, clienteId: usuario.id, estado: 'Cotizada' },
-      { $set: { estado: 'Rechazada' } },
-      { new: true }
-    );
- 
-    if (!solicitud) {
-      return res.redirect(`/chat/${req.params.id}?aviso=no-aceptable`);
-    }
- 
-    await Mensaje.create({
-      solicitudId: solicitud._id,
-      emisorId: usuario.id,
-      texto: '❌ Rechacé la cotización.'
-    });
- 
-    res.redirect(`/chat/${solicitud._id}?aviso=rechazada`);
- 
-  } catch (error) {
-    console.error('Error al rechazar la cotización:', error);
-    res.status(500).send('No se pudo rechazar la cotización.');
-  }
-});
- 
-// ==========================================
-// MARCAR TRABAJO COMO COMPLETADO (solo el prestador)
-// POST /chat/:id/completar
-// Pagada -> Completada
-// ==========================================
-router.post('/:id/completar', async (req, res) => {
-  try {
-    const usuario = req.session.usuario;
+}
 
-    if (usuario.tipoUsuario !== 'prestador') {
-      return res.status(403).send('Solo el prestador puede marcar el trabajo como completado.');
-    }
-
-    const trabajador = await Trabajador.findOne({ usuarioId: usuario.id }).select('_id');
-    if (!trabajador) {
-      return res.status(404).send('No se encontró tu perfil de prestador.');
-    }
-
-    // Atómico: solo si es SU solicitud y ya está pagada
-    const solicitud = await Solicitud.findOneAndUpdate(
-      { _id: req.params.id, trabajadorId: trabajador._id, estado: 'Pagada' },
-      { $set: { estado: 'Completada', fechaCompletado: new Date() } },
-      { new: true }
-    );
-
-    if (!solicitud) {
-      return res.redirect(`/chat/${req.params.id}?aviso=no-completable`);
-    }
-
-    await Mensaje.create({
-      solicitudId: solicitud._id,
-      emisorId: usuario.id,
-      texto: '🛠️ Terminé el trabajo. ¡Gracias por confiar en PRAXO! Por favor califica el servicio.'
-    });
-
-    res.redirect(`/chat/${solicitud._id}?aviso=completada`);
-
-  } catch (error) {
-    console.error('Error al completar el servicio:', error);
-    res.status(500).send('No se pudo marcar el servicio como completado.');
-  }
-});
-
-// ==========================================
-// DEJAR RESEÑA (solo el cliente, servicio Completado)
-// POST /chat/:id/resena
-// ==========================================
-router.post('/:id/resena', async (req, res) => {
-  try {
-    const usuario = req.session.usuario;
-
-    if (usuario.tipoUsuario !== 'cliente') {
-      return res.status(403).send('Solo el cliente puede calificar el servicio.');
-    }
-
-    const calificacion = Number(req.body.calificacion);
-    if (!Number.isInteger(calificacion) || calificacion < 1 || calificacion > 5) {
-      return res.redirect(`/chat/${req.params.id}?aviso=resena-invalida`);
-    }
-    const comentario = String(req.body.comentario || '').trim().slice(0, 500);
-
-    const solicitud = await Solicitud.findOne({
-      _id: req.params.id,
-      clienteId: usuario.id,
-      estado: 'Completada'
-    });
-
-    if (!solicitud) {
-      return res.redirect(`/chat/${req.params.id}?aviso=no-calificable`);
-    }
-
+function accion(nombre, fn, avisoExito) {
+  return async (req, res) => {
     try {
-      await Resena.create({
-        solicitudId: solicitud._id,
-        trabajadorId: solicitud.trabajadorId,
-        clienteId: usuario.id,
-        calificacion,
-        comentario
-      });
-    } catch (err) {
-      // 11000 = índice único: este servicio ya tiene reseña
-      if (err.code === 11000) {
-        return res.redirect(`/chat/${solicitud._id}?aviso=ya-calificada`);
-      }
-      throw err;
+      const resultado = await fn(req);
+      return responder(res, req, resultado, avisoExito);
+    } catch (error) {
+      console.error(`Error al ${nombre}:`, error);
+      return res.status(500).send(`No se pudo ${nombre}.`);
     }
+  };
+}
 
-    await recalcularCalificacion(solicitud.trabajadorId);
+// POST /chat/:id/mensaje
+router.post('/:id/mensaje', accion('enviar el mensaje',
+  (req) => enviarMensaje(req.params.id, req.session.usuario, req.body.texto)));
 
-    await Mensaje.create({
-      solicitudId: solicitud._id,
-      emisorId: usuario.id,
-      texto: `⭐ Califiqué el servicio con ${calificacion} de 5 estrellas.`
-    });
+// POST /chat/:id/aceptar   (cliente)    Cotizada -> Aceptada
+router.post('/:id/aceptar', accion('aceptar la cotización',
+  (req) => aceptarCotizacion(req.params.id, req.session.usuario), 'aceptada'));
 
-    res.redirect(`/chat/${solicitud._id}?aviso=calificada`);
+// POST /chat/:id/rechazar  (cliente)    Cotizada -> Rechazada
+router.post('/:id/rechazar', accion('rechazar la cotización',
+  (req) => rechazarCotizacion(req.params.id, req.session.usuario), 'rechazada'));
 
-  } catch (error) {
-    console.error('Error al guardar la reseña:', error);
-    res.status(500).send('No se pudo guardar la reseña.');
-  }
-});
+// POST /chat/:id/completar (prestador)  Pagada -> Completada
+router.post('/:id/completar', accion('marcar el servicio como completado',
+  (req) => completarServicio(req.params.id, req.session.usuario), 'completada'));
+
+// POST /chat/:id/resena    (cliente)    solo Completada, una vez
+router.post('/:id/resena', accion('guardar la reseña',
+  (req) => dejarResena(req.params.id, req.session.usuario, req.body), 'calificada'));
 
 module.exports = router;
