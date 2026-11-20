@@ -6,12 +6,28 @@ import React, { useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/cliente';
 import { useCarrito } from '../context/CarritoContext';
 import { Aviso, Boton, Campo } from '../components/ui';
 import { colores, radio } from '../theme';
 import { aHora, aIsoDia, fechaLarga } from '../utils/formato';
+
+// Convierte cualquier foto (incluido HEIC del iPhone) a un JPG de máximo 1600 px.
+// Así siempre se sube rápido, pesa poco y se ve en cualquier navegador.
+const ANCHO_MAXIMO = 1600;
+
+async function prepararFoto(asset) {
+  const contexto = ImageManipulator.manipulate(asset.uri);
+  if (asset.width && asset.height && Math.max(asset.width, asset.height) > ANCHO_MAXIMO) {
+    contexto.resize(asset.width >= asset.height ? { width: ANCHO_MAXIMO } : { height: ANCHO_MAXIMO });
+  }
+  const imagen = await contexto.renderAsync();
+  // base64: la foto viaja como texto dentro de una petición JSON normal (funciona en cualquier red)
+  const resultado = await imagen.saveAsync({ format: SaveFormat.JPEG, compress: 0.7, base64: true });
+  return { uri: resultado.uri, width: resultado.width, height: resultado.height, mimeType: 'image/jpeg', base64: resultado.base64 };
+}
 
 function manana() {
   const d = new Date();
@@ -32,6 +48,7 @@ export default function SolicitarScreen({ route, navigation }) {
   const [urgencia, setUrgencia] = useState(false);
   const [cotizacion, setCotizacion] = useState(true);
   const [foto, setFoto] = useState(null);
+  const [procesandoFoto, setProcesandoFoto] = useState(false);
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -63,15 +80,27 @@ export default function SolicitarScreen({ route, navigation }) {
       Alert.alert('Permiso necesario', desdeCamara ? 'Activa el permiso de cámara para tomar la foto.' : 'Activa el permiso de fotos para elegir una imagen.');
       return;
     }
-    const opciones = { mediaTypes: ['images'], quality: 0.7, allowsEditing: true };
+    const opciones = {
+      mediaTypes: ['images'],
+      quality: 0.6,
+      allowsEditing: true,
+      // El iPhone guarda en HEIC; "Compatible" lo entrega como JPG (más ligero y rápido de subir).
+      // Si aun así llega HEIC, el servidor lo acepta y lo convierte a JPG.
+      preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible
+    };
     const r = desdeCamara ? await ImagePicker.launchCameraAsync(opciones) : await ImagePicker.launchImageLibraryAsync(opciones);
     if (!r.canceled && r.assets && r.assets[0]) {
       const a = r.assets[0];
-      if (a.fileSize && a.fileSize > 5 * 1024 * 1024) {
-        Alert.alert('Imagen muy pesada', 'La foto debe pesar menos de 5 MB.');
-        return;
+      setProcesandoFoto(true);
+      try {
+        setFoto(await prepararFoto(a));
+      } catch (e) {
+        // Si no se pudo convertir, se manda la original: el servidor también convierte HEIC a JPG
+        console.warn('No se pudo convertir la foto en el teléfono:', e && e.message);
+        setFoto(a);
+      } finally {
+        setProcesandoFoto(false);
       }
-      setFoto(a);
     }
   }
 
@@ -87,34 +116,46 @@ export default function SolicitarScreen({ route, navigation }) {
       return;
     }
 
-    const datos = new FormData();
-    datos.append('trabajadorId', trabajador.id);
-    datos.append('fecha', aIsoDia(fecha));
-    datos.append('hora', aHora(hora));
-    datos.append('ubicacion', ubicacion.trim());
-    datos.append('referenciasUbicacion', referencias.trim());
-    datos.append('descripcion', descripcion.trim());
-    datos.append('urgencia', urgencia ? 'Urgencia' : 'Programado');
-    datos.append('requiereCotizacion', cotizacion ? 'true' : 'false');
-    if (foto) {
-      const tipo = foto.mimeType || 'image/jpeg';
-      datos.append('imagenEvidencia', {
-        uri: foto.uri,
-        name: foto.fileName || `evidencia.${tipo.split('/')[1] || 'jpg'}`,
-        type: tipo
-      });
+    const campos = {
+      trabajadorId: trabajador.id,
+      fecha: aIsoDia(fecha),
+      hora: aHora(hora),
+      ubicacion: ubicacion.trim(),
+      referenciasUbicacion: referencias.trim(),
+      descripcion: descripcion.trim(),
+      urgencia: urgencia ? 'Urgencia' : 'Programado',
+      requiereCotizacion: cotizacion
+    };
+
+    // Con foto ya convertida a JPG: se manda en JSON (base64).
+    // Si no se pudo convertir en el teléfono: se manda como archivo (el servidor convierte HEIC).
+    let peticion;
+    if (foto && foto.base64) {
+      peticion = { metodo: 'POST', cuerpo: { ...campos, imagenBase64: foto.base64 } };
+    } else if (foto) {
+      const datos = new FormData();
+      Object.entries(campos).forEach(([k, v]) => datos.append(k, String(v)));
+      const EXTENSIONES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif' };
+      const tipo = EXTENSIONES[foto.mimeType] ? foto.mimeType : 'image/jpeg';
+      datos.append('imagenEvidencia', { uri: foto.uri, name: `evidencia.${EXTENSIONES[tipo]}`, type: tipo });
+      peticion = { metodo: 'POST', formulario: datos };
+    } else {
+      peticion = { metodo: 'POST', cuerpo: campos };
     }
 
     setEnviando(true);
     try {
-      const r = await api('/carrito', { metodo: 'POST', formulario: datos });
+      const r = await api('/carrito', peticion);
       setCantidad(r.cantidad);
       Alert.alert('¡Agregado!', `${trabajador.oficio} con ${trabajador.nombre} está en tu carrito.`, [
         { text: 'Seguir buscando', onPress: () => navigation.goBack() },
         { text: 'Ir al carrito', onPress: () => navigation.navigate('Principal', { screen: 'Carrito' }) }
       ]);
     } catch (e) {
-      setError(e.message);
+      // Si falla con foto, lo más probable es la imagen: decirlo claro
+      setError(foto && /conexión/i.test(e.message)
+        ? 'No se pudo enviar la foto. Intenta con otra imagen o quítala y vuelve a enviar.'
+        : e.message);
     } finally {
       setEnviando(false);
     }
@@ -183,12 +224,12 @@ export default function SolicitarScreen({ route, navigation }) {
           </View>
         ) : (
           <View style={[st.fila, { marginBottom: 18 }]}>
-            <Boton titulo="Cámara" variante="contorno" icono="camera-outline" onPress={() => elegirFoto(true)} estilo={{ flex: 1 }} />
-            <Boton titulo="Galería" variante="contorno" icono="images-outline" onPress={() => elegirFoto(false)} estilo={{ flex: 1 }} />
+            <Boton titulo="Cámara" variante="contorno" icono="camera-outline" onPress={() => elegirFoto(true)} estilo={{ flex: 1 }} cargando={procesandoFoto} />
+            <Boton titulo="Galería" variante="contorno" icono="images-outline" onPress={() => elegirFoto(false)} estilo={{ flex: 1 }} cargando={procesandoFoto} />
           </View>
         )}
 
-        <Boton titulo="Agregar al carrito" icono="bag-add-outline" onPress={agregar} cargando={enviando} />
+        <Boton titulo="Agregar al carrito" icono="bag-add-outline" onPress={agregar} cargando={enviando || procesandoFoto} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

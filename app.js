@@ -164,6 +164,10 @@ app.use(
   })
 );
 
+// La app móvil manda la foto de evidencia dentro del JSON (base64): esa ruta admite hasta 8 MB.
+// El resto de la API mantiene el límite normal (100 KB).
+app.use('/api/v1/carrito', express.json({ limit: '8mb' }));
+
 app.use(
   express.json()
 );

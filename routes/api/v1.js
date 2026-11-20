@@ -24,7 +24,7 @@ const { obtenerMejoresResenas, nombrePublico } = require('../../services/resenas
 const carrito = require('../../services/carrito');
 const { requiereClienteApi, requiereCualquierUsuarioApi } = require('../../middlewares/apiAuth');
 const stripe = require('../../services/stripe');
-const { subirEvidencia } = require('../../middlewares/subidas');
+const { subirEvidencia, guardarImagenBase64 } = require('../../middlewares/subidas');
 const { limitadores } = require('../../middlewares/seguridad');
 const authRouter = require('../auth');
 
@@ -35,6 +35,17 @@ const { urlBase, urlAbsoluta, trabajadorPublico, usuarioPublico } = require('./u
 // Todas las respuestas de la API son JSON y no se guardan en caché
 router.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
+// Registro en la terminal: método, ruta, tamaño y resultado de cada petición de la app
+router.use((req, res, next) => {
+  const inicio = Date.now();
+  const kb = Math.round(Number(req.get('content-length') || 0) / 1024);
+  res.on('finish', () => {
+    const ruta = req.originalUrl.split('?')[0];
+    console.log(`[App] ${req.method} ${ruta} ${kb ? kb + ' KB ' : ''}→ ${res.statusCode} (${Date.now() - inicio} ms)`);
+  });
   next();
 });
 
@@ -214,10 +225,23 @@ router.get('/carrito', requiereClienteApi, async (req, res) => {
   }
 });
 
-// POST /api/v1/carrito  (multipart/form-data; foto opcional en "imagenEvidencia")
-router.post('/carrito', requiereClienteApi, subirEvidencia('json'), async (req, res) => {
+// POST /api/v1/carrito
+//  - JSON (recomendado para la app): foto opcional en "imagenBase64" (JPG/PNG/WEBP/HEIC en base64)
+//  - multipart/form-data: foto opcional en el archivo "imagenEvidencia"
+const subirSiEsMultipart = (req, res, next) =>
+  (req.is('multipart/form-data') ? subirEvidencia('json')(req, res, next) : next());
+
+router.post('/carrito', requiereClienteApi, subirSiEsMultipart, async (req, res) => {
   try {
-    const rutaImagen = req.file ? '/uploads/solicitudes/' + req.file.filename : null;
+    let rutaImagen = req.file ? '/uploads/solicitudes/' + req.file.filename : null;
+
+    if (!rutaImagen && req.body && req.body.imagenBase64) {
+      const foto = await guardarImagenBase64(req.body.imagenBase64);
+      if (foto.error) return res.status(400).json({ mensaje: foto.error });
+      rutaImagen = '/uploads/solicitudes/' + foto.filename;
+    }
+    if (req.body) delete req.body.imagenBase64;
+
     const resultado = await carrito.agregarAlCarrito(req.usuario.id, req.body, rutaImagen);
     if (!resultado.ok) {
       return res.status(resultado.status).json({ mensaje: resultado.error });

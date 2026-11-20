@@ -3,3 +3,4 @@ index.html
 .env
 config/mongodb.txt
 public/uploads/
+_to_delete/
